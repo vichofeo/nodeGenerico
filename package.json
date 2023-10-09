@@ -1,0 +1,33 @@
+{
+  "name": "generic",
+  "version": "1.0.0",
+  "description": "server generico",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "startBabel": "nodemon --exec babel-node app.js",
+    "start": "nodemon  src/app.js",
+    "build": "babel src/ --out-dir build",
+    "serve": "node build/app.js"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "vichofeo",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.1",
+    "mysql2": "^3.6.0",
+    "pg": "^8.11.3",
+    "sequelize": "^6.32.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.22.10",
+    "@babel/core": "^7.22.11",
+    "@babel/node": "^7.22.10",
+    "@babel/preset-env": "^7.22.10",
+    "morgan": "^1.10.0"
+  }
+}
