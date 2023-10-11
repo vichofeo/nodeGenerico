@@ -38,8 +38,8 @@ app.use(express.static('public'))
 app.use(morgan('dev'))
 
 //habilitando peticiones JSON y parseado
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.json({limit: '550mb'}))
+app.use(express.urlencoded({limit: '550mb', extended: true}))
 
 //CORS
 app.use(function (req, res, next){
@@ -64,5 +64,5 @@ routes.rutas(app)
 
 //const host= 
 app.listen(app.get('port'), ()=>{
-    console.log("corriendo server:" + app.get('port'))
+    console.log("corriendo server Node en :" + app.get('port'))
 })

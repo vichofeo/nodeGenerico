@@ -1,24 +1,30 @@
-const jwt = require('jsonwebtoken')
-const config = require('../config/config.cnf')
+//verifyAuth
+var jwt = require("jsonwebtoken");
+var config = require("./../config/config.cnf");
 
-
-const verifyAuth = (req, res, next)=>{
-    //const token = req.headers['token']
-    var token = null
+const verifyAuth = (req, res, next) => {
+    //var token = req.headers['token'];
+    var token = null;
     if (req.headers.authorization)
-        token = req.headers.authorization.split(' ')[1]
+        token = req.headers.authorization.split(' ')[1];
+    //console.log(token)
+    if (!token) {
+        return res.status(403).send({
+            auth: false,
+            mensaje: "No se proporcionó el token de seguridad"
+        })
+    }
 
-    if(!token)
-    res.status(403).send({auth:false, mensaje:"Token No se proporciono"}) //no autoprizado
-
-    //verificacion del token
-    jwt.verify(token,config.JWT_SECRET, (error, decoded)=>{
-        if(error)
-        res.status(500).send({auth:false, mensaje:"error de autenticaciojn"})//error de servidor
+    jwt.verify(token, config.JWT_SECRET, (error, decoded) => {
+        if (error)
+            return res.status(500).send({
+                auth: false,
+                mensaje: "Error de Autenticación"
+            })
 
         /*req.user = {
-            usuario: decoded.username,
-            id: decoded.id
+            usuario: decoded.usuario,
+            id: decoded._id
         }*/
         next()
     })

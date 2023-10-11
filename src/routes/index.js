@@ -10,19 +10,6 @@ var storage = multer.diskStorage({
 const upload = multer({
     storage
 }).single('imagen')
-/*
-const productoController = require('../controllers/ProductoController')
-
-const producto = (app)=>{
-    app.get("/producto", productoController.listar)
-    app.post("/producto", productoController.guardar)
-    app.put("/producto/:id", productoController.modificar )
-}
-
-module.exports = {
-    producto
-}
-*/
 
 /* Controllers */
 const  authMiddleWare = require('./../middlewares/authMiddleware')
@@ -40,6 +27,11 @@ const rutas = (app) => {
    //usrOptions
    app.get('/api/usr/', authMiddleWare.verifyAuth ,usrController.listar)
    app.post('/api/usr/', usrController.guardar)
+
+   let router = require('express').Router()//app.Router()
+   router.get('/x',  usrController.listar)
+   app.use('/ape', authMiddleWare.verifyAuth,)
+   app.use('/ape', router)
 };
 
 module.exports={
