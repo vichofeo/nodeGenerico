@@ -4,12 +4,12 @@
     "password": "vico",
     "database": "patty",
     "host": "localhost",
-    "dialect": "mysql"    
+    "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": null,
-    "database": "database_test",
+    "database": "patty",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

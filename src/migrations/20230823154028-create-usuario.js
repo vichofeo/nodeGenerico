@@ -15,6 +15,9 @@ module.exports = {
       status: {
         type: Sequelize.CHAR
       },
+      aluci: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

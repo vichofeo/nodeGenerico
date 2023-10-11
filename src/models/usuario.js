@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: 1,
       type: DataTypes.CHAR
-  }
+  },
+  
   }, {
     sequelize,
     modelName: 'usuario',
