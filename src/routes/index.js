@@ -22,7 +22,7 @@ const rutas = (app) => {
 
    app.get('/api/test', (req, res)=>{ res.send("Acceso de prueba")})
    //inicio de session
-   app.post('/api/ingresar', usrController.login)
+   app.post('/api/login', usrController.login)
 
    //usrOptions
    app.get('/api/usr/', authMiddleWare.verifyAuth ,usrController.listar)
