@@ -3,10 +3,10 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const config = require('../../config/config.cnf')
-const usrModel = require('../../models').usr
+const credencialModel = require('../../models').apu_credencial
 
 async function ingresar(req, res) {
-  const usr = await usrModel.findOne({
+  const usr = await credencialModel.findOne({
     where: { usuario: req.body.usuario }
   })
   if (!usr) 

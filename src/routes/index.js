@@ -13,8 +13,9 @@ const upload = multer({
 
 /* Controllers */
 const  authMiddleWare = require('./../middlewares/authMiddleware')
-const  authController = require('./../controllers/auth/authController')
-const  usrController = require('./../controllers/auth/usrController')
+
+const  credencialController = require('./../controllers/auth/credencialController')
+const moduloController = require('../controllers/admin/adminController')
 
 //define rutas de la aplicacion en una sola funcion 
 const rutas = (app) => {
@@ -22,16 +23,29 @@ const rutas = (app) => {
 
    app.get('/api/test', (req, res)=>{ res.send("Acceso de prueba")})
    //inicio de session
-   app.post('/api/login', usrController.login)
+   app.post('/api/login', credencialController.login)
 
    //usrOptions
-   app.get('/api/usr/', authMiddleWare.verifyAuth ,usrController.listar)
-   app.post('/api/usr/', usrController.guardar)
+   app.get('/api/usr/', authMiddleWare.verifyAuth ,credencialController.listar)
+   app.post('/api/usr/', credencialController.guardar)
 
-   let router = require('express').Router()//app.Router()
-   router.get('/x',  usrController.listar)
-   app.use('/ape', authMiddleWare.verifyAuth,)
-   app.use('/ape', router)
+   //admin
+   app.get("/api/admin/module", authMiddleWare.verifyAuth, moduloController.listar)
+   app.post("/api/admin/module", authMiddleWare.verifyAuth, moduloController.guardar)
+   //controller
+   app.get("/api/admin/submodule", authMiddleWare.verifyAuth, moduloController.sblistar)
+   app.post("/api/admin/submodule", authMiddleWare.verifyAuth, moduloController.sbguardar)
+
+   //cnf mod
+   app.post("/api/admin/mca", authMiddleWare.verifyAuth, moduloController.cnfListar)
+   app.post("/api/admin/mcai", authMiddleWare.verifyAuth, moduloController.cnfGuardar)
+
+   //rol
+   app.get("/api/admin/croles", authMiddleWare.verifyAuth, moduloController.rollistar)
+   app.post("/api/admin/croles", authMiddleWare.verifyAuth, moduloController.rolGuardar)
+
+   //config rol
+   app.post("/api/admin/rolemod", authMiddleWare.verifyAuth, moduloController.rolCnfListar)
 };
 
 module.exports={
