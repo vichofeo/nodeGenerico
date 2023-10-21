@@ -79,19 +79,32 @@ module.exports = class QueriesUtils {
 
   searchBySelectedComboData(data, selected) {
     const datos = this.#transformResultArray(data)
-    let i = 0
-    let sw = 0
-    for (const ii in datos) {
-      sw = 1
-      if (datos[ii].value == selected.value) {
-        i = ii
-        break
-      }
-    }
-
-    if (sw) return datos[i]
-    else return this.#sinDatoByCombo
+    return this.searchBySelectedComboDataNotransform(datos, selected)
   }
+
+  searchBySelectedComboDataNotransform(data, selected) {
+    try {
+      const datos = data
+      let i = 0
+      let sw = 0
+      for (const ii in datos) {
+        sw = 1
+        if (datos[ii].value == selected.value) {
+          i = ii
+          break
+        }
+      }
+  
+      if (sw) return datos[i]
+      else return this.#sinDatoByCombo
+    } catch (error) {
+        console.log(error);
+        return this.#sinDatoByCombo
+    };
+    
+    
+  }
+
   modifyFindAdvanced(datos, campo){
     return datos.map((obj) => {
         return obj[campo]
