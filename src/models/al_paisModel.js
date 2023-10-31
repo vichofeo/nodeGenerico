@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false, primaryKey: true},
        nombre_pais: { type: DataTypes.STRING(80) ,
       allowNull: true},
+      latitud: { type: DataTypes.DOUBLE,
+        allowNull: true},
+         longitud: { type: DataTypes.DOUBLE,
+        allowNull: true}
     },
     {
       sequelize,

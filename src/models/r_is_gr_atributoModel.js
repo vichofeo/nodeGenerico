@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class usuario extends Model {
+  class r_is_gr_atributo extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,18 +11,26 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  usuario.init(
+  r_is_gr_atributo.init(
     {
-        
+      grupo_atributo: {
+        type: DataTypes.STRING(64),
+        allowNull: false, primaryKey: true,
+      },
+      grupo: {
+        type: DataTypes.STRING(128),
+        allowNull: false
+      },
+      
     },
     {
       sequelize,
-      modelName: 'usuario',
-      timestamps: false,
+      modelName: 'r_is_gr_atributo',
+      timestamps: true,
       freezeTableName: true,
-      tableName: 'usuario',
+      tableName: 'r_is_gr_atributo',
       classMethods: {},
     }
   )
-  return usuario
+  return r_is_gr_atributo
 }

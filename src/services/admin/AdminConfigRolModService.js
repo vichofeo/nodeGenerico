@@ -1,8 +1,8 @@
-const QueriesUtils = require('../models/queries/QueriesUtils')
+const QueriesUtils = require('../../models/queries/QueriesUtils')
 const { QueryTypes } = require("sequelize");
 
 
-const db = require('../models/index')
+const db = require('../../models/index')
 const { v4: uuidv4 } = require('uuid');
 
 const aplicacionModel = db.ap_aplicacion
@@ -47,7 +47,7 @@ const listar = async (dataDTO) => {
       attributes: mca.transAttribByComboBox('modulo_id,nombre_modulo'),      
     }],    
     result.modulo =  await mca.findTuneAdvanced(data)
-    result.modulo =  mca.modifyFindAdvanced(result.modulo, 'modulo')        
+    result.modulo =  mca.modifyResultFindAdvanced(result.modulo, 'modulo')        
     result.moduloSelected = modulo.searchBySelectedComboData(result.modulo, dataDTO.moduloSelected)
 */
 

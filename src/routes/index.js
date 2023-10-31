@@ -17,6 +17,10 @@ const  authMiddleWare = require('./../middlewares/authMiddleware')
 const  credencialController = require('./../controllers/auth/credencialController')
 const moduloController = require('../controllers/admin/adminController')
 
+const menuController =  require('../controllers/admin/menuController')
+const egController = require('../controllers/georef/egController')
+
+
 //define rutas de la aplicacion en una sola funcion 
 const rutas = (app) => {
    app.get('/', (req, res)=>{ res.render("index.html")})
@@ -46,6 +50,27 @@ const rutas = (app) => {
 
    //config rol
    app.post("/api/admin/rolemod", authMiddleWare.verifyAuth, moduloController.rolCnfListar)
+
+    //usuaRIOS PEOPLE
+  app.post("/api/admin/people", authMiddleWare.verifyAuth, moduloController.peopleSearch)
+  app.post("/api/admin/getDataConfigCre", authMiddleWare.verifyAuth, moduloController.peopleDataCredencial)
+  //app.post("/api/admin/saveConfigCre", authMiddleWare.verifyAuth, moduloController.peopleDataCredencialSave)
+
+  //PAIS DPTO MUN
+  app.post("/api/admin/pais", authMiddleWare.verifyAuth, moduloController.getPais)
+  app.post("/api/admin/dpto", authMiddleWare.verifyAuth, moduloController.getDpto)
+  app.post("/api/admin/muni", authMiddleWare.verifyAuth, moduloController.getMuni)
+
+  //app.post("/gestores", productoController.getGestor)
+  //app.post("/establecimientos", productoController.getESalud)
+
+  //opciones de menu
+  app.get("/api/geo/menu", authMiddleWare.verifyAuth, menuController.menuGeoreferencia)
+
+  //opciones para modulo georef
+  app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
+  app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
+  app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrm)
 };
 
 module.exports={

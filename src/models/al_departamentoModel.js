@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true},
        geoname_id:  {type: DataTypes.STRING(12), 
       allowNull: true},
+      latitud: { type: DataTypes.DOUBLE,
+        allowNull: true},
+         longitud: { type: DataTypes.DOUBLE,
+        allowNull: true}
     },
     {
       sequelize,

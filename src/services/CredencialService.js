@@ -9,7 +9,7 @@ const listar = async () => await credencialModel.list()
 const login = async (usr) => {
   try {
     const result = await credencialModel.findDataOne(usr)
-console.log("consulta ior uno:", result)
+
     if (!result) return { message: 'Usuario incorrecto', ok: false }
     else {
       const aux = await bcrypt.compare(usr.password, result.hash)

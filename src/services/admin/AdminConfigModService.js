@@ -1,6 +1,6 @@
-const QueriesUtils = require('../models/queries/QueriesUtils')
+const QueriesUtils = require('../../models/queries/QueriesUtils')
 
-const db = require('../models/index')
+const db = require('../../models/index')
 const { v4: uuidv4 } = require('uuid');
 
 const aplicacionModel = db.ap_aplicacion

@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(15),
         allowNull: true
       },
+      telefono_emergencia: {
+        type: DataTypes.STRING(15),
+        allowNull: true
+      },
       correo_electronico: {
         type: DataTypes.STRING(64),
         allowNull: true
@@ -45,10 +49,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
     allowNull: true
   },
-    ente_direccion: {
-      type: DataTypes.STRING(200),
-    allowNull: true
-  },
+   
     cod_pais: {
       type: DataTypes.STRING(4),
     allowNull: true
@@ -97,7 +98,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
     allowNull: true
   },
-    ente_root: {
+    institucion_root: {
       type: DataTypes.STRING(64),
     allowNull: true
   },

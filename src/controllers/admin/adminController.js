@@ -1,8 +1,11 @@
-const moduloService = require('./../../services/AdminModService')
-const subModuloService = require('./../../services/AdminSubModService')
-const cnfMcaService = require('./../../services/AdminConfigModService')
-const rolService = require('./../../services/AdminRolService')
-const rolCnfService = require('./../../services/AdminConfigRolModService')
+const moduloService = require('./../../services/admin/AdminModService')
+const subModuloService = require('./../../services/admin/AdminSubModService')
+const cnfMcaService = require('./../../services/admin/AdminConfigModService')
+const rolService = require('./../../services/admin/AdminRolService')
+const rolCnfService = require('./../../services/admin/AdminConfigRolModService')
+
+const accesoService =  require('./../../services/admin/AdminAccessService')
+const pdmService = require('./../../services/admin/AdminPDMService')
 
 const listar = async (req, res) => {
   const result = await moduloService.listar()
@@ -64,6 +67,47 @@ const rolCnfListar = async( req, res)=>{
   const result = await rolCnfService.listar(datoDto)
   res.json(result)
 }
+
+/**
+ * Opciones para modulo visual de persona-login-rol
+ */
+const peopleSearch =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await accesoService.searchPeople(datoDto)
+  res.json(result)
+}
+
+const peopleDataCredencial =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await accesoService.getDataCredencial(datoDto)
+  res.json(result)
+}
+
+const peopleDataCredencialSave =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await accesoService.creGuardar(datoDto)
+  res.json(result)
+}
+
+//PDM
+const getPais =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await pdmService.getPais(datoDto)
+  res.json(result)
+}
+
+const getDpto =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await pdmService.getDpto(datoDto)
+  res.json(result)
+}
+
+const getMuni =  async (req, res)=>{
+  const datoDto = req.body
+  const result = await pdmService.getMuni(datoDto)
+  res.json(result)
+}
+
 module.exports = {
   listar, guardar,
 
@@ -74,4 +118,7 @@ module.exports = {
   rollistar, rolGuardar, 
 
   rolCnfListar,
+  peopleSearch, peopleDataCredencial, peopleDataCredencialSave,
+
+  getPais, getDpto, getMuni
 }

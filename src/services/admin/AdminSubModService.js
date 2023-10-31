@@ -1,8 +1,9 @@
-const moduloModel = require('./../models/queries/apModuloQueries')
+const subModuloModel = require('./../../models/queries/apControllerQueries')
+
 
 const listar = async () => {
   try {
-    const result = await moduloModel.list()
+    const result = await subModuloModel.list()
     return {
       ok: true,
       message: "Resultado exitoso",
@@ -11,7 +12,7 @@ const listar = async () => {
   } catch (error) {
     return {
       ok: false,
-      message: "Error de sistema: ADMMODSRV",
+      message: "Error de sistema: ADMSMODSRV",
       error: error.message
     }
   };
@@ -24,14 +25,14 @@ const listar = async () => {
 const guardar = async (data) => {
 
   //verifica si esta registrado
-  const result = await moduloModel.find(data)
+  const result = await subModuloModel.find(data)
   
   if (result.length > 0) {
-    return { ok: false, message: 'El modulo Introducido ya esta registrado' }
+    return { ok: false, message: 'El controller Introducido ya esta registrado' }
   } else {
     try {
 
-      const result = await moduloModel.Create(data)
+      const result = await subModuloModel.Create(data)
       if (result)
       return {
         ok: true,
@@ -46,7 +47,7 @@ const guardar = async (data) => {
     } catch (error) {
       return {
         ok: false,
-        message: "Error de sistema: ADMMODSRVG",
+        message: "Error de sistema: ADMSMODSRVG",
         error: error.message
       }
     }
