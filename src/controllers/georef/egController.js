@@ -18,9 +18,39 @@ const dataEESS = async(req, res) =>{
   const getDataFrm =  async (req, res) =>{
     const idx = req.params.idx
     const modelo = req.params.modelo
-    const result = await egService.getDataFrm({idx:idx, modelo:modelo})
+    const token =  req.headers.authorization
+    const result = await egService.getDataFrm({idx:idx, modelo:modelo, token: token})
     res.json(result)
   }
+
+  const getDataModelParam =  async (req, res) =>{    
+    const modelo = req.params.modelo
+    const token =  req.headers.authorization
+    const result = await egService.getDataModelParam({modelo:modelo, token: token})
+    res.json(result)
+  }
+
+const weUsersget = async (req, res) =>{      
+    const token =  req.headers.authorization
+    const result = await egService.weUsersget({token:token, idx:'-1', swAll:true})
+    res.json(result)
+}
+const weUserget = async (req, res) =>{      
+  const token =  req.headers.authorization
+  const idx = req.params.idx
+  const result = await egService.weUsersget({token:token, idx:idx, swAll:false})
+  res.json(result)
+}
+
+const weUserSave = async(req, res) =>{
+  const token =  req.headers.authorization
+  const datos = req.body
+  const result = await egService.weUserSave({token:token, data: datos})
+  res.json(result)
+}
+
   module.exports = {
-    dataEESS,  saveDataEESS, getDataFrm
+    dataEESS,  saveDataEESS, getDataFrm,
+    weUsersget, weUserget, weUserSave,
+    getDataModelParam
   }

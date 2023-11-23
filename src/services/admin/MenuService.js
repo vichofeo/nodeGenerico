@@ -1,63 +1,136 @@
+const { PARAMETROS } = require('../../config/parameters')
+const { REPORTS } = require('../../config/reports')
+
 const QueriesUtils = require('../../models/queries/QueriesUtils')
 
-const {QueryTypes} = require("sequelize")
+const { QueryTypes } = require("sequelize")
 
 const db = require('../../models/index')
 
-const tk =  require('./../utilService')
+const tk = require('./../utilService')
 
 
-const appModel =  db.ae_institucion
+const appModel = db.ae_institucion
 const sequelize = db.sequelize
 
-const menuGeoreferencia = async (token) =>{
-try {
-const datos =  tk.getCnfApp(token)
+const getDataTree = async (parent_id = '-1', root, resultado = []) => {
+
+    let query = `SELECT 
+    DISTINCT ins.institucion_id, '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor 
+    FROM ae_institucion ins
+    LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
+    WHERE 
+    ins.parent_grp_id = '${parent_id}'    
+    -- and dpto.nombre_dpto is not null
+    ORDER BY 2`
+
+    if (root == '-1') {
+        query = `SELECT 
+      DISTINCT ins.institucion_id, '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor
+    FROM ae_institucion ins
+    LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
+    WHERE 
+    ins.institucion_root = '${parent_id}'    
+    -- and dpto.nombre_dpto is not null
+    ORDER BY 2`
+    }
 
 
-const app = new QueriesUtils(appModel)
-//verifica si es usuario por tipo de institucion
-let result = await app.findID(datos.inst)
+    const result = await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
+
+    if (result.length > 0) {
+        for (const i in result) {
+            if (result[i].text)
+                resultado[result[i].text] = { value: result[i].value, text: result[i].text, atributo: result[i].atributo, valor: result[i].valor }
+            //resultado = { ...resultado, [result[i].text]: { value: result[i].value, text: result[i].text }, index:i }
+
+            await getDataTree(result[i].institucion_id, root, resultado);
 
 
-let query = ""
-switch (result.tipo_institucion_id) {
-    case 'EG':
-        query = `SELECT DISTINCT '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text
-        FROM ae_institucion ins, al_departamento dpto
-        WHERE ins.cod_dpto =  dpto.cod_dpto
-        AND ins.institucion_root = '${result.institucion_id}'
-        ORDER BY 2`
-        break;
-    case 'EESS':
-        query = `SELECT DISTINCT '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text
-        FROM ae_institucion ins, al_departamento dpto
-        WHERE ins.cod_dpto =  dpto.cod_dpto
-        AND ins.institucion_id = '${result.institucion_id}'
-        ORDER BY 2`        
-        break;
-    default:
-        query = "SELECT '' AS VALUE, '' AS text"
-        break;        
+        }
+
+        return resultado
+    } else return resultado
+
 }
 
-result = await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
-if(result.length>0)
-result.unshift({value:'/ssepi/sssscp/all', text:'Todos'})
+const menuGeoreferencia = async (token) => {
+    try {
+        const datos = tk.getCnfApp(token)
 
-return{
-    ok:true,
-    data: {georeferencia: result},
-    message: 'Resultado exitoso'
-}
 
-} catch (error) {
-    return {
-        ok: false,
-        message: "Error de sistema: MNGEOSRV",
-        error: error.message
-      }
-};
+        const app = new QueriesUtils(appModel)
+        //verifica si es usuario por tipo de institucion
+        let result = await app.findID(datos.inst)
+
+
+        let query = `SELECT 
+        DISTINCT '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor
+        FROM ae_institucion ins
+        LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
+        WHERE         
+        `
+        let menuMiEstablecimiento = null
+        let menuReportes =  []
+        switch (result.tipo_institucion_id) {
+            case 'EG':
+                query = ` ${query} ins.institucion_root = '${result.institucion_id}' order by 2`                
+                break;
+            case 'EESS':
+                query = ` ${query} ins.institucion_id = '${result.institucion_id}'`
+                menuMiEstablecimiento = []                
+                for (const key in PARAMETROS) 
+                    menuMiEstablecimiento.push({value: `/ssepi/eess/${key}`, text:PARAMETROS[key].alias })
+                break;            
+            default:
+                query = "SELECT '' AS VALUE, '' AS text"
+                break;
+        }
+
+//menu REPORTES
+        for (const key in REPORTS) 
+               menuReportes.push({value: `/ssepi/report/${key}`, text:REPORTS[key].alias, atributo:'reports', valor: key})
+
+        //const tmp = await getDataTree(result.institucion_id, result.institucion_root)
+
+        let result2 = result.tipo_institucion_id == 'ASUSS' ?
+        Object.values(await getDataTree(result.institucion_id, result.institucion_root)) :
+            await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
+        
+
+        if (result2.length > 1)
+            result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo:'ssepi', valor: 'all' })
+        else if (result2.length == 1)
+            result2 = result2[0]
+
+
+            
+
+        return {
+            ok: true,
+            data: {
+                georeferencia: result2,
+                usuarios: { value: "/ssepi/weusers", text: "Usuario" },
+                "Mi Establecimiento" : menuMiEstablecimiento, 
+                "Reportes": menuReportes,
+                Reportes_prueba: [
+                    {
+                        "value": "/hl7",
+                        "text": "report H"
+                    }]
+            },
+            moredata: { institucion: result.nombre_corto },
+            message: 'Resultado exitoso'
+        }
+
+    } catch (error) {
+        console.log(error)
+        return {
+            ok: false,
+            message: "Error de sistema: MNGEOSRV",
+            error: error.message
+        }
+    };
 
 }
 

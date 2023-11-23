@@ -1,13 +1,21 @@
-
-const  jwt = require("jsonwebtoken");
-const  config = require("./../config/config.cnf");
+const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken");
+const config = require("./../config/config.cnf");
 
 const getCnfApp = (token) => {
-    let  tk = token.split(' ')[1];    
-    const ops=   jwt.verify(tk, config.JWT_SECRET)
+    let tk = token.split(' ')[1];
+    const ops = jwt.verify(tk, config.JWT_SECRET)
     return ops
 }
 
+const genPass = async (login, pass) => {
+
+    const passs = pass //login + pass
+    const BCRYPT_SALT_ROUNDS = 12
+    const hash = await bcrypt.hash(passs, BCRYPT_SALT_ROUNDS)
+    return hash
+}
+
 module.exports = {
-    getCnfApp
+    getCnfApp, genPass
 }

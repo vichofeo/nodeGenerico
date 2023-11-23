@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(80),
         allowNull: false
       },
+      nombre_corto: {
+        type: DataTypes.STRING(10),
+        allowNull: false
+      },
       telefono: {
         type: DataTypes.STRING(15),
         allowNull: true
@@ -102,6 +106,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(64),
     allowNull: true
   },
+  parent_grp_id: {
+    type: DataTypes.STRING(64),
+  allowNull: true
+},
     tipo_institucion_id: {
       type: DataTypes.STRING(64) ,
       allowNull: false

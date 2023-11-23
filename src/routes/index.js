@@ -19,7 +19,9 @@ const moduloController = require('../controllers/admin/adminController')
 
 const menuController =  require('../controllers/admin/menuController')
 const egController = require('../controllers/georef/egController')
+const reportController =  require('../controllers/georef/reportsController')
 
+const hl7 = require('../controllers/hl7Controller')
 
 //define rutas de la aplicacion en una sola funcion 
 const rutas = (app) => {
@@ -71,6 +73,23 @@ const rutas = (app) => {
   app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
   app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrm)
+  app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
+
+  //opciones submodulo de usuarios logueado
+  app.get("/api/geo/weusers", authMiddleWare.verifyAuth, egController.weUsersget)
+  app.get("/api/geo/weusers/:idx", authMiddleWare.verifyAuth, egController.weUserget)
+  app.post("/api/geo/weuser", authMiddleWare.verifyAuth, egController.weUserSave)
+
+  ///Repportes
+  app.get("/api/geo/reportgral/:model", authMiddleWare.verifyAuth, reportController.getReports)
+
+  //app.post('/api/hl7', hl7.recibe)
+  app.get('/api/hl7', hl7.muestra)
+  app.delete('/api/hl7', hl7.borrar)
+  app.post('/api/hl7', hl7.tmp2)
+
+
+
 };
 
 module.exports={
