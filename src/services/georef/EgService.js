@@ -36,6 +36,100 @@ dbmodel.infraestructuran = db.r_institucion_salud_infraestructura
 dbmodel.atributos = db.r_is_atributo
 
 
+
+const display_full_tree = async (tipo , node = '-1', branches = 0, resultado = []) => {
+
+    let condicion = (tipo=='EG') ? `i.institucion_root = '${node}'` : `i.parent_grp_id = '${node}'`
+      
+
+    let qs = `SELECT d.cod_dpto, d.nombre_dpto, 
+    i.institucion_id, i.nombre_institucion as "name", i.nombre_corto, 
+    i.parent_grp_id, i.institucion_root, i.tipo_institucion_id, 
+    p.nombre_institucion as padre, p.nombre_corto as padre_corto,
+    eg.nombre_institucion as eg, eg.nombre_corto as eg_corto
+    FROM ae_institucion i
+    LEFT JOIN  al_departamento d ON (d.cod_pais = i.cod_pais AND d.cod_dpto=i.cod_dpto)
+    LEFT JOIN  ae_institucion p ON (p.institucion_id=i.parent_grp_id)
+    LEFT JOIN  ae_institucion eg ON (eg.institucion_id=i.institucion_root)
+    WHERE ${condicion}
+    ORDER BY i.tipo_institucion_id, i.parent_grp_id        
+    `;
+
+    const rc = await sequelize.query(qs, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
+
+    // conteo de ramas
+    if (branches == 0) { branches = 1 }
+    // recorre resulst
+    let sweess = 0
+    
+    const dpto = {}
+    for (const key in rc) {
+        const ar = rc[key]
+        ar.branch = branches
+        //ar.children = []
+
+        const link_node = ar.institucion_id
+        const parent = ar.parent_grp_id
+        const tipo_institucion = ar.tipo_institucion_id
+
+        if (tipo_institucion == "EESS") {
+            sweess = 1
+
+            //if(!Object.is(dpto[ar.cod_dpto], dpto[ar.cod_dpto])) dpto[ar.cod_dpto]={}
+            //if(!Object.is(dpto[ar.cod_dpto][ar.name], dpto[ar.cod_dpto][ar.name])) dpto[ar.cod_dpto][ar.name]=[]            
+            dpto[ar.cod_dpto] = { ...dpto[ar.cod_dpto], name: ar.nombre_dpto, cod_dpto: ar.cod_dpto }
+            dpto[ar.cod_dpto][ar.eg_corto] = { ...dpto[ar.cod_dpto][ar.eg_corto], name: ar.eg_corto, nombre_corto: ar.eg_corto, nombre_institucion: ar.eg, idx:ar.institucion_root }
+            dpto[ar.cod_dpto][ar.eg_corto][ar.name] = {name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion:ar.name, idx: ar.institucion_id }
+
+            !dpto[ar.cod_dpto].children ? dpto[ar.cod_dpto].children = [ar.eg_corto] : dpto[ar.cod_dpto].children.push(ar.eg_corto)
+            !dpto[ar.cod_dpto][ar.eg_corto].children ? dpto[ar.cod_dpto][ar.eg_corto].children = [ar.name] : dpto[ar.cod_dpto][ar.eg_corto].children.push(ar.name)
+        }
+
+
+
+        // recorre consulta
+        if (tipo_institucion != "EESS") {
+            sweess = 0
+            resultado.push({name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion:ar.name, idx: ar.institucion_id})
+            branches = branches + 1;
+            resultado[resultado.length - 1].children = []
+            await display_full_tree(tipo,link_node, branches, resultado[resultado.length - 1].children)
+            branches = branches - 1
+        }
+    }
+    if (sweess == 1) {
+        //pasa los valores
+        const temp = Object.values(dpto)
+        for (const dpto of temp) {
+
+            let result = dpto.children.filter((item, index) => {
+                return dpto.children.indexOf(item) === index;
+            })
+            dpto.children = []
+            for (const eg of result) {
+                let reess = dpto[eg].children.filter((item, index) => {
+                    return dpto[eg].children.indexOf(item) === index;
+                })
+                dpto[eg].children = []
+                for (const eess of reess) {
+                    dpto[eg].children.push(dpto[eg][eess])
+                    delete dpto[eg][eess]
+                }
+
+                dpto.children.push(dpto[eg])
+                delete dpto[eg]
+
+            }
+            resultado.push(dpto)
+
+        }
+
+    }
+    console.log("###############################################", resultado.length)
+
+    return resultado
+}
+
 const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_id = '-1', resultado = []) => {
 
     let query = ''
@@ -160,7 +254,7 @@ const saveDataEESS = async (data) => {
 }
 function verificaParamEdicion(parametros, tipo) {
     let claves = Object.keys(parametros.campos);
-    if (tipo != 'EESS') {        
+    if (tipo != 'EESS') {
         for (let i = 0; i < claves.length; i++) {
             let clave = claves[i]
             parametros.campos[clave][5] = true;
@@ -297,7 +391,7 @@ const getDataParams = async (dto) => {
 }
 
 const getDataFrm = async (dto) => {
-    dto.modelos = ['institucion', dto.modelo, 'propietario', 'responsablen' ,'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
+    dto.modelos = ['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
     const result = getDataParams(dto)
     delete result.institucion
     return result
@@ -506,8 +600,49 @@ const weUserSave = async (dto) => {
     };
 
 }
+
+
+const misEess = async (dto) => {
+    try {
+        const datos = tk.getCnfApp(dto.token)
+        const inst = new QueriesUtils(eessModel)
+        const eess = await inst.findID(datos.inst)
+
+        const conf = {
+            attributes: []
+        }
+
+        let result = await display_full_tree(eess.tipo_institucion_id , eess.institucion_id)
+        //add root
+        result = [
+            {name: eess.nombre_corto, 
+                nombre_corto: eess.nombre_corto, 
+                nombre_institucion:eess.nombre_institucion, 
+                idx: eess.institucion_id,
+                children: result
+            }
+        ]
+
+        return {
+            //ok: true,
+            data: result,
+            //inst: eess,
+            //message: "Datos entregados"
+        }
+    } catch (error) {
+        console.log(error);
+        return {
+            ok: false,
+            message: "Error de sistema: GEOMYsEESSSRV",
+            error: error.message
+        }
+    };
+
+}
+
 module.exports = {
     dataEESS, saveDataEESS, getDataFrm,
     weUsersget, weUserSave,
-    getDataModelParam
+    getDataModelParam,
+    misEess
 }

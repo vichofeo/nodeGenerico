@@ -70,10 +70,12 @@ const menuGeoreferencia = async (token) => {
         LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
         WHERE         
         `
-        let menuMiEstablecimiento = null
+        let menuMiEstablecimiento = {}
+        let misEstablecimientos = {}
         let menuReportes =  []
         switch (result.tipo_institucion_id) {
             case 'EG':
+                misEstablecimientos = {value: '/ssepi/miseess', text: 'Mis Establecimientos'}
                 query = ` ${query} ins.institucion_root = '${result.institucion_id}' order by 2`                
                 break;
             case 'EESS':
@@ -81,7 +83,10 @@ const menuGeoreferencia = async (token) => {
                 menuMiEstablecimiento = []                
                 for (const key in PARAMETROS) 
                     menuMiEstablecimiento.push({value: `/ssepi/eess/${key}`, text:PARAMETROS[key].alias })
-                break;            
+                break; 
+            case 'ASUSS':
+                misEstablecimientos = {value: '/ssepi/miseess', text: 'Mis Establecimientos'}
+                break;               
             default:
                 query = "SELECT '' AS VALUE, '' AS text"
                 break;
@@ -103,9 +108,6 @@ const menuGeoreferencia = async (token) => {
         else if (result2.length == 1)
             result2 = result2[0]
 
-
-            
-
         return {
             ok: true,
             data: {
@@ -117,7 +119,8 @@ const menuGeoreferencia = async (token) => {
                     {
                         "value": "/hl7",
                         "text": "report H"
-                    }]
+                    }],
+                "Mis Establecimientos": misEstablecimientos    
             },
             moredata: { institucion: result.nombre_corto },
             message: 'Resultado exitoso'

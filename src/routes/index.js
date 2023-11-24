@@ -79,8 +79,11 @@ const rutas = (app) => {
   app.get("/api/geo/weusers", authMiddleWare.verifyAuth, egController.weUsersget)
   app.get("/api/geo/weusers/:idx", authMiddleWare.verifyAuth, egController.weUserget)
   app.post("/api/geo/weuser", authMiddleWare.verifyAuth, egController.weUserSave)
+  
+  //mis establecimientos
+  app.get("/api/geo/miseess", authMiddleWare.verifyAuth, egController.misEess)
 
-  ///Repportes
+    ///Repportes
   app.get("/api/geo/reportgral/:model", authMiddleWare.verifyAuth, reportController.getReports)
 
   //app.post('/api/hl7', hl7.recibe)

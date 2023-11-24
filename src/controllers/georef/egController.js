@@ -49,8 +49,15 @@ const weUserSave = async(req, res) =>{
   res.json(result)
 }
 
+//modulo mis establecimeintos
+const misEess = async(req, res) =>{
+  const token =  req.headers.authorization  
+  const result = await egService.misEess({token:token})
+  res.json(result)
+}
   module.exports = {
     dataEESS,  saveDataEESS, getDataFrm,
     weUsersget, weUserget, weUserSave,
-    getDataModelParam
+    getDataModelParam,
+    misEess
   }
