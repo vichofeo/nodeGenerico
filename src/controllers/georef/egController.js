@@ -29,6 +29,19 @@ const dataEESS = async(req, res) =>{
     const result = await egService.getDataModelParam({modelo:modelo, token: token})
     res.json(result)
   }
+const getDataModelByIdxParam =  async(req, res) =>{
+    const idx = req.body.idx    
+    const modelo = req.body.modelo
+    const token =  req.headers.authorization            
+    const result = await egService.getDataModelByIdxParam({idx:idx, modelo:modelo, token: token, noverify:true})
+    res.json(result)
+}
+const saveDataModelByIdxParam =  async(req, res) =>{
+  const token =  req.headers.authorization            
+  const result = await egService.saveDataModelByIdxParam({token:token, ...req.body})
+  res.json(result)
+}
+
 
 const weUsersget = async (req, res) =>{      
     const token =  req.headers.authorization
@@ -58,6 +71,6 @@ const misEess = async(req, res) =>{
   module.exports = {
     dataEESS,  saveDataEESS, getDataFrm,
     weUsersget, weUserget, weUserSave,
-    getDataModelParam,
+    getDataModelParam, getDataModelByIdxParam, saveDataModelByIdxParam,
     misEess
   }

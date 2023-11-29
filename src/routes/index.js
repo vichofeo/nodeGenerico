@@ -74,6 +74,8 @@ const rutas = (app) => {
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
   app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrm)
   app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
+  app.post("/api/geo/eess/get", authMiddleWare.verifyAuth, egController.getDataModelByIdxParam)
+  app.post("/api/geo/eess", authMiddleWare.verifyAuth, egController.saveDataModelByIdxParam)
 
   //opciones submodulo de usuarios logueado
   app.get("/api/geo/weusers", authMiddleWare.verifyAuth, egController.weUsersget)

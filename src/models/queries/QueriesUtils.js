@@ -9,16 +9,21 @@ module.exports = class QueriesUtils {
     this.#sinDatoByCombo = { value: '-1', text: '-Sin Dato-' }
     this.#initialByCombo = { value: '-1', text: '-Todos-' }
   }
-/**
- * Insert data
- * @param {objDatos} dato 
- * @returns 
- */
+  /**
+   * Insert data
+   * @param {objDatos} dato 
+   * @returns 
+   */
   create(dato) {
     return this.#table
       .create(dato)
       .then((data) => data)
-      .catch((error) => error)
+      .catch((error) => {
+        console.log("Errr en la insercion ", error)
+        console.log("Carga.......................... ", dato)
+
+        return false
+      })
   }
   /**
    * select * all
@@ -51,10 +56,13 @@ module.exports = class QueriesUtils {
   findID(datoKey) {
     return this.#table
       .findByPk(datoKey)
-      .then((data) => data.dataValues)
+      .then((data) => {
+        //console.log("***********************************************************", data)
+        return data ? data.dataValues : {}
+      })
       .catch((e) => {
         console.log("%%%%%%%%%%%%%", e)
-        return e
+        return false
       })
   }
   /**
@@ -69,7 +77,7 @@ module.exports = class QueriesUtils {
         where: data.where,
         order: data.order
       })
-      .then((data) => data)
+      .then((data) => this.#transformResultArray(data))
       .catch((e) => e)
   }
   /**
@@ -86,25 +94,28 @@ module.exports = class QueriesUtils {
         return e
       })
   }
-/**
- * update
- * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data 
- */
-  modify(data){
+  /**
+   * update
+   * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data 
+   */
+  modify(data) {
     console.log("###########", data)
     this.#table.
-    update(data.set,{ where: data.where })
-    .then((dato)=>{
-      console.log("===========", dato)
-      return dato})
-    .catch((e)=>{console.log("UUUUUUMall", e)
-    return e})
+      update(data.set, { where: data.where })
+      .then((dato) => {
+        console.log("=========== MODIFY(QUERYUTILS) eXITO:", dato)
+        return dato
+      })
+      .catch((e) => {
+        console.log("UUUUUUMall", e)
+        return e
+      })
   }
-/**
- * 
- * @param {'a1,a2'} textSeparatedComa 
- * @returns [[a1,value],[a2,text]]
- */
+  /**
+   * 
+   * @param {'a1,a2'} textSeparatedComa 
+   * @returns [[a1,value],[a2,text]]
+   */
   transAttribByComboBox(textSeparatedComa) {
     try {
       const arr = textSeparatedComa.split(',')
@@ -130,12 +141,16 @@ module.exports = class QueriesUtils {
    * @returns 
    */
   #transformResultArray(datos) {
-    return datos.map((obj) => {
-      return obj.dataValues
-    })
+    if (Array.isArray(datos))
+      return datos.map((obj) => {
+        if (obj.dataValues)
+          return obj.dataValues
+        else return obj
+      })
+    else return datos
   }
 
-  
+
 
   /**
    * Busca opcion por defaul en coleccion de datos (value,text) para comboBox
@@ -166,15 +181,15 @@ module.exports = class QueriesUtils {
           break
         }
       }
-  
+
       if (sw) return datos[i]
       else return this.#sinDatoByCombo
     } catch (error) {
-        console.log(error);
-        return this.#sinDatoByCombo
+      console.log(error);
+      return this.#sinDatoByCombo
     };
-    
-    
+
+
   }
 
   /**
@@ -183,13 +198,13 @@ module.exports = class QueriesUtils {
    * @param {String: alias tabla de cruce} campo 
    * @returns array[result]
    */
-  modifyResultFindAdvanced(datos, campo){
+  modifyResultFindAdvanced(datos, campo) {
     return datos.map((obj) => {
-        return obj[campo]
-      })
+      return obj[campo]
+    })
   }
 
-  modifyResultToArray(result){
+  modifyResultToArray(result) {
     return this.#transformResultArray(result)
   }
 }

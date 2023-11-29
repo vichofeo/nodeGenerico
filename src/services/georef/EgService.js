@@ -1,7 +1,7 @@
-
+const { v4: uuidv4 } = require('uuid');
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
-const { QueryTypes } = require("sequelize")
+const { QueryTypes, UUIDV4 } = require("sequelize")
 
 const db = require('../../models/index')
 
@@ -18,12 +18,13 @@ const sequelize = db.sequelize;
 const tk = require('./../utilService')
 
 const { PARAMETROS } = require('../../config/parameters')
-
+const { AGRUPADO } = require('../../config/agrupado')
 
 const dbmodel = {}
 dbmodel.institucion = db.ae_institucion
 dbmodel.eess = db.r_institucion_salud
 dbmodel.propietario = dbmodel.eess
+dbmodel.responsable = db.r_institucion_salud_responsable
 dbmodel.servicios_basicos = dbmodel.eess
 dbmodel.atencion = dbmodel.eess
 dbmodel.superficie = dbmodel.eess
@@ -37,16 +38,16 @@ dbmodel.atributos = db.r_is_atributo
 
 
 
-const display_full_tree = async (tipo , node = '-1', branches = 0, resultado = []) => {
+const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []) => {
 
-    let condicion = (tipo=='EG') ? `i.institucion_root = '${node}'` : `i.parent_grp_id = '${node}'`
-      
+    let condicion = (tipo == 'EG') ? `i.institucion_root = '${node}'` : `i.parent_grp_id = '${node}'`
 
-    let qs = `SELECT d.cod_dpto, d.nombre_dpto, 
+
+    let qs = `SELECT d.cod_dpto, d.nombre_dpto, d.latitud, d.longitud,
     i.institucion_id, i.nombre_institucion as "name", i.nombre_corto, 
     i.parent_grp_id, i.institucion_root, i.tipo_institucion_id, 
-    p.nombre_institucion as padre, p.nombre_corto as padre_corto,
-    eg.nombre_institucion as eg, eg.nombre_corto as eg_corto
+    p.nombre_institucion as padre, p.nombre_corto as padre_corto, p.tipo_institucion_id as ptype, p.cod_dpto as pdpto,
+    eg.nombre_institucion as eg, eg.nombre_corto as eg_corto, eg.tipo_institucion_id as egtype, eg.cod_dpto as egdpto
     FROM ae_institucion i
     LEFT JOIN  al_departamento d ON (d.cod_pais = i.cod_pais AND d.cod_dpto=i.cod_dpto)
     LEFT JOIN  ae_institucion p ON (p.institucion_id=i.parent_grp_id)
@@ -61,7 +62,7 @@ const display_full_tree = async (tipo , node = '-1', branches = 0, resultado = [
     if (branches == 0) { branches = 1 }
     // recorre resulst
     let sweess = 0
-    
+
     const dpto = {}
     for (const key in rc) {
         const ar = rc[key]
@@ -77,9 +78,16 @@ const display_full_tree = async (tipo , node = '-1', branches = 0, resultado = [
 
             //if(!Object.is(dpto[ar.cod_dpto], dpto[ar.cod_dpto])) dpto[ar.cod_dpto]={}
             //if(!Object.is(dpto[ar.cod_dpto][ar.name], dpto[ar.cod_dpto][ar.name])) dpto[ar.cod_dpto][ar.name]=[]            
-            dpto[ar.cod_dpto] = { ...dpto[ar.cod_dpto], name: ar.nombre_dpto, cod_dpto: ar.cod_dpto }
-            dpto[ar.cod_dpto][ar.eg_corto] = { ...dpto[ar.cod_dpto][ar.eg_corto], name: ar.eg_corto, nombre_corto: ar.eg_corto, nombre_institucion: ar.eg, idx:ar.institucion_root }
-            dpto[ar.cod_dpto][ar.eg_corto][ar.name] = {name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion:ar.name, idx: ar.institucion_id }
+            dpto[ar.cod_dpto] = { ...dpto[ar.cod_dpto], name: ar.nombre_dpto, cod_dpto: ar.cod_dpto, type: 'dpto', idx: ar.cod_dpto, lat:ar.latitud, lng:ar.longitud }
+            dpto[ar.cod_dpto][ar.eg_corto] = { ...dpto[ar.cod_dpto][ar.eg_corto], name: ar.eg_corto, nombre_corto: ar.eg_corto, nombre_institucion: ar.eg, idx: ar.institucion_root, parent:ar.parent_grp_id ,add: true, type: ar.egtype}
+            dpto[ar.cod_dpto][ar.eg_corto][ar.name] = {
+                name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion: ar.name,
+                idx: ar.institucion_id,
+                type: ar.tipo_institucion_id,
+                eg: ar.eg_corto,
+                dpto: ar.nombre_dpto,
+                cod_dpto: ar.cod_dpto
+            }
 
             !dpto[ar.cod_dpto].children ? dpto[ar.cod_dpto].children = [ar.eg_corto] : dpto[ar.cod_dpto].children.push(ar.eg_corto)
             !dpto[ar.cod_dpto][ar.eg_corto].children ? dpto[ar.cod_dpto][ar.eg_corto].children = [ar.name] : dpto[ar.cod_dpto][ar.eg_corto].children.push(ar.name)
@@ -90,28 +98,43 @@ const display_full_tree = async (tipo , node = '-1', branches = 0, resultado = [
         // recorre consulta
         if (tipo_institucion != "EESS") {
             sweess = 0
-            resultado.push({name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion:ar.name, idx: ar.institucion_id})
-            branches = branches + 1;
+            resultado.push({ id: `${branches}-${tipo_institucion}-${link_node}`, name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion: ar.name, idx: ar.institucion_id, type: ar.ptype })
+            branches++;
             resultado[resultado.length - 1].children = []
-            await display_full_tree(tipo,link_node, branches, resultado[resultado.length - 1].children)
-            branches = branches - 1
+            await display_full_tree(tipo, link_node, branches, resultado[resultado.length - 1].children)
+            //branches = branches - 1
         }
     }
     if (sweess == 1) {
         //pasa los valores
+        let indice = 1000
         const temp = Object.values(dpto)
         for (const dpto of temp) {
+            indice++
 
+            //filtrado elementos unicos para dpto
             let result = dpto.children.filter((item, index) => {
                 return dpto.children.indexOf(item) === index;
             })
-            dpto.children = []
+            dpto.children = [] //`${branches}-${tipo_institucion}-${link_node}`
+            dpto.id = `${indice}-${dpto.type}-${dpto.idx}`
+            console.log("################## DPTO INDEX:", dpto.id)
             for (const eg of result) {
+                indice++
+                //filtrado elementos EG
                 let reess = dpto[eg].children.filter((item, index) => {
                     return dpto[eg].children.indexOf(item) === index;
                 })
                 dpto[eg].children = []
+                dpto[eg].id = `${indice}-${dpto[eg].type}-${dpto[eg].idx}`
+                dpto[eg].egdpto = dpto.cod_dpto
+                dpto[eg].lat = dpto.lat
+                dpto[eg].lng = dpto.lng
+                console.log("$$$$$$$$$$$$$$$$$ EG INDEX:", dpto[eg].id)
                 for (const eess of reess) {
+                    indice++
+                    dpto[eg][eess].id = `${indice}-${dpto[eg][eess].type}-${dpto[eg][eess].idx}`
+                    console.log("%%%%%%%%%%%%%%%%%% EESS INDEX:", dpto[eg][eess].id)
                     dpto[eg].children.push(dpto[eg][eess])
                     delete dpto[eg][eess]
                 }
@@ -252,17 +275,22 @@ const saveDataEESS = async (data) => {
     }
 
 }
-function verificaParamEdicion(parametros, tipo) {
+function verificaParamEdicion(parametros, tipo, noverify = false) {
+
     let claves = Object.keys(parametros.campos);
     if (tipo != 'EESS') {
-        for (let i = 0; i < claves.length; i++) {
-            let clave = claves[i]
-            parametros.campos[clave][5] = true;
+        for (const element of claves) {
+            let clave = element
+            if (noverify) {
+                parametros.campos[clave][1] = true
+                parametros.campos[clave][5] = false
+            } else parametros.campos[clave][5] = true;
+
         }
         return parametros
     } else {
-        for (let i = 0; i < claves.length; i++) {
-            let clave = claves[i]
+        for (const element of claves) {
+            let clave = element
             parametros.campos[clave][5] = false;
         }
         return parametros
@@ -292,8 +320,24 @@ const getDataParams = async (dto) => {
             if (PARAMETROS[modelo].cardinalidad == '1') {
                 parametros.campos = PARAMETROS[modelo].campos
 
-                const query = new QueriesUtils(dbmodel[modelo])
-                const result = await query.findID(idx)
+                //pregunta si se trata de un modelo dual de datos
+                let result = {}
+                if (PARAMETROS[modelo].dual) {
+                    const tmp = PARAMETROS[modelo].dual.split(',')
+                    for (const element of tmp) {
+                        const query = new QueriesUtils(dbmodel[element])
+                        const aux = await query.findID(idx)
+                        if(aux)
+                        result = { ...result, ...aux }
+                    }
+
+                } else {
+                    const query = new QueriesUtils(dbmodel[modelo])
+                    const aux = await query.findID(idx)
+                        if(aux)
+                        result = aux
+                }
+
                 parametros.valores = result
                 parametros.exito = Object.keys(parametros.valores).length ? true : false
 
@@ -314,7 +358,7 @@ const getDataParams = async (dto) => {
                     const objModel = new QueriesUtils(dbmodel[tablaRef])
                     const cnfData = {}
                     cnfData.attributes = parametros.campos[campoForeign][3] == 'T' ? PARAMETROS[modelo].referer[key].campos : objModel.transAttribByComboBox(PARAMETROS[modelo].referer[key].campos.toString())
-                    cnfData.where = parametros.campos[campoForeign][3] == 'T' ? { [campoRef]: result[campoForeign] } : { ...where }
+                    cnfData.where = parametros.campos[campoForeign][3] == 'T' ? { [campoRef]: result[campoForeign] ? result[campoForeign] : "-1" } : { ...where }
 
                     console.log("******", campoForeign)
                     console.log("***!!!!!!!", parametros.campos[campoForeign][3])
@@ -335,7 +379,7 @@ const getDataParams = async (dto) => {
                     }
                 }
 
-                datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion)
+                datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion, dto.noverify)
             } else {
                 //tabla de datos
                 //CONSTRUYE SENTENCIA SELECT
@@ -391,7 +435,7 @@ const getDataParams = async (dto) => {
 }
 
 const getDataFrm = async (dto) => {
-    dto.modelos = ['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
+    dto.modelos = AGRUPADO[dto.modelo]//['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
     const result = getDataParams(dto)
     delete result.institucion
     return result
@@ -404,6 +448,101 @@ const getDataModelParam = async (dto) => {
     return result
 }
 
+const getDataModelByIdxParam = async (dto) => {
+    dto.modelos = AGRUPADO[dto.modelo]//['eess_corto', 'propietario', 'responsable']
+    const result = getDataParams(dto)
+    delete result.institucion
+    return result
+}
+
+const saveDataModelByIdxParam = async (dto) => {
+    try {
+        const session = tk.getCnfApp(dto.token)
+        const modelos = AGRUPADO[dto.modelo]//['eess_corto', 'propietario', 'responsable']
+        const eg =  dto.eg
+        const datos =  dto.data
+        const uid =  uuidv4()
+        let tmp = {nad:-99}
+        //reccorre modelos
+        for (const element of modelos) {
+            const  obj =  datos[PARAMETROS[element].alias]
+            if(element == 'eess_corto' || element =='institucion'){
+                console.log("--------ingresando-------")
+
+                //busca ente maestro
+                let o =  new QueriesUtils(dbmodel.institucion)
+                const cnf =  { where:{parent_grp_id: '-1', institucion_root:'-1',  root:'-1'}}
+                tmp = await o.findTune(cnf)                
+                if(tmp && tmp.length>0){
+                    console.log("--------:::::::::::::::::::::", tmp)
+                obj.root = tmp[0].institucion_id
+                }
+
+                //reformula objeto de creacion
+                obj.tipo_institucion_id='EESS'
+                obj.parent_grp_id =  eg.parent
+                obj.institucion_root =  eg.idx
+                obj.cod_dpto =  eg.egdpto
+                obj.institucion_id =  uid
+                obj.create_date =  new Date()
+                obj.dni_register =  session.dni
+                obj.latitud = eg.lat
+                obj.longitud =  eg.lng
+                //inserta institucion                
+                tmp = await o.create(obj)               
+
+                obj.ente_gestor_id =  eg.idx
+
+                //insert ubicacion
+                o =  new QueriesUtils(dbmodel.eess)
+                await o.create(obj)
+            }else if(element == 'propietario'){
+                //update propietario
+                let o =  new QueriesUtils(dbmodel.propietario)
+                const result = await o.modify({ set: obj, where: { institucion_id: uid } })
+                console.log("-----------luego de modificar ------------", result)
+            }else if(element == 'responsable'){
+                console.log("-----------=======================RESPONSABLE========================== ------------")
+                //inserta otros 
+                obj.responsable_id= uuidv4()               
+                obj.institucion_id =  uid
+                obj.create_date =  new Date()
+                obj.dni_register =  session.dni
+
+                const dni =  obj.dni + (obj.dni_complemento ? "-"+obj.dni_complemento:"")
+                obj.dni_persona = dni
+                //busca en persona si existe no hace nada
+                const persona =  new QueriesUtils(dbmodel.personal)
+                const result = await persona.findID(dni)
+                
+                if(!result || !result?.dni_persona){
+                    console.log("::::::::::::::::::::::::: ENTRANDO POR PERSONA:", result.dni_persona)
+                    //inserta nuevo registro                    
+                    await persona.create(obj)
+                }
+                //registra responsbale
+                let o =  new QueriesUtils(dbmodel.responsable)
+                await o.create(obj)
+
+            }
+            
+        }
+        
+    
+        return {
+            ok: true,                
+                message: 'Resultado exitoso. Parametros Guardados'
+        }
+    } catch (error) {
+        console.log(error);
+        return {
+            ok: false,
+            message: "Error de sistema: EESSSVPARAMSRV",
+            error: error.message
+        }
+    };
+    
+}
 const weUsersget = async (dto) => {
     try {
         //idx, token, modelos
@@ -612,22 +751,24 @@ const misEess = async (dto) => {
             attributes: []
         }
 
-        let result = await display_full_tree(eess.tipo_institucion_id , eess.institucion_id)
+        let result = await display_full_tree(eess.tipo_institucion_id, eess.institucion_id)
         //add root
         result = [
-            {name: eess.nombre_corto, 
-                nombre_corto: eess.nombre_corto, 
-                nombre_institucion:eess.nombre_institucion, 
+            {
+                id: 1,
+                name: eess.nombre_corto,
+                nombre_corto: eess.nombre_corto,
+                nombre_institucion: eess.nombre_institucion,
                 idx: eess.institucion_id,
                 children: result
             }
         ]
 
         return {
-            //ok: true,
+            ok: true,
             data: result,
-            //inst: eess,
-            //message: "Datos entregados"
+            inst: eess,
+            message: "Datos entregados"
         }
     } catch (error) {
         console.log(error);
@@ -643,6 +784,6 @@ const misEess = async (dto) => {
 module.exports = {
     dataEESS, saveDataEESS, getDataFrm,
     weUsersget, weUserSave,
-    getDataModelParam,
+    getDataModelParam, getDataModelByIdxParam, saveDataModelByIdxParam,
     misEess
 }

@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       urbano_rural: {
-        type: DataTypes.DATE,
+        type: DataTypes.STRING(64),
         allowNull: true,
       },
 

@@ -1,4 +1,4 @@
-//[label,editable,requerido,<T:texto, C:combo, R:Radio, H:checkBox, F: fecha>]
+//[label, editable, requerido, <T:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio]
 const PARAMETROS = {
     eess: {
         table: 'r_institucion_salud',
@@ -50,7 +50,7 @@ const PARAMETROS = {
     },
     propietario: {
         table: 'r_institucion_salud',
-        alias: 'propietario',
+        alias: 'Propietario',
         cardinalidad: "1",
         campos: {
             pro_nit: ['NIT', true, false, 'T'],
@@ -65,6 +65,37 @@ const PARAMETROS = {
         key: ['institucion_id'],
         update: [],
         referer: [],
+    },
+    responsable: {
+        table: 'au_persona au',
+        alias: 'Responsable',
+        cardinalidad: "1",
+        campos: {
+            tipo_dni: ['Tido de identificacion', false, true, 'C'],
+            dni: ['Numero Documento', false, true, 'T'],
+            dni_complemento: ['Complemento', false, true, 'T'],
+            
+            primer_apellido: ['Primer Apellido', true, true, 'T'],
+            segundo_apellido: ['Segundo Apellido', true, false, 'T'],
+            nombres: ['Nombres', true, true, 'T'],
+            
+            genero: ['Genero', true, true, 'C'],
+            nacionalidad: ['Nacionalidad', true, true, 'C'],
+            mail: ['Correo Electronico', true, true, 'T'],
+            profesion_ocupacion:['Profesion Ocupacion', true, true, 'C'],
+            matricula_profesional: ['Nro Matricula Profesional', true, true, 'T'],
+
+        },
+        key: ['dni_persona'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo_dni', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERDNITIPO' },            
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'genero', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGENERO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nacionalidad', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERNACIONALIDAD' },
+
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
+    
+        ],
     },
     responsablen: {
         table: 'au_persona au',
@@ -359,8 +390,39 @@ const PARAMETROS = {
 
 
         ],
-    }
+    },
 
+    //parametros cortosss de leve uso
+    eess_corto: {
+        table: 'r_institucion_salud',
+        alias: 'Identificacion',
+        dual: 'institucion,eess',
+        cardinalidad: "1",
+        campos: {
+            nombre_institucion: ['Nombre de la institucion', true, true, 'T'],
+            nombre_corto: ['Nombre Corto o Abrev.', true, true, 'T'],
+            fecha_creacion: ['Fecha de Creacion', true, true, 'F'],
+            fecha_actividades: ['Fecha inicio Actidades', true, true, 'F'],
+            correo_electronico: ['Correo electronico', true, true, 'T'],
+            telefono: ['Telefono', true, true, 'T'],
+
+            codigo: ['Codigo Institucion/Rues', true, true, 'T'],
+            clase: ['Clase Institucion', true, true, 'C'],
+            nivel_atencion: ['Nivel de Atencion', true, true, 'C'],
+            subsector: ['Sub Sector', false, true, 'C'],
+            urbano_rural: ['Area', true, true, 'C'],
+            snis: ['Cuenta con CodRues', true, true, 'C'],
+        },
+        key: ['institucion_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'clase', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'CLASE' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nivel_atencion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'NIVELATENCION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'subsector', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SUBSECTOR' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'urbano_rural', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AREA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'snis', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+        ],
+    },
 }
 
 module.exports = {
