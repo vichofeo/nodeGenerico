@@ -1,4 +1,4 @@
-const { PARAMETROS } = require('../../config/parameters')
+const  PARAMETROS  = require('../../config/parameters')
 const { REPORTS } = require('../../config/reports')
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')

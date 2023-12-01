@@ -1,4 +1,5 @@
 //[label, editable, requerido, <T:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio]
+"use strict"
 const PARAMETROS = {
     eess: {
         table: 'r_institucion_salud',
@@ -67,66 +68,68 @@ const PARAMETROS = {
         referer: [],
     },
     responsable: {
-        table: 'au_persona au',
+        table: 'r_institucion_salud_responsable',
         alias: 'Responsable',
+        dual: ['responsable','personal'],
         cardinalidad: "1",
         campos: {
             tipo_dni: ['Tido de identificacion', false, true, 'C'],
             dni: ['Numero Documento', false, true, 'T'],
             dni_complemento: ['Complemento', false, true, 'T'],
-            
+
             primer_apellido: ['Primer Apellido', true, true, 'T'],
             segundo_apellido: ['Segundo Apellido', true, false, 'T'],
             nombres: ['Nombres', true, true, 'T'],
-            
+
             genero: ['Genero', true, true, 'C'],
             nacionalidad: ['Nacionalidad', true, true, 'C'],
             mail: ['Correo Electronico', true, true, 'T'],
-            profesion_ocupacion:['Profesion Ocupacion', true, true, 'C'],
+            profesion_ocupacion: ['Profesion Ocupacion', true, true, 'C'],
             matricula_profesional: ['Nro Matricula Profesional', true, true, 'T'],
 
         },
-        key: ['dni_persona'],
+        key: ['responsable_id'],
+        keyDual:['dni_persona', 'responsable_id'],
         update: [],
         referer: [
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo_dni', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERDNITIPO' },            
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo_dni', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERDNITIPO' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'genero', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGENERO' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nacionalidad', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERNACIONALIDAD' },
 
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
-    
+
         ],
     },
     responsablen: {
-        table: 'au_persona au',
+        table: 'r_institucion_salud_responsable isr',
         alias: 'Responsables',
         cardinalidad: "n",
-        campos: `au.dni_persona, au.tipo_dni, au.dni, au.dni_complemento,
+        linked: 'responsable',
+        campos: `isr.responsable_id as idx, 'responsable' as linked,
+        au.dni_persona, au.tipo_dni, au.dni, au.dni_complemento,
         au.primer_apellido, au.segundo_apellido, au.casada_apellido, au.nombres,
         au.estado_civil, au.genero, au.nacionalidad, au.discapacidad,
         isr.profesion_ocupacion, isr.matricula_profesional
         `,
 
-        camposView: [{ value: "dni_persona", text: "CI" }, 
-            { value: "primer_apellido", text: "Apellido" }, { value: "nombres", text: "Nombres" },        
-         { value: "desc_profesion_ocupacion", text: "Profesion/ocupacion" },
+        camposView: [{ value: "dni_persona", text: "CI" },
+        { value: "primer_apellido", text: "Apellido" }, { value: "nombres", text: "Nombres" },
+        { value: "desc_profesion_ocupacion", text: "Profesion/ocupacion" },
         { value: "desc_nacionalidad", text: "Nacionalidad" },
-        { value: "matricula_profesional", text: "Matricula Profesional" }, 
+        { value: "matricula_profesional", text: "Matricula Profesional" },
         ],
-        key: ['isr.institucion_id'],
+        key: ['isr.institucion_id'], //llave de busqueda
         precondicion: ["au.dni_persona = isr.dni_persona", "isr.activo='Y'"],
         update: [],
         referer: [
+
+            { ref: 'r_is_atributo as atr6', camporef: 'atr6.atributo_id', camporefForeign: 'isr.profesion_ocupacion', alias: 'grupo_atributo', campos: 'atr6.atributo as desc_profesion_ocupacion', condicion: 'PERGRUPOPROFESION' },
+
+            { tabla: 'au_persona au' },
             { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'au.estado_civil', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_estado_civil', condicion: 'PERESTADOCIVIL' },
             { ref: 'r_is_atributo as atr2', camporef: 'atr2.atributo_id', camporefForeign: 'au.genero', alias: 'grupo_atributo', campos: 'atr2.atributo as desc_genero', condicion: 'PERGENERO' },
             { ref: 'r_is_atributo as atr3', camporef: 'atr3.atributo_id', camporefForeign: 'au.nacionalidad', alias: 'grupo_atributo', campos: 'atr3.atributo as desc_nacionalidad', condicion: 'PERNACIONALIDAD' },
             { ref: 'r_is_atributo as atr33', camporef: 'atr33.atributo_id', camporefForeign: 'au.discapacidad', alias: 'grupo_atributo', campos: 'atr33.atributo as desc_discapacidad', condicion: 'AFIRMACION' },
-
-            { tabla: 'r_institucion_salud_responsable isr' },
-            
-            { ref: 'r_is_atributo as atr6', camporef: 'atr6.atributo_id', camporefForeign: 'isr.profesion_ocupacion', alias: 'grupo_atributo', campos: 'atr6.atributo as desc_profesion_ocupacion', condicion: 'PERGRUPOPROFESION' },
-            
-
         ],
     },
 
@@ -266,9 +269,10 @@ const PARAMETROS = {
 
     infraestructuran: {
         table: 'r_institucion_salud_infraestructura',
-        alias: 'Infraestructura',
+        alias: 'Infraestructuras',
         cardinalidad: "n",
-        campos: "infraestructura_id, servicio, descripcion, cantidad, estado, funcionamiento, observaciones",
+        linked: 'infraestructura',
+        campos: "infraestructura_id as idx, 'infraestructura' as linked, servicio, descripcion, cantidad, estado, funcionamiento, observaciones",
         camposView: [{ value: "desc_servicio", text: "Servicio" }, { value: "desc_descripcion", text: "Descripcion" },
         { value: "cantidad", text: "Cantidad" }, { value: "desc_estado", text: "Estado" }, { value: "desc_funcionamiento", text: "Funcionamiento" },
         ],
@@ -282,11 +286,33 @@ const PARAMETROS = {
         ],
     },
 
+    infraestructura: {
+        table: 'r_institucion_salud_infraestructura',
+        alias: 'Infraestructura',
+        cardinalidad: "1",
+        campos: {
+            servicio: ['Servicio', true, true, 'C'],
+            descripcion: ['Descripcion', true, true, 'C'],
+            cantidad: ['Cantidad', true, true, 'T'],
+            estado: ['Estado', true, true, 'C'],
+            funcionamiento: ['Funcionamiento', true, true, 'C'],
+            observaciones: ['Observaciones', true, false, 'T'],
+        },         
+        key: ['infraestructura_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'servicio', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SERVICIOMEDICO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'descripcion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SERVICIODESCMEDICO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FUNCIONA' },
+        ],
+    },
     mobiliarion: {
         table: 'r_institucion_salud_mobiliario',
-        alias: 'Mobiliario',
+        alias: 'Mobiliarios',
         cardinalidad: "n",
-        campos: "registro_id, servicio, descripcion, cantidad, estado, funcionamiento, anio_compra, fuente_financiamiento, observaciones, tipo_registro",
+        linked: 'mobiliario',
+        campos: "registro_id as idx, 'mobiliario' as linked, servicio, descripcion, cantidad, estado, funcionamiento, anio_compra, fuente_financiamiento, observaciones, tipo_registro",
         camposView: [{ value: "desc_servicio", text: "Servicio" }, { value: "descripcion", text: "Descripcion" },
         { value: "cantidad", text: "Cantidad" }, { value: "desc_estado", text: "Estado" }, { value: "desc_funcionamiento", text: "Funcionamiento" },
         { value: "anio_compra", text: "Año Compra" }, { value: "desc_fuente_financiamiento", text: "Fuente Fin." }
@@ -301,11 +327,62 @@ const PARAMETROS = {
             { ref: 'r_is_atributo as atr4', camporef: 'atr4.atributo_id', camporefForeign: 'fuente_financiamiento', alias: 'grupo_atributo', campos: 'atr4.atributo as desc_fuente_financiamiento', condicion: 'FINANCIAMIENTOFUENTE' },
         ],
     },
-    equipamienton: {
+    
+    mobiliario:{
+        table: 'r_institucion_salud_mobiliario',
+        alias: 'Mobiliario',
+        cardinalidad: "1",
+        campos: {
+            servicio: ['Servicio', false, true, 'C'],
+            descripcion: ['Descripcion', false, true, 'T'],
+            cantidad: ['Cantidad', false, true, 'T'],
+            estado: ['Estado', false, true, 'C'],
+            funcionamiento: ['Funcionamiento', false, true, 'C'],
+            fuente_financiamiento: ['Fuente de Financiamiento', true, true, 'C'],            
+            anio_compra: ['Año de Compra', false, false, 'T'],
+            observaciones: ['Observaciones', false, false, 'T'],            
+
+        },         
+        key: ['registro_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'servicio', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SERVICIOMEDICO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FUNCIONA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'fuente_financiamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FINANCIAMIENTOFUENTE' },
+        ],
+    },
+
+    equipamiento:{
         table: 'r_institucion_salud_mobiliario',
         alias: 'Equipamiento',
+        cardinalidad: "1",
+        campos: {
+            servicio: ['Servicio', true, true, 'C'],
+            descripcion: ['Descripcion', true, true, 'T'],
+            cantidad: ['Cantidad', true, true, 'T'],
+            estado: ['Estado', true, true, 'C'],
+            funcionamiento: ['Funcionamiento', true, true, 'C'],
+            fuente_financiamiento: ['Fuente de Financiamiento', true, true, 'C'],            
+            anio_compra: ['Año de Compra', true, false, 'T'],
+            observaciones: ['Observaciones', true, false, 'T'],            
+
+        },         
+        key: ['registro_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'servicio', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SERVICIOMEDICO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FUNCIONA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'fuente_financiamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FINANCIAMIENTOFUENTE' },
+        ],
+    },
+    equipamienton: {
+        table: 'r_institucion_salud_mobiliario',
+        alias: 'Equipamientos',
         cardinalidad: "n",
-        campos: "registro_id, servicio, descripcion, cantidad, estado, funcionamiento, anio_compra, fuente_financiamiento, observaciones, tipo_registro",
+        linked: 'equipamiento',
+        campos: "registro_id as idx, 'equipamiento' as linked, servicio, descripcion, cantidad, estado, funcionamiento, anio_compra, fuente_financiamiento, observaciones, tipo_registro",
         camposView: [{ value: "desc_servicio", text: "Servicio" }, { value: "descripcion", text: "Descripcion" },
         { value: "cantidad", text: "Cantidad" }, { value: "desc_estado", text: "Estado" }, { value: "desc_funcionamiento", text: "Funcionamiento" },
         { value: "anio_compra", text: "Año Compra" }, { value: "desc_fuente_financiamiento", text: "Fuente Fin." }
@@ -323,7 +400,7 @@ const PARAMETROS = {
 
     personaln: {
         table: 'au_persona au',
-        alias: 'Personal',
+        alias: 'Personals',
         cardinalidad: "n",
         campos: `au.dni_persona, au.tipo_dni, au.dni, au.dni_complemento,
         au.primer_apellido, au.segundo_apellido, au.casada_apellido, au.nombres,
@@ -350,17 +427,17 @@ const PARAMETROS = {
             { ref: 'r_is_atributo as atr4', camporef: 'atr4.atributo_id', camporefForeign: 'isp.item_contrato', alias: 'grupo_atributo', campos: 'atr4.atributo as desc_item_contrato', condicion: 'PERITEMCONTRATO' },
             { ref: 'r_is_atributo as atr5', camporef: 'atr5.atributo_id', camporefForeign: 'isp.item_contrato_desc', alias: 'grupo_atributo', campos: 'atr5.atributo as desc_item_contrato_desc', condicion: 'PERITEMCONTRATODESC' },
             { ref: 'r_is_atributo as atr6', camporef: 'atr6.atributo_id', camporefForeign: 'isp.profesion_ocupacion', alias: 'grupo_atributo', campos: 'atr6.atributo as desc_profesion_ocupacion', condicion: 'PERGRUPOPROFESION' },
-            { ref: 'r_is_atributo as atr7', camporef: 'atr6.atributo_id', camporefForeign: 'isp.profesion_ocupacion_especifica', alias: 'grupo_atributo', campos: 'atr7.atributo as desc_profesion_ocupacion_especifica', condicion: 'PERGRUPOPROFESPECIFICA' },
+            { ref: 'r_is_atributo as atr7', camporef: 'atr7.atributo_id', camporefForeign: 'isp.profesion_ocupacion_especifica', alias: 'grupo_atributo', campos: 'atr7.atributo as desc_profesion_ocupacion_especifica', condicion: 'PERGRUPOPROFESPECIFICA' },
 
-            { ref: 'r_is_atributo as atr8', camporef: 'atr6.atributo_id', camporefForeign: 'isp.fuente_financiamiento', alias: 'grupo_atributo', campos: 'atr8.atributo as desc_fuente_financiamiento', condicion: 'FINANCIAMIENTOFUENTE' },
-            { ref: 'r_is_atributo as atr9', camporef: 'atr6.atributo_id', camporefForeign: 'isp.descripcion_cargo', alias: 'grupo_atributo', campos: 'atr9.atributo as desc_descripcion_cargo', condicion: 'PERGRUPOPROFESION' },
-            { ref: 'r_is_atributo as atr10', camporef: 'atr6.atributo_id', camporefForeign: 'isp.carga_laboral', alias: 'grupo_atributo', campos: 'atr10.atributo as desc_carga_laboral', condicion: 'PERCARGAHORARIA' },
-            { ref: 'r_is_atributo as atr11', camporef: 'atr7.atributo_id', camporefForeign: 'isp.personal_rotatorio', alias: 'grupo_atributo', campos: 'atr11.atributo as desc_personal_rotatorio', condicion: 'AFIRMACION' },
+            { ref: 'r_is_atributo as atr8', camporef: 'atr8.atributo_id', camporefForeign: 'isp.fuente_financiamiento', alias: 'grupo_atributo', campos: 'atr8.atributo as desc_fuente_financiamiento', condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'r_is_atributo as atr9', camporef: 'atr9.atributo_id', camporefForeign: 'isp.descripcion_cargo', alias: 'grupo_atributo', campos: 'atr9.atributo as desc_descripcion_cargo', condicion: 'PERGRUPOPROFESION' },
+            { ref: 'r_is_atributo as atr10', camporef: 'atr10.atributo_id', camporefForeign: 'isp.carga_laboral', alias: 'grupo_atributo', campos: 'atr10.atributo as desc_carga_laboral', condicion: 'PERCARGAHORARIA' },
+            { ref: 'r_is_atributo as atr11', camporef: 'atr11.atributo_id', camporefForeign: 'isp.personal_rotatorio', alias: 'grupo_atributo', campos: 'atr11.atributo as desc_personal_rotatorio', condicion: 'AFIRMACION' },
 
         ],
     },
-    personal: {
-        table: 'au_persona au',
+    personal_is: {
+        table: 'r_institucion_salud_personal',
         alias: 'Personal',
         cardinalidad: "1",
         campos: {
@@ -375,7 +452,51 @@ const PARAMETROS = {
             genero: ['Genero', true, true, 'C'],
             nacionalidad: ['Nacionalidad', true, true, 'C'],
             discapacidad: ['Alguna Discapacidad', true, true, 'C'],
-            telefono:['Telefono', true, true, 'T'],
+            telefono: ['Telefono', true, true, 'T'],
+
+        },
+        key: ['dni_persona'],
+        update: [],
+        referer: [//au
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado_civil', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERESTADOCIVIL' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'genero', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGENERO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nacionalidad', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERNACIONALIDAD' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'discapacidad', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+
+            { tabla: 'r_institucion_salud_personal isp' },
+//isp
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nivel_instruccion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERNIVELINSTRUCCION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'item_contrato', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERITEMCONTRATO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'item_contrato_desc', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERITEMCONTRATODESC' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion_especifica', alias: 'grupo_atributo', campos: 'atr7.atributo as desc_profesion_ocupacion_especifica', condicion: 'PERGRUPOPROFESPECIFICA' },
+
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'fuente_financiamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'descripcion_cargo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'carga_laboral', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERCARGAHORARIA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'personal_rotatorio', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+
+
+
+        ],
+    },
+    personal: {
+        table: 'au_persona',
+        alias: 'Personal',
+        cardinalidad: "1",
+        campos: {
+            tipo_dni: ['Tido de identificacion', false, true, 'C'],
+            dni: ['Numero Documento', false, true, 'T'],
+            dni_complemento: ['Complemento', false, true, 'T'],
+            fecha_nacimiento: ['Fecha Nacimiento', true, true, 'F'],
+            primer_apellido: ['Primer Apellido', true, true, 'T'],
+            segundo_apellido: ['Segundo Apellido', true, false, 'T'],
+            nombres: ['Nombres', true, true, 'T'],
+            estado_civil: ['Estado Civil', true, true, 'C'],
+            genero: ['Genero', true, true, 'C'],
+            nacionalidad: ['Nacionalidad', true, true, 'C'],
+            discapacidad: ['Alguna Discapacidad', true, true, 'C'],
+            telefono: ['Telefono', true, true, 'T'],
 
         },
         key: ['dni_persona'],
@@ -396,7 +517,7 @@ const PARAMETROS = {
     eess_corto: {
         table: 'r_institucion_salud',
         alias: 'Identificacion',
-        dual: 'institucion,eess',
+        dual: ['institucion','eess'],
         cardinalidad: "1",
         campos: {
             nombre_institucion: ['Nombre de la institucion', true, true, 'T'],
@@ -414,6 +535,7 @@ const PARAMETROS = {
             snis: ['Cuenta con CodRues', true, true, 'C'],
         },
         key: ['institucion_id'],
+        keyDual: ['institucion_id', 'institucion_id'],
         update: [],
         referer: [
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'clase', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'CLASE' },
@@ -425,6 +547,9 @@ const PARAMETROS = {
     },
 }
 
-module.exports = {
-    PARAMETROS,
-}
+const immutableObject = (obj) =>
+  typeof obj === 'object' ?  Object.values (obj).forEach (immutableObject) || Object.freeze (obj) : obj;
+
+  //immutableObject(PARAMETROS)
+
+module.exports = PARAMETROS

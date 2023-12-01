@@ -17,7 +17,15 @@ const sequelize = db.sequelize;
 
 const tk = require('./../utilService')
 
-const { PARAMETROS } = require('../../config/parameters')
+const AUXILIAR = JSON.stringify(require('../../config/parameters'))
+const PARAMETROS = JSON.parse(AUXILIAR)
+const original = JSON.parse(AUXILIAR)
+
+const immutableObject = (obj) =>
+    typeof obj === 'object' ? Object.values(obj).forEach(immutableObject) || Object.freeze(obj) : obj;
+
+
+
 const { AGRUPADO } = require('../../config/agrupado')
 
 const dbmodel = {}
@@ -25,6 +33,9 @@ dbmodel.institucion = db.ae_institucion
 dbmodel.eess = db.r_institucion_salud
 dbmodel.propietario = dbmodel.eess
 dbmodel.responsable = db.r_institucion_salud_responsable
+dbmodel.infraestructura = db.r_institucion_salud_infraestructura
+dbmodel.mobiliario = db.r_institucion_salud_mobiliario 
+dbmodel.equipamiento = db.r_institucion_salud_mobiliario
 dbmodel.servicios_basicos = dbmodel.eess
 dbmodel.atencion = dbmodel.eess
 dbmodel.superficie = dbmodel.eess
@@ -37,6 +48,35 @@ dbmodel.infraestructuran = db.r_institucion_salud_infraestructura
 dbmodel.atributos = db.r_is_atributo
 
 
+const verifyOptionsInsertByModel = async (nameKey, obj, modelParam, modelDb) => {
+    try {
+        let results = null
+        switch (modelParam) {
+            case 'personal':
+                //busca persona
+                console.log("********************* PREVIO", obj)
+                obj[nameKey] = obj.dni
+                if (obj.hasOwnProperty('dni_complemento') && obj.dni_complemento)
+                    obj[nameKey] += '-' + obj.dni_complemento
+                console.log("============================DESPUES", obj)
+                results = modelDb.findID(obj[nameKey])
+                if (!(results && results[nameKey])) {
+                    //inserta dato            
+                    await modelDb.create(obj)
+                }
+                break;
+            default:
+                //inserta datos
+                obj[nameKey] = uuidv4()
+                await modelDb.create(obj)
+                break;
+        }
+        return obj
+    } catch (error) {
+        console.log(error);
+    };
+
+}
 
 const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []) => {
 
@@ -78,8 +118,8 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
 
             //if(!Object.is(dpto[ar.cod_dpto], dpto[ar.cod_dpto])) dpto[ar.cod_dpto]={}
             //if(!Object.is(dpto[ar.cod_dpto][ar.name], dpto[ar.cod_dpto][ar.name])) dpto[ar.cod_dpto][ar.name]=[]            
-            dpto[ar.cod_dpto] = { ...dpto[ar.cod_dpto], name: ar.nombre_dpto, cod_dpto: ar.cod_dpto, type: 'dpto', idx: ar.cod_dpto, lat:ar.latitud, lng:ar.longitud }
-            dpto[ar.cod_dpto][ar.eg_corto] = { ...dpto[ar.cod_dpto][ar.eg_corto], name: ar.eg_corto, nombre_corto: ar.eg_corto, nombre_institucion: ar.eg, idx: ar.institucion_root, parent:ar.parent_grp_id ,add: true, type: ar.egtype}
+            dpto[ar.cod_dpto] = { ...dpto[ar.cod_dpto], name: ar.nombre_dpto, cod_dpto: ar.cod_dpto, type: 'dpto', idx: ar.cod_dpto, lat: ar.latitud, lng: ar.longitud }
+            dpto[ar.cod_dpto][ar.eg_corto] = { ...dpto[ar.cod_dpto][ar.eg_corto], name: ar.eg_corto, nombre_corto: ar.eg_corto, nombre_institucion: ar.eg, idx: ar.institucion_root, parent: ar.parent_grp_id, add: true, type: ar.egtype }
             dpto[ar.cod_dpto][ar.eg_corto][ar.name] = {
                 name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion: ar.name,
                 idx: ar.institucion_id,
@@ -275,7 +315,7 @@ const saveDataEESS = async (data) => {
     }
 
 }
-function verificaParamEdicion(parametros, tipo, noverify = false) {
+function verificaParamEdicion(parametros, tipo, original, noverify = false) {
 
     let claves = Object.keys(parametros.campos);
     if (tipo != 'EESS') {
@@ -284,15 +324,22 @@ function verificaParamEdicion(parametros, tipo, noverify = false) {
             if (noverify) {
                 parametros.campos[clave][1] = true
                 parametros.campos[clave][5] = false
-            } else parametros.campos[clave][5] = true;
-
+            } else {
+                parametros.campos[clave][1] = original[clave][1]
+                parametros.campos[clave][5] = true
+            }
         }
         return parametros
     } else {
         for (const element of claves) {
             let clave = element
+            if (noverify)
+                parametros.campos[clave][1] = true
+            else parametros.campos[clave][1] = original[clave][1]
+
             parametros.campos[clave][5] = false;
         }
+
         return parametros
     }
 }
@@ -317,24 +364,30 @@ const getDataParams = async (dto) => {
             console.log("modelo::::::::", i, "--->", modelos[i])
             const modelo = modelos[i]
             const parametros = {}
-            if (PARAMETROS[modelo].cardinalidad == '1') {
-                parametros.campos = PARAMETROS[modelo].campos
 
+            if (PARAMETROS[modelo].cardinalidad == '1') {
+                parametros.campos = Object.assign({}, PARAMETROS[modelo].campos)
                 //pregunta si se trata de un modelo dual de datos
                 let result = {}
                 if (PARAMETROS[modelo].dual) {
-                    const tmp = PARAMETROS[modelo].dual.split(',')
-                    for (const element of tmp) {
+                    const tmp = PARAMETROS[modelo].dual//PARAMETROS[modelo].dual.split(',')
+                    const keys = PARAMETROS[modelo].keyDual
+                    let idxAux = idx
+                    for (const i in tmp) {
+                        const element = tmp[i]
+                        //alterna idx, el primer idx es de la tabla principal
                         const query = new QueriesUtils(dbmodel[element])
-                        const aux = await query.findID(idx)
-                        if(aux)
-                        result = { ...result, ...aux }
+                        const aux = await query.findID(idxAux)
+                        if (aux) {
+                            idxAux = aux[keys[i]]
+                            result = { ...result, ...aux }
+                        }
                     }
 
                 } else {
                     const query = new QueriesUtils(dbmodel[modelo])
                     const aux = await query.findID(idx)
-                        if(aux)
+                    if (aux)
                         result = aux
                 }
 
@@ -379,7 +432,7 @@ const getDataParams = async (dto) => {
                     }
                 }
 
-                datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion, dto.noverify)
+                datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion, original[modelo].campos, dto.noverify)
             } else {
                 //tabla de datos
                 //CONSTRUYE SENTENCIA SELECT
@@ -411,7 +464,7 @@ const getDataParams = async (dto) => {
 
                 const result = await sequelize.query(`SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
 
-                datosResult[PARAMETROS[modelo].alias] = { campos: PARAMETROS[modelo].camposView, valores: result }
+                datosResult[PARAMETROS[modelo].alias] = { campos: PARAMETROS[modelo].camposView, valores: result, linked: PARAMETROS[modelo].linked }
             }
         }
 
@@ -434,8 +487,12 @@ const getDataParams = async (dto) => {
 
 }
 
-const getDataFrm = async (dto) => {
-    dto.modelos = AGRUPADO[dto.modelo]//['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
+const getDataFrmAgrupado = async (dto) => {
+    //['eess_corto', 'propietario', 'responsable']
+    //['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
+    if (AGRUPADO[dto.modelo])
+        dto.modelos = AGRUPADO[dto.modelo]
+    else dto.modelos = [dto.modelo]
     const result = getDataParams(dto)
     delete result.institucion
     return result
@@ -448,90 +505,84 @@ const getDataModelParam = async (dto) => {
     return result
 }
 
-const getDataModelByIdxParam = async (dto) => {
-    dto.modelos = AGRUPADO[dto.modelo]//['eess_corto', 'propietario', 'responsable']
-    const result = getDataParams(dto)
-    delete result.institucion
-    return result
-}
 
 const saveDataModelByIdxParam = async (dto) => {
     try {
         const session = tk.getCnfApp(dto.token)
         const modelos = AGRUPADO[dto.modelo]//['eess_corto', 'propietario', 'responsable']
-        const eg =  dto.eg
-        const datos =  dto.data
-        const uid =  uuidv4()
-        let tmp = {nad:-99}
+        const eg = dto.eg
+        const datos = dto.data
+        const uid = uuidv4()
+        let tmp = { nad: -99 }
         //reccorre modelos
         for (const element of modelos) {
-            const  obj =  datos[PARAMETROS[element].alias]
-            if(element == 'eess_corto' || element =='institucion'){
+            const obj = datos[PARAMETROS[element].alias]
+            if (element == 'eess_corto' || element == 'institucion') {
                 console.log("--------ingresando-------")
 
                 //busca ente maestro
-                let o =  new QueriesUtils(dbmodel.institucion)
-                const cnf =  { where:{parent_grp_id: '-1', institucion_root:'-1',  root:'-1'}}
-                tmp = await o.findTune(cnf)                
-                if(tmp && tmp.length>0){
+                let o = new QueriesUtils(dbmodel.institucion)
+                const cnf = { where: { parent_grp_id: '-1', institucion_root: '-1', root: '-1' } }
+                tmp = await o.findTune(cnf)
+                if (tmp && tmp.length > 0) {
                     console.log("--------:::::::::::::::::::::", tmp)
-                obj.root = tmp[0].institucion_id
+                    obj.root = tmp[0].institucion_id
                 }
 
                 //reformula objeto de creacion
-                obj.tipo_institucion_id='EESS'
-                obj.parent_grp_id =  eg.parent
-                obj.institucion_root =  eg.idx
-                obj.cod_dpto =  eg.egdpto
-                obj.institucion_id =  uid
-                obj.create_date =  new Date()
-                obj.dni_register =  session.dni
+                obj.tipo_institucion_id = 'EESS'
+                obj.parent_grp_id = eg.parent
+                obj.institucion_root = eg.idx
+                obj.cod_dpto = eg.egdpto
+                obj.institucion_id = uid
+                obj.create_date = new Date()
+                obj.dni_register = session.dni
                 obj.latitud = eg.lat
-                obj.longitud =  eg.lng
+                obj.longitud = eg.lng
                 //inserta institucion                
-                tmp = await o.create(obj)               
+                tmp = await o.create(obj)
 
-                obj.ente_gestor_id =  eg.idx
+                obj.ente_gestor_id = eg.idx
 
                 //insert ubicacion
-                o =  new QueriesUtils(dbmodel.eess)
+                o = new QueriesUtils(dbmodel.eess)
                 await o.create(obj)
-            }else if(element == 'propietario'){
+            } else if (element == 'propietario') {
                 //update propietario
-                let o =  new QueriesUtils(dbmodel.propietario)
+                let o = new QueriesUtils(dbmodel.propietario)
                 const result = await o.modify({ set: obj, where: { institucion_id: uid } })
                 console.log("-----------luego de modificar ------------", result)
-            }else if(element == 'responsable'){
+            } else if (element == 'responsable') {
                 console.log("-----------=======================RESPONSABLE========================== ------------")
                 //inserta otros 
-                obj.responsable_id= uuidv4()               
-                obj.institucion_id =  uid
-                obj.create_date =  new Date()
-                obj.dni_register =  session.dni
+                obj.responsable_id = uuidv4()
+                obj.institucion_id = uid
+                obj.create_date = new Date()
+                obj.dni_register = session.dni
 
-                const dni =  obj.dni + (obj.dni_complemento ? "-"+obj.dni_complemento:"")
+                const dni = obj.dni + (obj.dni_complemento ? "-" + obj.dni_complemento : "")
                 obj.dni_persona = dni
                 //busca en persona si existe no hace nada
-                const persona =  new QueriesUtils(dbmodel.personal)
+                const persona = new QueriesUtils(dbmodel.personal)
                 const result = await persona.findID(dni)
-                
-                if(!result || !result?.dni_persona){
+
+                if (!result || !result?.dni_persona) {
                     console.log("::::::::::::::::::::::::: ENTRANDO POR PERSONA:", result.dni_persona)
                     //inserta nuevo registro                    
                     await persona.create(obj)
                 }
                 //registra responsbale
-                let o =  new QueriesUtils(dbmodel.responsable)
+                let o = new QueriesUtils(dbmodel.responsable)
                 await o.create(obj)
 
             }
-            
+
         }
-        
-    
+
+
         return {
-            ok: true,                
-                message: 'Resultado exitoso. Parametros Guardados'
+            ok: true,
+            message: 'Resultado exitoso. Parametros Guardados'
         }
     } catch (error) {
         console.log(error);
@@ -541,8 +592,97 @@ const saveDataModelByIdxParam = async (dto) => {
             error: error.message
         }
     };
-    
+
 }
+
+const saveDataModifyInsertByModel = async (dto) => {
+    try {
+        const session = tk.getCnfApp(dto.token) //dni
+        const modelo = dto.modelo //['eess_corto', 'propietario', 'responsable']
+        const swModify = dto.sw
+        const idx = dto.idx
+        const uid = uuidv4()
+
+        const parametros = PARAMETROS[modelo]
+        const indexObj = parametros.alias
+        let obj = dto.data[indexObj]
+        delete obj.create_date
+        obj.dni_register = session.dni
+        obj.institucion_id = session.inst
+//tipo_registro='MOBILIARIO'|'EQUIPAMIENTO'
+        if(modelo=='mobiliario') obj.tipo_registro = 'MOBILIARIO'
+        if(modelo=='equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
+
+        //verifica si es un modelo dual
+        if (parametros.dual) {
+            console.log("-----> Entro por dual", parametros.dual.length)
+            let ii = 0
+            let idxAux = idx
+            for (let i = parametros.dual.length - 1; i >= 0; i--) {
+                const auxModel = parametros.dual[i]
+                const nameKey = parametros.keyDual[ii]
+                console.log("--------> Corriendo por. ", auxModel, ':::', nameKey)
+                //verifica si es actualizacion o modificacion
+                const tblModel = new QueriesUtils(dbmodel[auxModel])
+                if (swModify) {
+                    //modificacion
+                    obj.last_modify_date_time = new Date()
+                    const cnf = { where: { [nameKey]: obj[nameKey] } }
+                    delete obj[nameKey]
+                    cnf.set = obj
+                    await tblModel.modify(cnf)
+                } else {
+                    //insercion         o creacion           
+                    obj.create_date = new Date()
+                    
+                    if (nameKey=='personal') {
+                        //busca persona                        
+                        obj[nameKey] = obj.dni
+                        if (obj.hasOwnProperty('dni_complemento') && obj.dni_complemento)
+                            obj[nameKey] += '-' + obj.dni_complemento                        
+                        const results = tblModel.findID(obj[nameKey])
+                        if (Object.keys(results).length <=0) {
+                            //inserta dato            
+                            await tblModel.create(obj)
+                        }
+                    }else{
+                        obj[nameKey] = uid
+                        await modelDb.create(obj)
+                    }
+                }
+                ii++
+            }
+        } else {//NODUAL
+            //verifica si es actualizacion o modificacion
+            const tblModel = new QueriesUtils(dbmodel[modelo])
+            if (swModify) {
+                //modificacion
+                obj.last_modify_date_time = new Date()
+                const cnf = { set: obj, where: { [parametros.key[0]]: idx } }
+                await tblModel.modify(cnf)
+            } else {
+                //insercion
+                obj[parametros.key[0]] = uid
+                obj.create_date = new Date()
+                await tblModel.create(obj)
+            }
+        }
+        return {
+            ok: true,            
+            message: 'Resultado exitoso. Parametros Guardados'
+        }
+    } catch (error) {
+        console.log(error);
+        return {
+            ok: false,
+            message: "Error de sistema: EESSSVDTABYMODELSRV",
+            error: error.message
+        }
+    };
+
+}
+
+
 const weUsersget = async (dto) => {
     try {
         //idx, token, modelos
@@ -782,8 +922,8 @@ const misEess = async (dto) => {
 }
 
 module.exports = {
-    dataEESS, saveDataEESS, getDataFrm,
+    dataEESS, saveDataEESS, getDataFrmAgrupado,
     weUsersget, weUserSave,
-    getDataModelParam, getDataModelByIdxParam, saveDataModelByIdxParam,
+    getDataModelParam, saveDataModelByIdxParam, saveDataModifyInsertByModel,
     misEess
 }

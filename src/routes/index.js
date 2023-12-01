@@ -72,10 +72,13 @@ const rutas = (app) => {
   //opciones para modulo georef
   app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
-  app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrm)
+  app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmGroupModel)
   app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
+  app.get("/api/geo/eess/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmByModel)
   app.post("/api/geo/eess/get", authMiddleWare.verifyAuth, egController.getDataModelByIdxParam)
+  
   app.post("/api/geo/eess", authMiddleWare.verifyAuth, egController.saveDataModelByIdxParam)
+  app.post("/api/geo/eess/save", authMiddleWare.verifyAuth, egController.saveDataModifyInsertByModel)
 
   //opciones submodulo de usuarios logueado
   app.get("/api/geo/weusers", authMiddleWare.verifyAuth, egController.weUsersget)
