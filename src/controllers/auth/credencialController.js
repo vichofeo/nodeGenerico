@@ -8,6 +8,14 @@ console.log("desde controller: ", usrDTO)
   res.json(user)
 }
 
+const getLogin = async (req, res) =>{
+  const token =  req.headers.authorization 
+  const usrDTO = {token: token}
+  const user = await credencialService.getLogin(usrDTO)
+
+  res.json(user)
+}
+
 const listar = async (req, res)=>{
   const result = await credencialService.listar()  
   
@@ -20,8 +28,15 @@ const result = await credencialService.guardar(usrDto)
 res.json(result)
 }
 
+const modify = async (req,res) =>{
+  const token =  req.headers.authorization
+  const usrDto = {token: token, ...req.body}
+const result = await credencialService.modify(usrDto)
+res.json(result)
+}
+
 module.exports = {
-  login,
+  login, getLogin,
   listar,
-  guardar
+  guardar, modify
 }

@@ -1,10 +1,17 @@
+/**
+ * Servicios para opciones de ente gestor para mapas, establecimiento de salud
+ * 1. requiere cargar lo modelos
+ * 2. algunos servicios requiren de parametros ubicados en el config
+ * 3. requiere de una clase para la realizacion la interaccion con datos de los modelos
+ * @vichofeo
+ */
 const { v4: uuidv4 } = require('uuid');
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
 const { QueryTypes, UUIDV4 } = require("sequelize")
 
 const db = require('../../models/index')
-
+const tk = require('./../utilService')
 
 const eessModel = db.ae_institucion
 const dptoModel = db.al_departamento
@@ -15,37 +22,45 @@ const app_instModel = db.ape_aplicacion_institucion
 
 const sequelize = db.sequelize;
 
-const tk = require('./../utilService')
+
 
 const AUXILIAR = JSON.stringify(require('../../config/parameters'))
 const PARAMETROS = JSON.parse(AUXILIAR)
 const original = JSON.parse(AUXILIAR)
 
-const immutableObject = (obj) =>
+/*const immutableObject = (obj) =>
     typeof obj === 'object' ? Object.values(obj).forEach(immutableObject) || Object.freeze(obj) : obj;
-
-
+*/
 
 const { AGRUPADO } = require('../../config/agrupado')
 
+/**
+ * obsjeto dbmodel, contiene los modelos para ser relacionados con PARAMETROS
+ */
 const dbmodel = {}
 dbmodel.institucion = db.ae_institucion
 dbmodel.eess = db.r_institucion_salud
 dbmodel.propietario = dbmodel.eess
 dbmodel.responsable = db.r_institucion_salud_responsable
 dbmodel.infraestructura = db.r_institucion_salud_infraestructura
-dbmodel.mobiliario = db.r_institucion_salud_mobiliario 
+dbmodel.mobiliario = db.r_institucion_salud_mobiliario
 dbmodel.equipamiento = db.r_institucion_salud_mobiliario
+dbmodel.personal_is = db.r_institucion_salud_personal
 dbmodel.servicios_basicos = dbmodel.eess
 dbmodel.atencion = dbmodel.eess
 dbmodel.superficie = dbmodel.eess
 dbmodel.estructura = dbmodel.eess
+
+dbmodel.acreditacion = db.r_institucion_salud_acrehab
 
 dbmodel.personal = db.au_persona
 
 
 dbmodel.infraestructuran = db.r_institucion_salud_infraestructura
 dbmodel.atributos = db.r_is_atributo
+
+dbmodel.localidad =  db.al_municipio
+dbmodel.departamento = dptoModel
 
 
 const verifyOptionsInsertByModel = async (nameKey, obj, modelParam, modelDb) => {
@@ -78,6 +93,16 @@ const verifyOptionsInsertByModel = async (nameKey, obj, modelParam, modelDb) => 
 
 }
 
+/**
+ * servicio recursivo para obtener listado de establecimientos de salud en forma de arbol
+ * 
+ * @param String tipo(ASUSS, EG, EESS)  
+ * @param String node: identificador padre para recorrer dato en arbol
+ * @param Integer branches ; variable interna no obligatoria en la llamada principal
+ * @param ArrAy resultado : array acumulativo para devolver resultado
+ * @returns [{name: "nodo", children:[{name: "nodo"}]}]
+ * @vichofeo
+ */
 const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []) => {
 
     let condicion = (tipo == 'EG') ? `i.institucion_root = '${node}'` : `i.parent_grp_id = '${node}'`
@@ -192,7 +217,15 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
 
     return resultado
 }
-
+/**
+ * Servicio que obtiene dato de los establecimientos de salud por usuario autentificado
+ * @param String dpto: <all,cod_dpto> codigo del departamento; all flag acordado para mostrar todos los dptos
+ * @param String tipo: ASUSS, EG, EESS
+ * @param String root: si es igual a -1 es el dato raiz del grupo de establecimientos por usuario autentificado
+ * @param String parent_id: nodo padre para el grupo de datos ASUSS + regionales
+ * @param Array resultado : [{}] array de objetos para contener datos de consultas antes de ser retornados 
+ * @returns Array de objetos con datos de los establecimientos de salud 
+ */
 const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_id = '-1', resultado = []) => {
 
     let query = ''
@@ -343,7 +376,13 @@ function verificaParamEdicion(parametros, tipo, original, noverify = false) {
         return parametros
     }
 }
-
+/**
+ * extrae informaion segun modelo de parametros valido para mis "Mi establecimiento"
+ * idx: identificador segun modelo de paremetros que puede ser id de establecimiento como de personal u otro ver idx de PRAMETROS
+ * @param {token, idx} dto 
+ * @returns {data:{datos segun parametros}, institucion:{datos institucion logueada}}
+ * @vichofeo
+ */
 const getDataParams = async (dto) => {
     try {
         const datos = tk.getCnfApp(dto.token)
@@ -370,11 +409,13 @@ const getDataParams = async (dto) => {
                 //pregunta si se trata de un modelo dual de datos
                 let result = {}
                 if (PARAMETROS[modelo].dual) {
+                    
                     const tmp = PARAMETROS[modelo].dual//PARAMETROS[modelo].dual.split(',')
                     const keys = PARAMETROS[modelo].keyDual
-                    let idxAux = idx
+                    let idxAux = idx                    
                     for (const i in tmp) {
                         const element = tmp[i]
+                        console.log("0000000000000000000000 DUAL ::=>", element, '1111111111111111 IDX==> ', idxAux)
                         //alterna idx, el primer idx es de la tabla principal
                         const query = new QueriesUtils(dbmodel[element])
                         const aux = await query.findID(idxAux)
@@ -394,46 +435,61 @@ const getDataParams = async (dto) => {
                 parametros.valores = result
                 parametros.exito = Object.keys(parametros.valores).length ? true : false
 
+                console.log("$$$$$$$$$$$$$$$ RESULtS", result)
 
+                //obtiene referencias PARA LOS COMBOS Y OTROS
+                for (const element of PARAMETROS[modelo].referer) {
+                    console.log("::::", modelo, '--', element)
+                    const tablaRef = element.ref
+                    const campoRef = element.camporef
+                    const campoForeign = element.camporefForeign
+                    const campoLink = element.campoLink ? element.campoLink: element.camporefForeign
+                    const alias = element.alias
+                    const condicion = element.condicion
 
-
-                //obtiene referencias
-                for (let key = 0; key < PARAMETROS[modelo].referer.length; key++) {
-                    console.log("::::", modelo, '--', key)
-                    const tablaRef = PARAMETROS[modelo].referer[key].ref
-                    const campoRef = PARAMETROS[modelo].referer[key].camporef
-                    const campoForeign = PARAMETROS[modelo].referer[key].camporefForeign
-                    const alias = PARAMETROS[modelo].referer[key].alias
-                    const condicion = PARAMETROS[modelo].referer[key].condicion
-
-                    const where = PARAMETROS[modelo].referer[key].condicion ? { [alias]: condicion } : {}
+                    const where = element.condicion ? { [alias]: condicion } : {}
+                    element.campoLink ? where[campoRef] = result[campoLink] : ""
 
                     const objModel = new QueriesUtils(dbmodel[tablaRef])
                     const cnfData = {}
-                    cnfData.attributes = parametros.campos[campoForeign][3] == 'T' ? PARAMETROS[modelo].referer[key].campos : objModel.transAttribByComboBox(PARAMETROS[modelo].referer[key].campos.toString())
-                    cnfData.where = parametros.campos[campoForeign][3] == 'T' ? { [campoRef]: result[campoForeign] ? result[campoForeign] : "-1" } : { ...where }
+                    cnfData.attributes = parametros.campos[campoForeign][3] == 'T' ? element.campos : objModel.transAttribByComboBox(element.campos.toString())
+                    cnfData.where = parametros.campos[campoForeign][3] == 'T' ? { [campoRef]: result[campoLink] ? result[campoLink] : "-1" } : { ...where }
+                    cnfData.order = [element.campos[element.campos.length - 1]]
 
                     console.log("******", campoForeign)
                     console.log("***!!!!!!!", parametros.campos[campoForeign][3])
                     console.log("!!!!!!!!!!!!!!!!!!!", cnfData)
 
-                    const r = objModel.modifyResultToArray(await objModel.findTune(cnfData))
+
+                    let r = null
+                    let dependency= false
+                    if (element.linked) {
+                        cnfData.include = [{ model: dbmodel[element.linked.ref], as: element.linked.alias  , ...cnfData }]
+                        cnfData.attributes = element.linked.campos
+                        cnfData.alias = element.linked.alias
+                        delete cnfData.where
+                        dependency= element.linked.dependency
+                        r = await objModel.findData1toNForCbx(cnfData)
+                    } else
+                        r = await objModel.findTune(cnfData)
 
 
                     if (parametros.campos[campoForeign][3] == 'T') {
-                        parametros.valores[campoForeign] = r[0][PARAMETROS[modelo].referer[key].campos]
+                        parametros.valores[campoForeign] = r[0][element.campos]
                     } else {
                         const aux = parametros.valores[campoForeign]
+                        if(dependency) console.log("aki es", dependency, "matis datis::::::::::::::::::::::::::::::::::::::::::", parametros.valores[dependency].selected.value)
                         parametros.valores[campoForeign] = {
-                            selected: objModel.searchBySelectedComboDataNotransform(r, { value: aux }),
-                            items: r
+                            selected: dependency ? objModel.searchBySelectedComboDataNotransform(r[parametros.valores[dependency].selected.value], { value: aux }) :objModel.searchBySelectedComboDataNotransform(r, { value: aux }),
+                            items: r,
+                            dependency: dependency
                         }
 
                     }
                 }
 
                 datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion, original[modelo].campos, dto.noverify)
-            } else {
+            } else { //>-- FIN CARDINALIDAD ==1
                 //tabla de datos
                 //CONSTRUYE SENTENCIA SELECT
                 console.log("*****************************************::::::::::::::", PARAMETROS[modelo].referer.length)
@@ -600,18 +656,24 @@ const saveDataModifyInsertByModel = async (dto) => {
         const session = tk.getCnfApp(dto.token) //dni
         const modelo = dto.modelo //['eess_corto', 'propietario', 'responsable']
         const swModify = dto.sw
-        const idx = dto.idx
+        let idx = dto.idx
         const uid = uuidv4()
 
         const parametros = PARAMETROS[modelo]
-        const indexObj = parametros.alias
+        const indexObj = parametros.alias        
         let obj = dto.data[indexObj]
-        delete obj.create_date
+        delete obj?.create_date
         obj.dni_register = session.dni
         obj.institucion_id = session.inst
-//tipo_registro='MOBILIARIO'|'EQUIPAMIENTO'
-        if(modelo=='mobiliario') obj.tipo_registro = 'MOBILIARIO'
-        if(modelo=='equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
+        //tipo_registro='MOBILIARIO'|'EQUIPAMIENTO'
+        if (modelo == 'mobiliario') obj.tipo_registro = 'MOBILIARIO'
+        if (modelo == 'equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
+        //si es modificacion y no existe idx
+        if(idx=='-1' && swModify && !parametros.dual) {            
+            idx =  obj[parametros.key[0]]
+            console.log("----------->ENTRANDO POR MODIFICACION CON ESTE IDX.", idx)
+            delete obj[parametros.key[0]]
+        }
 
         //verifica si es un modelo dual
         if (parametros.dual) {
@@ -621,33 +683,36 @@ const saveDataModifyInsertByModel = async (dto) => {
             for (let i = parametros.dual.length - 1; i >= 0; i--) {
                 const auxModel = parametros.dual[i]
                 const nameKey = parametros.keyDual[ii]
-                console.log("--------> Corriendo por. ", auxModel, ':::', nameKey)
+                console.log("--------> Corriendo por: ", ii, " .-" , auxModel, ':::', nameKey)
                 //verifica si es actualizacion o modificacion
                 const tblModel = new QueriesUtils(dbmodel[auxModel])
                 if (swModify) {
                     //modificacion
+                    console.log("-->INGRESANDO A MODIFICAR DUAL ",ii)
                     obj.last_modify_date_time = new Date()
                     const cnf = { where: { [nameKey]: obj[nameKey] } }
-                    delete obj[nameKey]
+                    //delete obj[nameKey]
                     cnf.set = obj
                     await tblModel.modify(cnf)
                 } else {
-                    //insercion         o creacion           
+                    //insercion - creacion           
                     obj.create_date = new Date()
-                    
-                    if (nameKey=='personal') {
-                        //busca persona                        
+
+                    if (auxModel == 'personal') {
+                        //SEGMENTO SOLO PARA CASO PERSONA :busca persona                                                
                         obj[nameKey] = obj.dni
                         if (obj.hasOwnProperty('dni_complemento') && obj.dni_complemento)
-                            obj[nameKey] += '-' + obj.dni_complemento                        
+                            obj[nameKey] += '-' + obj.dni_complemento
                         const results = tblModel.findID(obj[nameKey])
-                        if (Object.keys(results).length <=0) {
+                        console.log("222222222222222222222222222222222:::", obj)
+                        if (Object.keys(results).length <= 0) {
                             //inserta dato            
                             await tblModel.create(obj)
                         }
-                    }else{
+                    } else {                        
                         obj[nameKey] = uid
-                        await modelDb.create(obj)
+                        console.log("3333333333333333333333333333333:::", obj)
+                        await tblModel.create(obj)
                     }
                 }
                 ii++
@@ -668,10 +733,11 @@ const saveDataModifyInsertByModel = async (dto) => {
             }
         }
         return {
-            ok: true,            
+            ok: true,
             message: 'Resultado exitoso. Parametros Guardados'
         }
     } catch (error) {
+        console.log("FALLO EN EL PROCESO EDIT-INSERT")
         console.log(error);
         return {
             ok: false,
@@ -925,5 +991,8 @@ module.exports = {
     dataEESS, saveDataEESS, getDataFrmAgrupado,
     weUsersget, weUserSave,
     getDataModelParam, saveDataModelByIdxParam, saveDataModifyInsertByModel,
-    misEess
+    misEess,
+
+    getDataTreeEntidades
+
 }

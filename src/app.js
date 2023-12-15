@@ -4,8 +4,8 @@
 
 const express = require('express')
 const morgan = require('morgan') //FOR DEV control
-const xmlparser = require('express-xml-bodyparser')
-const config = require('./config/config.cnf')
+//const xmlparser = require('express-xml-bodyparser')
+const config = require('./config/config.cnf.js')
 
 
 /** ******************************************
@@ -29,7 +29,7 @@ const app = express()
 app.set('port', process.env.PORT || config.PORT )
 
 //el xml parser 
-app.use(xmlparser());
+//app.use(xmlparser());
 
 //Habilitar carga de archivos estaticos
 app.use(express.static('public'))

@@ -26,5 +26,11 @@ module.exports = {
         return credencialModel.findOne({where: {login: data.login}})
         .then(usr=>usr)
         .catch(e=>false)
-     }
+     },
+     ModifyLogin(data) {        
+        return credencialModel.update(data.set, { where: data.where })
+          .then((dato) => dato)
+          .catch((e) => {            
+            return false})
+      }
    };

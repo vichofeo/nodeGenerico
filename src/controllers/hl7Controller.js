@@ -1,5 +1,6 @@
 const { QueryTypes } = require("sequelize");
-const db = require('../models/index')
+const db = require('../models/index');
+const QueriesUtils = require("../models/queries/QueriesUtils");
 const sequelize = db.sequelize
 
 const recibe = async (req, res) => {
@@ -129,6 +130,28 @@ const tmp2 = async (req, res) =>{
     
 
 }
+
+const unouno = async (req, res) =>{
+    const modelo =  db.r_is_atributo
+    const pp = new QueriesUtils(modelo)
+    const cnf = {
+        attributes: [['atributo_id','VALUE']],        
+        include: [{
+            model: modelo,
+            as: 'grplinkn',
+            attributes: pp.transAttribByComboBox('atributo_id,atributo'), 
+            where:{grupo_atributo: 'PERGRUPOPROFESPECIFICA'},
+          }]
+          
+    }
+
+    const results =  await pp.findTuneAdvanced(cnf)
+
+    res.json({
+        results: results
+    })
+}
 module.exports = {
-    recibe, muestra, borrar, tmp, tmp2
+    recibe, muestra, borrar, tmp, tmp2,
+    unouno,
 }

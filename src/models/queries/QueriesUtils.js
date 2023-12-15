@@ -70,46 +70,54 @@ module.exports = class QueriesUtils {
    * @param {attributes:[], where:{a:v, a2:v2 ....}} data 
    * @returns 
    */
-  findTune(data) {
-    return this.#table
-      .findAll({
+  async findTune(data) {
+    return this.#transformResultArray(await this.#table.findAll({
         attributes: data.attributes,
         where: data.where,
         order: data.order
-      })
-      .then((data) => this.#transformResultArray(data))
-      .catch((e) => e)
+      }))
+      //.then((data) => this.#transformResultArray(data))
+      //.catch((e) => e)
   }
   /**
    * select personalizado segun objeto de entrada
    * @param {attributes, where, includes, etc} data 
    * @returns 
    */
-  findTuneAdvanced(data) {
-    return this.#table
-      .findAll(data)
-      .then((data) => data)
+  async findTuneAdvanced(data) {
+    return this.#transformResultArray(await this.#table.findAll(data))
+      /*.then((data) => this.#transformResultArray(data))
       .catch((e) => {
         console.log("%%%%%%%%%%%%%", e)
-        return e
-      })
+        return false
+      })*/
+  }
+  async findData1toNForCbx(dataCnf) {    
+      const aux = await this.findTuneAdvanced(dataCnf)      
+      const result = {}
+      for (const element of aux) {        
+        result[element.value] = element[dataCnf.alias]
+      }
+      return result
   }
   /**
    * update
    * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data 
    */
-  modify(data) {
-    console.log("###########", data)
-    this.#table.
+  async modify(data) {
+    console.log("########### DATA MODIFY", data)
+    /*this.#table.
       update(data.set, { where: data.where })
       .then((dato) => {
         console.log("=========== MODIFY(QUERYUTILS) eXITO:", dato)
         return dato
       })
       .catch((e) => {
-        console.log("UUUUUUMall", e)
-        return e
-      })
+        console.log("*****************MODIFICAN UUUUUUMall", e)
+        return false
+      })*/
+
+      return await this.#table.update(data.set, { where: data.where })
   }
   /**
    * 

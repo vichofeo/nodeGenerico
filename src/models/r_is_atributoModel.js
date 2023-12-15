@@ -12,8 +12,16 @@ module.exports = (sequelize, DataTypes) => {
       r_is_atributo.belongsTo(models.r_is_gr_atributo, {
         as: 'grupo',
         foreignKey: 'grupo_atributo',
-      })     
-      
+      })
+      //1:n autoreflexiva
+      r_is_atributo.hasMany(models.r_is_atributo, {
+        as: 'grplinkn',
+        foreignKey: 'precedencia',
+      })
+      /*r_is_atributo.belongsTo(models.r_is_atributo, {
+        as: 'grplinkn',
+        foreignKey: 'precedencia',
+      })*/
     }
   }
   r_is_atributo.init(
@@ -30,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(64),
         allowNull: false
       },
+      precedencia:{
+        type: DataTypes.STRING(64),
+        allowNull: false
+      }
       
     },
     {

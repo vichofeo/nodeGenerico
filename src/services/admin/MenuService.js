@@ -1,4 +1,5 @@
-const  PARAMETROS  = require('../../config/parameters')
+const PARAMETROS = require('../../config/parameters')
+const { AGRUPADO } = require('../../config/agrupado')
 const { REPORTS } = require('../../config/reports')
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
@@ -72,55 +73,79 @@ const menuGeoreferencia = async (token) => {
         `
         let menuMiEstablecimiento = {}
         let misEstablecimientos = {}
-        let menuReportes =  []
+        let menuReportes = []
+        let menuAcreHab = []
+
         switch (result.tipo_institucion_id) {
             case 'EG':
-                misEstablecimientos = {value: '/ssepi/miseess', text: 'Mis Establecimientos'}
-                query = ` ${query} ins.institucion_root = '${result.institucion_id}' order by 2`                
+                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
+                query = ` ${query} ins.institucion_root = '${result.institucion_id}' order by 2`
                 break;
             case 'EESS':
                 query = ` ${query} ins.institucion_id = '${result.institucion_id}'`
-                menuMiEstablecimiento = []                
-                for (const key in PARAMETROS) 
-                    menuMiEstablecimiento.push({value: `/ssepi/eess/${key}`, text:PARAMETROS[key].alias })
-                break; 
+                menuMiEstablecimiento = []
+                for (const key of AGRUPADO.all) {
+                    console.log("key: ", key)
+                    menuMiEstablecimiento.push({ value: `/ssepi/eess/${key}`, text: PARAMETROS[key].alias })
+                }
+                break;
             case 'ASUSS':
-                misEstablecimientos = {value: '/ssepi/miseess', text: 'Mis Establecimientos'}
-                break;               
+                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
+                if(result.institucion_root == '-1'){
+                    menuAcreHab = []
+                    for (const key of AGRUPADO.acre_hab) {                        
+                        menuAcreHab.push({ value: `/ssepi/acrehab/${key}`, text: PARAMETROS[key].alias })
+                    }
+                }
+                break;
             default:
                 query = "SELECT '' AS VALUE, '' AS text"
                 break;
         }
 
-//menu REPORTES
-        for (const key in REPORTS) 
-               menuReportes.push({value: `/ssepi/report/${key}`, text:REPORTS[key].alias, atributo:'reports', valor: key})
+        //menu REPORTES
+        for (const key in REPORTS)
+            menuReportes.push({ value: `/ssepi/report/${key}`, text: REPORTS[key].alias, atributo: 'reports', valor: key })
 
         //const tmp = await getDataTree(result.institucion_id, result.institucion_root)
 
-        let result2 = result.tipo_institucion_id == 'ASUSS' ?
-        Object.values(await getDataTree(result.institucion_id, result.institucion_root)) :
-            await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
-        
+        let result2 =
+            result.tipo_institucion_id == 'ASUSS' ? Object.values(await getDataTree(result.institucion_id, result.institucion_root)) :
+                await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
 
-        if (result2.length > 1)
-            result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo:'ssepi', valor: 'all' })
-        else if (result2.length == 1)
+
+        let result3 = result2 
+        if (result2.length > 1){
+            result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo: 'ssepi', valor: 'all' })
+            result3 = result2.map(obj => ({ ...obj, value: obj.value.replaceAll('/ssepi/sssscp/', '/ssepi/snis/') }))
+        }else if (result2.length == 1){
             result2 = result2[0]
+            result3 = {...result2, value : result2.value.replaceAll('/ssepi/sssscp/', '/ssepi/snis/')}
+        }
+            
+
+         
+        //menusss
+        const dataMenu = {}
+        dataMenu.georeferencia = result2
+        dataMenu.usuarios = { value: "/ssepi/weusers", text: "Usuario" }
+        Object.keys(menuMiEstablecimiento).length > 0 ? dataMenu['Mi Establecimiento'] = menuMiEstablecimiento : ""
+        dataMenu["Reportes"] = menuReportes
+        Object.keys(misEstablecimientos).length > 0 ? dataMenu['Mis Establecimientos'] = misEstablecimientos : ""
+        Object.keys(menuAcreHab).length > 0 ? dataMenu['Acreditacion / Habilitacion'] = menuAcreHab : ""
+
+        dataMenu["Frms Snis"] = result3
 
         return {
             ok: true,
             data: {
-                georeferencia: result2,
-                usuarios: { value: "/ssepi/weusers", text: "Usuario" },
-                "Mi Establecimiento" : menuMiEstablecimiento, 
-                "Reportes": menuReportes,
-                Reportes_prueba: [
+                ...dataMenu,
+                R_prueba: [
                     {
                         "value": "/hl7",
                         "text": "report H"
                     }],
-                "Mis Establecimientos": misEstablecimientos    
+
             },
             moredata: { institucion: result.nombre_corto },
             message: 'Resultado exitoso'

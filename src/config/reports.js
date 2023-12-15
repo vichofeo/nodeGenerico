@@ -259,6 +259,32 @@ const REPORTS = {
 
         ],
     },
+    snis310: {
+        table: 'ae_institucion aei, al_departamento dpto , ae_institucion ges, s301 as sn,  r_institucion_salud ins',
+        alias: 'SNIS F.301',
+        tipo: "Sum",
+        campos: `dpto.nombre_dpto as "Departamento",  
+        ges.nombre_corto AS "Ente Gestor", aei.nombre_institucion AS "Establecimiento", ins.snis AS "Con RUES",
+        sn.formulario, sn.grupo, sn.variable, sn.subvariable, sn.totalv as "Total Varones", sn.totalm as "Total Mujeres", sn.totalg as "Total total"
+        `,
+        camposOcultos: ['Total Varones', 'Total Mujeres', 'Total total'],
+        rows: ["Departamento", "Ente Gestor", "formulario"],
+        cols: ["grupo"],
+        mdi:'mdi-snowman',
+        key: ['ins.institucion_id'],
+        precondicion: ["sn.codigo= ins.codigo",
+            "aei.institucion_id =  ins.institucion_id",
+            "ges.institucion_id =  ins.ente_gestor_id",
+            "(aei.cod_pais=dpto.cod_pais AND aei.cod_dpto= dpto.cod_dpto)",
+            "aei.tipo_institucion_id = 'EESS'"],
+            
+        referer: [
+            { ref: 'r_is_atributo as ur', camporef: 'ur.atributo_id', camporefForeign: 'ins.urbano_rural',  campos: 'ur.atributo AS "Ambito"',  },
+            { ref: 'r_is_atributo as cla', camporef: 'cla.atributo_id', camporefForeign: 'ins.clase',  campos: 'cla.atributo AS "Clase"',  },
+            { ref: 'r_is_atributo as na', camporef: 'na.atributo_id', camporefForeign: 'ins.nivel_atencion',  campos: 'na.atributo AS "Nivel Atencion"',  },            
+                   
+        ],
+    },
 } 
 
 module.exports = {

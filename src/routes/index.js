@@ -21,6 +21,8 @@ const menuController =  require('../controllers/admin/menuController')
 const egController = require('../controllers/georef/egController')
 const reportController =  require('../controllers/georef/reportsController')
 
+const snis =  require('../controllers/fsnis/fsnisController')
+
 const hl7 = require('../controllers/hl7Controller')
 
 //define rutas de la aplicacion en una sola funcion 
@@ -30,10 +32,12 @@ const rutas = (app) => {
    app.get('/api/test', (req, res)=>{ res.send("Acceso de prueba")})
    //inicio de session
    app.post('/api/login', credencialController.login)
+   app.post('/api/getUsrLgn',authMiddleWare.verifyAuth , credencialController.getLogin )
 
    //usrOptions
-   app.get('/api/usr/', authMiddleWare.verifyAuth ,credencialController.listar)
-   app.post('/api/usr/', credencialController.guardar)
+   app.get('/api/usr', authMiddleWare.verifyAuth ,credencialController.listar)
+   app.post('/api/usr', credencialController.guardar)
+   app.put('/api/usr', authMiddleWare.verifyAuth,  credencialController.modify)
 
    //admin
    app.get("/api/admin/module", authMiddleWare.verifyAuth, moduloController.listar)
@@ -73,6 +77,8 @@ const rutas = (app) => {
   app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
   app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmGroupModel)
+  
+  //mi establecimiento
   app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
   app.get("/api/geo/eess/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmByModel)
   app.post("/api/geo/eess/get", authMiddleWare.verifyAuth, egController.getDataModelByIdxParam)
@@ -91,10 +97,15 @@ const rutas = (app) => {
     ///Repportes
   app.get("/api/geo/reportgral/:model", authMiddleWare.verifyAuth, reportController.getReports)
 
-  //app.post('/api/hl7', hl7.recibe)
-  app.get('/api/hl7', hl7.muestra)
+  //Grupo para formularios SNIS
+  app.post("/api/snis/f301", authMiddleWare.verifyAuth, snis.fsnisReportParams)
+
+
+  app.post('/api/hl7', hl7.recibe)
+  //app.get('/api/hl7', hl7.muestra)
+  app.get('/api/hl7', hl7.unouno)
   app.delete('/api/hl7', hl7.borrar)
-  app.post('/api/hl7', hl7.tmp2)
+  //app.post('/api/hl7', hl7.tmp2)
 
 
 

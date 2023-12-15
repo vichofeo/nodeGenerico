@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      ae_institucion.hasMany(models.al_departamento, {
+        as: 'rdptoins',
+        foreignKey: 'cod_dpto',
+      })
     }
   }
   ae_institucion.init(
