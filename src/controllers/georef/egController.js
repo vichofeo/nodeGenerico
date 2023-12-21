@@ -1,4 +1,5 @@
 const egService = require('../../services/georef/EgService')
+const cboxService =  require('../../services/georef/UtilsServices')
 
 const dataEESS = async(req, res) =>{
     const idx = req.params.idx
@@ -82,9 +83,22 @@ const misEess = async(req, res) =>{
   const result = await egService.misEess({token:token})
   res.json(result)
 }
+
+const cbxUtil =  async(req, res)=>{
+  const token =  req.headers.authorization  
+  const result = await cboxService.getDataForCbx({token:token, ...req.body})
+  res.json(result)
+}
+
+const cbxUtilAcreHab =  async(req, res)=>{
+  const token =  req.headers.authorization  
+  const result = await cboxService.repoAcreHab({token:token, ...req.body})
+  res.json(result)
+}
+
   module.exports = {
     dataEESS,  saveDataEESS, getDataFrmGroupModel,
     weUsersget, weUserget, weUserSave,
     getDataFrmByModel, getDataModelParam, getDataModelByIdxParam, saveDataModelByIdxParam, saveDataModifyInsertByModel,
-    misEess
+    misEess, cbxUtil, cbxUtilAcreHab
   }

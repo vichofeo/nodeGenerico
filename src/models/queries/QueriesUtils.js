@@ -18,12 +18,12 @@ module.exports = class QueriesUtils {
     return this.#table
       .create(dato)
       .then((data) => data)
-      .catch((error) => {
+      /*.catch((error) => {
         console.log("Errr en la insercion ", error)
-        console.log("Carga.......................... ", dato)
+        console.log("Carga.......................... ", dato)*/
 
-        return false
-      })
+       // return false
+     // })*/
   }
   /**
    * select * all

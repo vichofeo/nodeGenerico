@@ -52,6 +52,7 @@ dbmodel.superficie = dbmodel.eess
 dbmodel.estructura = dbmodel.eess
 
 dbmodel.acreditacion = db.r_institucion_salud_acrehab
+dbmodel.habilitacion = db.r_institucion_salud_acrehab
 
 dbmodel.personal = db.au_persona
 
@@ -650,7 +651,11 @@ const saveDataModelByIdxParam = async (dto) => {
     };
 
 }
-
+/**
+ * servicio que guarda datos segun parametros por modelo (simple y dual)
+ * @param {toke: String, modelo:String, sw:Boolean, data:{datos de modelo por parametro}} dto 
+ * @returns {ok: boolean, message: String}
+ */
 const saveDataModifyInsertByModel = async (dto) => {
     try {
         const session = tk.getCnfApp(dto.token) //dni
@@ -658,16 +663,23 @@ const saveDataModifyInsertByModel = async (dto) => {
         const swModify = dto.sw
         let idx = dto.idx
         const uid = uuidv4()
+        const app = new QueriesUtils(eessModel)
+        const institucion = await app.findID(session.inst)
 
         const parametros = PARAMETROS[modelo]
         const indexObj = parametros.alias        
         let obj = dto.data[indexObj]
         delete obj?.create_date
-        obj.dni_register = session.dni
-        obj.institucion_id = session.inst
+        
         //tipo_registro='MOBILIARIO'|'EQUIPAMIENTO'
         if (modelo == 'mobiliario') obj.tipo_registro = 'MOBILIARIO'
         if (modelo == 'equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
+        if (modelo == 'acreditacion') obj.tipo_registro = 'ACREDITACION'
+        if (modelo == 'habilitacion') obj.tipo_registro = 'HABILITACION'
+
+        if(institucion.institucion_root != '-1')obj.institucion_id = session.inst        
+        obj.dni_register = session.dni
+        
         //si es modificacion y no existe idx
         if(idx=='-1' && swModify && !parametros.dual) {            
             idx =  obj[parametros.key[0]]
@@ -726,6 +738,12 @@ const saveDataModifyInsertByModel = async (dto) => {
                 const cnf = { set: obj, where: { [parametros.key[0]]: idx } }
                 await tblModel.modify(cnf)
             } else {
+                if (modelo == 'acreditacion' || modelo == 'habilitacion') {
+                    //inactiva a los demas registros                    
+                    const cnf = { set: {last_modify_date_time: new Date(), activo:'N', dni_register: session.dni }, where: { institucion_id: obj.institucion_id } }
+                    await tblModel.modify(cnf)
+                }
+                
                 //insercion
                 obj[parametros.key[0]] = uid
                 obj.create_date = new Date()

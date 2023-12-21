@@ -598,37 +598,27 @@ const PARAMETROS = {
         table: 'r_institucion_salud_acrehab',
         alias: 'Acreditacion',        
         cardinalidad: "1",
-        dual:['acreditacion','institucion'],
+        //dual:['acreditacion','institucion'],
         campos: {
-            dpto: ['Departamento', false, true, 'C'],
-            eg: ['Ente Gestor', false, true, 'C'],
-            institucion_id: ['Establecimiento', false, true, 'C'],
-
+            
             eess_nombre: ['Establecimiento', true, true, 'T'],
-            estado_acrehab: ['Estado', true, false, 'T'],
+            estado_acrehab: ['Estado', true, false, 'C'],
             gestion_registro: ['Gestion registro', true, true, 'T'],
 
             nro_ra: ['Numero R.A.', true, true, 'T'],
-            fecha_ra: ['Fecha R.A.', true, true, 'T'],
+            fecha_ra: ['Fecha R.A.', true, true, 'F'],
             vigencia_anios: ['Años de vigencia', true, true, 'T'],
             puntaje: ['Puntaje %', true, true, 'T'],
+            activo:['Estado de Vigencia', false, true, 'C']
             
 
         },
         key: ['acrehab_id'], 
-        keyDual:['institucion_id','acrehab_id'],       
+        //keyDual:['institucion_id','acrehab_id'],       
         update: [],
         referer: [
-            { ref: 'departamento', camporef: 'cod_dpto', camporefForeign: 'dpto', alias: 'cod_pais', campos: ['cod_dpto', 'nombre_dpto'], condicion: 'BO' },
-            //campoLink:'institucion_id'
-//            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
-  //          { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion_especifica', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESPECIFICA', linked:{campos:[['atributo_id','value']],ref:'atributos', alias:'grplinkn', dependency:'profesion_ocupacion' }},
-
-            { ref: 'institucion', camporef: 'institucion_id', camporefForeign: 'eg', alias: 'tipo_institucion_id', campos: ['institucion_id', 'nombre_corto'], condicion: 'EG', linked:{campos:[['cod_dpto','value']],ref:'departamento', alias:'rdptoins', dependency:'dpto' } },
-            { ref: 'institucion', camporef: 'institucion_id', camporefForeign: 'institucion_id', alias: 'tipo_institucion_id', campos: ['institucion_id', 'nombre_institucion'], condicion: 'EG' },
-
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado_acrehab', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AHACREDITACION' },
-
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'activo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ACTIVE' },
         ],
     },
     acreditacionn:{
@@ -636,20 +626,23 @@ const PARAMETROS = {
         alias: 'Acreditaciones',
         cardinalidad: "n",
         linked: 'acreditacion',
-        campos: `r.acrehab_id as idx, 'acreditacion' as linked,r.institucion_id, 
+        campos: `r.acrehab_id as idx, 'acreditacion' as linked,r.institucion_id,         
         eg.nombre_corto, dpto.nombre_dpto,
+        isap.nombre_institucion,
         r.eess_nombre, r.estado_acrehab, r.gestion_registro, 
-        r.nro_ra, r.fecha_ra, r.vigencia_anios, r.puntaje, r.tipo_registro
+        r.nro_ra, r.fecha_ra, r.vigencia_anios, r.puntaje, r.tipo_registro, r.activo
         `,
 
         camposView: [
             { value: "nombre_corto", text: "Ente Gestor" }, { value: "nombre_dpto", text: "Dpto" },
-        { value: "eess_nombre", text: "Establecimiento" }, { value: "desc_estado", text: "Estado" },
+            { value: "nombre_institucion", text: "Establecimiento" } ,   
+        { value: "eess_nombre", text: "Nombre Registrado" }, { value: "desc_estado", text: "Estado" },
         { value: "gestion_registro", text: "Gestion registro" },
         { value: "nro_ra", text: "Nro R.A." },
         { value: "fecha_ra", text: "Fecha R.A." },
         { value: "vigencia_anios", text: "Vigencia en Anios" },
         { value: "puntaje", text: "Puntaje" },
+        { value: "activo", text: "Vigente" }
         ],
         key: ['isap.root'], //llave de busqueda
         precondicion: ["dpto.cod_pais = isap.cod_pais" ,"dpto.cod_dpto=isap.cod_dpto",
@@ -662,65 +655,68 @@ const PARAMETROS = {
         ],
     },
     habilitacion:{
-        table: 'r_institucion_salud_responsable',
-        alias: 'Habilitacion',
-        dual: ['responsable','personal'],
+        table: 'r_institucion_salud_acrehab',
+        alias: 'Habilitacion',        
         cardinalidad: "1",
+        //dual:['acreditacion','institucion'],
         campos: {
-            tipo_dni: ['Tido de identificacion', false, true, 'C'],
-            dni: ['Numero Documento', false, true, 'T'],
-            dni_complemento: ['Complemento', false, true, 'T'],
+            
+            eess_nombre: ['Establecimiento', true, true, 'T'],
+            estado_acrehab: ['Estado', true, false, 'C'],
+            gestion_registro: ['Gestion registro', true, true, 'T'],
 
-            primer_apellido: ['Primer Apellido', true, true, 'T'],
-            segundo_apellido: ['Segundo Apellido', true, false, 'T'],
-            nombres: ['Nombres', true, true, 'T'],
-
-            genero: ['Genero', true, true, 'C'],
-            nacionalidad: ['Nacionalidad', true, true, 'C'],
-            mail: ['Correo Electronico', true, true, 'T'],
-            profesion_ocupacion: ['Profesion Ocupacion', true, true, 'C'],
-            matricula_profesional: ['Nro Matricula Profesional', true, true, 'T'],
+            nro_ra: ['Numero R.A.', true, true, 'T'],
+            fecha_ra: ['Fecha R.A.', true, true, 'F'],
+            vigencia_anios: ['Años de vigencia', true, true, 'T'],
+            puntaje: ['Puntaje %', true, true, 'T'],
+            activo:['Estado de Vigencia', false, true, 'C']
+            
 
         },
-        key: ['responsable_id'],
-        keyDual:['dni_persona', 'responsable_id'],
+        key: ['acrehab_id'], 
+        //keyDual:['institucion_id','acrehab_id'],       
         update: [],
         referer: [
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo_dni', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERDNITIPO' },
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'genero', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGENERO' },
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nacionalidad', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERNACIONALIDAD' },
-
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'profesion_ocupacion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'PERGRUPOPROFESION' },
-
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado_acrehab', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AHHABILITACION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'activo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ACTIVE' },
         ],
     },
     habilitacionn:{
-        table: 'ae_institucion isap ,r_institucion_salud isa,  ae_institucion eg, r_institucion_salud_acrehab r',
+        table: 'al_departamento dpto, ae_institucion isap ,r_institucion_salud isa,  ae_institucion eg, r_institucion_salud_acrehab r',
         alias: 'Habilitaciones',
         cardinalidad: "n",
         linked: 'habilitacion',
-        campos: `r.acrehab_id as idx, 'habilitacion' as linked,r.institucion_id, 
+        campos: `r.acrehab_id as idx, 'habilitacion' as linked,r.institucion_id,         
         eg.nombre_corto, dpto.nombre_dpto,
+        isap.nombre_institucion,
         r.eess_nombre, r.estado_acrehab, r.gestion_registro, 
-        r.nro_ra, r.fecha_ra, r.vigencia_anios, r.puntaje, r.tipo_registro
+        r.nro_ra, r.fecha_ra, r.vigencia_anios, r.puntaje, r.tipo_registro, r.activo
         `,
 
         camposView: [
-        { value: "eess_nombre", text: "Establecimiento" }, { value: "desc_estado", text: "Estado" },
+            { value: "nombre_corto", text: "Ente Gestor" }, { value: "nombre_dpto", text: "Dpto" },
+            { value: "nombre_institucion", text: "Establecimiento" } ,   
+        { value: "eess_nombre", text: "Nombre Registrado" }, { value: "desc_estado", text: "Estado" },
         { value: "gestion_registro", text: "Gestion registro" },
         { value: "nro_ra", text: "Nro R.A." },
         { value: "fecha_ra", text: "Fecha R.A." },
         { value: "vigencia_anios", text: "Vigencia en Anios" },
         { value: "puntaje", text: "Puntaje" },
+        { value: "activo", text: "Vigente" }
         ],
         key: ['isap.root'], //llave de busqueda
-        precondicion: ["isap.institucion_id =  isa.institucion_id", "isa.ente_gestor_id =  eg.institucion_id",
+        precondicion: ["dpto.cod_pais = isap.cod_pais" ,"dpto.cod_dpto=isap.cod_dpto",
+            "isap.institucion_id =  isa.institucion_id", "isa.ente_gestor_id =  eg.institucion_id",
             "isa.institucion_id =  r.institucion_id","tipo_registro='HABILITACION'"],
         update: [],
         referer: [
-            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'r.estado_acrehab', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_estado', condicion: 'AHACREDITACION' },
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'r.estado_acrehab', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_estado', condicion: 'AHHABILITACION' },
             
         ],
+    },
+
+    repo_acrehab:{
+        alias: 'Reporte',
     }
 
 }

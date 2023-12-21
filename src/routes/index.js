@@ -82,7 +82,10 @@ const rutas = (app) => {
   app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
   app.get("/api/geo/eess/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmByModel)
   app.post("/api/geo/eess/get", authMiddleWare.verifyAuth, egController.getDataModelByIdxParam)
-  
+  //llama comboxe persnalizado con dependientes
+  app.post("/api/geo/eess/cbox", authMiddleWare.verifyAuth, egController.cbxUtil)
+  app.post("/api/geo/eess/cboxAcre", authMiddleWare.verifyAuth, egController.cbxUtilAcreHab)
+
   app.post("/api/geo/eess", authMiddleWare.verifyAuth, egController.saveDataModelByIdxParam)
   app.post("/api/geo/eess/save", authMiddleWare.verifyAuth, egController.saveDataModifyInsertByModel)
 
