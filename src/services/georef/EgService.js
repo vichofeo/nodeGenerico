@@ -244,11 +244,13 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
     ins.nombre_institucion, ins.telefono, ins.direccion_web, dpto.nombre_dpto,
     ins.latitud, ins.longitud, ins.avenida_calle, ins.zona_barrio,
     ins.tipo_institucion_id,
-    es.nivel_atencion, es.urbano_rural, es.clase,
-    es.nivel
+    es.nivel_atencion||es.snis as nivel_atencion, 
+    es.urbano_rural, es.clase,
+    es.nivel 
     FROM  al_departamento dpto,  ae_institucion ins
     LEFT JOIN (
-	 SELECT es.institucion_id , es.nivel_atencion, es.urbano_rural, es.clase,  aa.atributo AS nivel
+	 SELECT es.institucion_id , es.nivel_atencion, es.urbano_rural, es.clase,  
+     aa.atributo||CASE es.snis WHEN 'N' THEN ' s/cr' ELSE '' END AS nivel, es.snis
 	 FROM r_is_atributo aa, r_institucion_salud es
 	 WHERE es.nivel_atencion = aa.atributo_id
 	 ) AS es ON ins.institucion_id = es.institucion_id  
@@ -453,8 +455,8 @@ const getDataParams = async (dto) => {
 
                     const objModel = new QueriesUtils(dbmodel[tablaRef])
                     const cnfData = {}
-                    cnfData.attributes = parametros.campos[campoForeign][3] == 'T' ? element.campos : objModel.transAttribByComboBox(element.campos.toString())
-                    cnfData.where = parametros.campos[campoForeign][3] == 'T' ? { [campoRef]: result[campoLink] ? result[campoLink] : "-1" } : { ...where }
+                    cnfData.attributes = parametros.campos[campoForeign][3].slice(0,1) == 'T' ? element.campos : objModel.transAttribByComboBox(element.campos.toString())
+                    cnfData.where = parametros.campos[campoForeign][3].slice(0,1) == 'T' ? { [campoRef]: result[campoLink] ? result[campoLink] : "-1" } : { ...where }
                     cnfData.order = [element.campos[element.campos.length - 1]]
 
                     console.log("******", campoForeign)
@@ -474,8 +476,8 @@ const getDataParams = async (dto) => {
                     } else
                         r = await objModel.findTune(cnfData)
 
-
-                    if (parametros.campos[campoForeign][3] == 'T') {
+console.log("////////////////////////////////////////////////////////////Parametors",parametros.campos[campoForeign][3].slice(0,1))
+                    if (parametros.campos[campoForeign][3].slice(0,1) == 'T') {
                         parametros.valores[campoForeign] = r[0][element.campos]
                     } else {
                         const aux = parametros.valores[campoForeign]

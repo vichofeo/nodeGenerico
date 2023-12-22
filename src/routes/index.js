@@ -73,7 +73,7 @@ const rutas = (app) => {
   //opciones de menu
   app.get("/api/geo/menu", authMiddleWare.verifyAuth, menuController.menuGeoreferencia)
 
-  //opciones para modulo georef
+  //opciones para modulo georef de mapas
   app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
   app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmGroupModel)
