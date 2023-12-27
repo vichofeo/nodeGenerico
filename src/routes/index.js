@@ -103,13 +103,13 @@ const rutas = (app) => {
   //Grupo para formularios SNIS
   app.post("/api/snis/f301", authMiddleWare.verifyAuth, snis.fsnisReportParams)
 
-
+/*
   app.post('/api/hl7', hl7.recibe)
   //app.get('/api/hl7', hl7.muestra)
   app.get('/api/hl7', hl7.unouno)
   app.delete('/api/hl7', hl7.borrar)
   //app.post('/api/hl7', hl7.tmp2)
-
+*/
 
 
 };

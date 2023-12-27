@@ -67,9 +67,14 @@ const REPORTS = {
       {
         ref: 'r_is_atributo as crtr',
         camporef: 'crtr.atributo_id',
-        camporefForeign: 'ins.caracteristicas_terreno',
+        camporefForeign: 'ins.ccaracteristicas_terreno',
         campos: 'crtr.atributo AS "Terreno"',
       },
+
+      {ref: 'r_is_atributo as car01', camporef: 'car01.atributo_id', camporefForeign: 'ins.cascensor', campos: 'car01.atributo AS "Ascensor"'},
+      {ref: 'r_is_atributo as car02', camporef: 'car02.atributo_id', camporefForeign: 'ins.crampas', campos: 'car02.atributo AS "Rampas"'},
+      {ref: 'r_is_atributo as car03', camporef: 'car03.atributo_id', camporefForeign: 'ins.cplano_aprobado', campos: 'car03.atributo AS "Plano Aprobado"'},
+      {ref: 'r_is_atributo as car04', camporef: 'car04.atributo_id', camporefForeign: 'ins.cplan_mantenimiento', campos: 'car04.atributo AS "Plan Mantenimiento"'},
 
       {
         ref: 'r_is_atributo as est',
@@ -733,7 +738,7 @@ const REPORTS = {
         isld.snis AS "Con RUES" `,
     camposOcultos: [],
     rows: ['Departamento'],
-    cols: ['Tipo de Registro','Alerta'],
+    cols: ['Tipo de Registro', 'Alerta'],
     mdi: 'mdi-hospital-building',
     key: ['isld.institucion_id'],
     precondicion: [
@@ -741,7 +746,7 @@ const REPORTS = {
       'isld.institucion_id =  aei.institucion_id',
       'isld.ente_gestor_id =  eg.institucion_id',
       'dpto.cod_pais= aei.cod_pais',
-      'dpto.cod_dpto= aei.cod_dpto',      
+      'dpto.cod_dpto= aei.cod_dpto',
       'a2.atributo_id= ah.estado_acrehab ',
       'a3.atributo_id= ah.activo',
     ],

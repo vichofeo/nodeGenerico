@@ -131,10 +131,19 @@ module.exports = (sequelize, DataTypes) => {
       atencion_horas: { type: DataTypes.STRING(64), allowNull: true },
 
       //caracteristicas superficie
-      caracteristicas_terreno: { type: DataTypes.STRING(64), allowNull: true },
-      superficie_construida: { type: DataTypes.DOUBLE, allowNull: true },
-      superficie_circulacion: { type: DataTypes.DOUBLE, allowNull: true },
-      superficie_total: { type: DataTypes.DOUBLE, allowNull: true },
+      ccaracteristicas_terreno: { type: DataTypes.STRING(64), allowNull: true },
+      canio_construccion: { type: DataTypes.INTEGER, allowNull: true }, 
+      csuperficie_construida: { type: DataTypes.DOUBLE, allowNull: true },
+      csuperficie_circulacion: { type: DataTypes.DOUBLE, allowNull: true },
+      csuperficie_total: { type: DataTypes.DOUBLE, allowNull: true },
+      csuperficie_terreno: { type: DataTypes.DOUBLE, allowNull: true }, 
+      cpisos : { type: DataTypes.INTEGER, allowNull: true }, 
+      cascensor: { type: DataTypes.STRING(64), allowNull: true }, 
+      crampas: { type: DataTypes.STRING(64), allowNull: true }, 
+      cplano_aprobado: { type: DataTypes.STRING(64), allowNull: true }, 
+      cplan_mantenimiento: { type: DataTypes.STRING(64), allowNull: true },
+      cescalera_emergencia: { type: DataTypes.STRING(64), allowNull: true },
+      cparqueo: { type: DataTypes.STRING(64), allowNull: true },
 
       //estructura establecimeinto
       estructura_estado: { type: DataTypes.STRING(64), allowNull: true },

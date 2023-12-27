@@ -56,12 +56,17 @@ dbmodel.habilitacion = db.r_institucion_salud_acrehab
 
 dbmodel.personal = db.au_persona
 
-
 dbmodel.infraestructuran = db.r_institucion_salud_infraestructura
 dbmodel.atributos = db.r_is_atributo
 
 dbmodel.localidad =  db.al_municipio
 dbmodel.departamento = dptoModel
+
+//modelo de rues3
+dbmodel.r3estuctura =  db.r_institucion_salud_estructura
+dbmodel.r3areas =  db.r_institucion_salud_areas
+dbmodel.r3mobiliario =  db.r_institucion_salud_areas_mobequi
+dbmodel.r3equipamiento =  db.r_institucion_salud_areas_mobequi
 
 
 const verifyOptionsInsertByModel = async (nameKey, obj, modelParam, modelDb) => {
@@ -245,7 +250,7 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
     ins.latitud, ins.longitud, ins.avenida_calle, ins.zona_barrio,
     ins.tipo_institucion_id,
     es.nivel_atencion||es.snis as nivel_atencion, 
-    es.urbano_rural, es.clase,
+    es.urbano_rural, cl.atributo as clase,
     es.nivel 
     FROM  al_departamento dpto,  ae_institucion ins
     LEFT JOIN (
@@ -254,6 +259,7 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
 	 FROM r_is_atributo aa, r_institucion_salud es
 	 WHERE es.nivel_atencion = aa.atributo_id
 	 ) AS es ON ins.institucion_id = es.institucion_id  
+     LEFT JOIN r_is_atributo cl ON (es.clase=cl.atributo_id AND cl.grupo_atributo='CLASE')
     WHERE
     ins.cod_dpto = dpto.cod_dpto AND ins.cod_pais = dpto.cod_pais         
     ${query}
@@ -274,7 +280,12 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
 
 }
 
-
+/**
+ * servicio que obtiene datos de establecimientos de salud para el dibjado del mapa
+ * @param {token, idx:cod_dpto} data 
+ * @returns 
+ * @vichofeo
+ */
 const dataEESS = async (data) => {
     try {
         const datos = tk.getCnfApp(data.token)
@@ -392,6 +403,7 @@ const getDataParams = async (dto) => {
         const app = new QueriesUtils(eessModel)
         const institucion = await app.findID(datos.inst)
         const tipo_institucion = institucion.tipo_institucion_id
+        const idxLogin = institucion.institucion_id
 
         let idx = null
         if (dto.idx)
@@ -438,11 +450,11 @@ const getDataParams = async (dto) => {
                 parametros.valores = result
                 parametros.exito = Object.keys(parametros.valores).length ? true : false
 
-                console.log("$$$$$$$$$$$$$$$ RESULtS", result)
+                console.log("$$$$$$$$$$$$$$$::::::: RESULtS", result)
 
                 //obtiene referencias PARA LOS COMBOS Y OTROS
                 for (const element of PARAMETROS[modelo].referer) {
-                    console.log("::::", modelo, '--', element)
+                    console.log(":::: REFERER modelo", modelo, '--', element)
                     const tablaRef = element.ref
                     const campoRef = element.camporef
                     const campoForeign = element.camporefForeign
@@ -466,19 +478,23 @@ const getDataParams = async (dto) => {
 
                     let r = null
                     let dependency= false
-                    if (element.linked) {
+                    if (element.linked) {//hace el link con la referencia de definicion en model segun cfn de parametros
+                        //console.log("=================",cnfData.order)
+                        //console.log("=================",cnfData.attributes)
                         cnfData.include = [{ model: dbmodel[element.linked.ref], as: element.linked.alias  , ...cnfData }]
                         cnfData.attributes = element.linked.campos
                         cnfData.alias = element.linked.alias
+                        //console.log("=================",element.linked.campos)
+                        cnfData.order.push([sequelize.col(element.linked.alias+'.'+element.campos[element.campos.length - 1])])
                         delete cnfData.where
                         dependency= element.linked.dependency
                         r = await objModel.findData1toNForCbx(cnfData)
                     } else
                         r = await objModel.findTune(cnfData)
 
-console.log("////////////////////////////////////////////////////////////Parametors",parametros.campos[campoForeign][3].slice(0,1))
+console.log("////////////////////////////////////////////////////////////Parametors caja html",parametros.campos[campoForeign][3].slice(0,1))
                     if (parametros.campos[campoForeign][3].slice(0,1) == 'T') {
-                        parametros.valores[campoForeign] = r[0][element.campos]
+                        parametros.valores[campoForeign] = r[0] ? r[0][element.campos] : ""
                     } else {
                         const aux = parametros.valores[campoForeign]
                         if(dependency) console.log("aki es", dependency, "matis datis::::::::::::::::::::::::::::::::::::::::::", parametros.valores[dependency].selected.value)
@@ -489,6 +505,22 @@ console.log("////////////////////////////////////////////////////////////Paramet
                         }
 
                     }
+                }
+                //complementa referencia si existe el campo ilogic que contiene querys textuales q solo funcionan con el id instutucion logueado
+                if(PARAMETROS[modelo].ilogic){
+                    for (const key in PARAMETROS[modelo].ilogic) {
+                        console.log("!!!!!!!!!!!!EXISTE ILOGIC!!!!!!! llave:", key)
+                        const queryIlogic = PARAMETROS[modelo].ilogic[key].replaceAll('idxLogin',idxLogin)
+                        console.log("************** almacen ilogic", parametros.valores[key])
+                        const tempo = parametros.valores[key]                        
+                        const result = await sequelize.query(queryIlogic, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
+                        parametros.valores[key] = {
+                            selected: app.searchBySelectedComboDataNotransform(result, { value: tempo }),
+                            items: result,
+                            dependency: false
+                        }
+                    }
+                    
                 }
 
                 datosResult[PARAMETROS[modelo].alias] = verificaParamEdicion(parametros, tipo_institucion, original[modelo].campos, dto.noverify)
@@ -674,8 +706,8 @@ const saveDataModifyInsertByModel = async (dto) => {
         delete obj?.create_date
         
         //tipo_registro='MOBILIARIO'|'EQUIPAMIENTO'
-        if (modelo == 'mobiliario') obj.tipo_registro = 'MOBILIARIO'
-        if (modelo == 'equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
+        if (modelo == 'mobiliario'|| modelo=='r3mobiliario') obj.tipo_registro = 'MOBILIARIO'
+        if (modelo == 'equipamiento' || modelo=='r3equipamiento') obj.tipo_registro = 'EQUIPAMIENTO'
         if (modelo == 'acreditacion') obj.tipo_registro = 'ACREDITACION'
         if (modelo == 'habilitacion') obj.tipo_registro = 'HABILITACION'
 
@@ -772,8 +804,17 @@ const saveDataModifyInsertByModel = async (dto) => {
 const weUsersget = async (dto) => {
     try {
         //idx, token, modelos
-        dto.modelos = ['personal']
+        const modeloPersona = 'personal'
+        const modeloAlias =  PARAMETROS[modeloPersona].alias
+        dto.modelos = [modeloPersona]
+        //llama procedimiento generico de datos
         const result = await getDataParams(dto)
+        //elimina restriccion de Atributos para usuarios logueados        
+        for (const key in result.data[modeloAlias].campos) 
+            result.data[modeloAlias].campos[key][5] =  false
+        
+        
+        console.log(result.data[modeloAlias].campos)
         const institucionLogeada = result.institucion
 
         if (dto.swAll) {
@@ -820,18 +861,18 @@ const weUsersget = async (dto) => {
             }
         } else {
             //solo el regstro para edicion o insercion
-            if (result.data['Personal'].exito) {
+            if (result.data[modeloAlias].exito) {
                 //busca si esta registrado
                 const credencial = new QueriesUtils(credencialModel)
                 let cnf = {
                     attributes: ['dni_persona'],
-                    where: { dni_persona: result.data['Personal'].valores.dni_persona, activo: 'Y' }
+                    where: { dni_persona: result.data[modeloAlias].valores.dni_persona, activo: 'Y' }
                 }
                 const dataCredencial = await credencial.findTune(cnf)
 
                 if (!dataCredencial || dataCredencial.length > 0) {
-                    result.data['Personal'].exito = false
-                    result.data['Personal'].mensaje = `El usuario ${result.data['Personal'].valores.dni_persona} :: Ya se encuentra habilitado en otra institucion`
+                    result.data[modeloAlias].exito = false
+                    result.data[modeloAlias].mensaje = `El usuario ${result.data[modeloAlias].valores.dni_persona} :: Ya se encuentra habilitado en otra institucion`
                 } else {
                     //obtine datos de institucion
                     const eess = new QueriesUtils(eessModel)
@@ -865,14 +906,14 @@ const weUsersget = async (dto) => {
                         datos = datos.concat(datosAux)
                     }
                     const instituciones = credencial.searchBySelectedComboDataNotransform(datos, { value: "-1" })
-                    result.data['Personal'].instituciones = {
+                    result.data[modeloAlias].instituciones = {
                         selected: instituciones,
                         items: datos
                     }
                 }
 
             } else {
-                result.data['Personal'].mensaje = "No se encontro Registro"
+                result.data[modeloAlias].mensaje = "No se encontro Registro"
             }
 
             return {

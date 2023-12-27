@@ -1,4 +1,10 @@
-//[label, editable, requerido, <T:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio]
+//[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio]
+/**
+ * objeto de configuracion para diversas pantallas
+ * campos:[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio, Reservado]
+ * T?->TT: texto, TN: texto numero entero, TM: TextMail, TD: Texto decimal, TA: Text Area
+ * use-se la opcion dual cuando la interaccion y la insercion es con tablas de bd
+ */
 "use strict"
 const PARAMETROS = {
     eess: {
@@ -69,7 +75,7 @@ const PARAMETROS = {
         update: [],
         referer: [
             { ref: 'institucion', camporef: 'institucion_id', camporefForeign: 'ente_gestor', campoLink:'ente_gestor_id' ,campos: ['nombre_institucion'], alias: null, condicion: null },
-
+            
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'urbano_rural', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AREA' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'subsector', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SUBSECTOR' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nivel_atencion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'NIVELATENCION' },
@@ -254,22 +260,39 @@ const PARAMETROS = {
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'atencion_horas', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ATENCIONHORAS' }
         ],
     },
-
+//adecuado a R3
     superficie: {
         table: 'r_institucion_salud',
         alias: 'Caracteristicas y Superficie',
         cardinalidad: "1",
         campos: {
-            caracteristicas_terreno: ['Caracteristicas del Terreno', true, true, 'C'],
-            superficie_construida: ['Superficie Construida', true, true, 'TD',],
-            superficie_circulacion: ['Superficie Circulacion', true, true, 'TD'],
-            superficie_total: ['Superficie Total del Terreno', true, true, 'TD']
+            ccaracteristicas_terreno: ['Propiedad del Territorio', true, true, 'C'],
+            //csuperficie_construida: ['Superficie Construida', true, true, 'TD',],
+            //csuperficie_circulacion: ['Superficie de Circulacion', true, true, 'TD'],
+            canio_construccion:['Año de Construccion', true, true, 'TN'], 
+            csuperficie_total: ['Superficie Total Construida', true, true, 'TD'],
+            //aumentados xR3
+            csuperficie_terreno:['Superficie Terreno', true, true, 'TD'], 
+            cpisos: ['Pisos', true, true, 'TN'],  
+            cascensor:['Ascensor', true, true, 'R'],  
+            crampas: ['Rampas', true, true, 'R'],  
+            cplano_aprobado: ['Plano Aprobado', true, true, 'R'],  
+            cplan_mantenimiento: ['Plan Mantenimiento Preventivo', true, true, 'R'], 
+            cescalera_emergencia: ['Escaleras de Emergencia', true, true, 'R'], 
+            cparqueo: ['Parqueos', true, true, 'R'], 
+            
         },
         key: ['institucion_id'],
         update: [],
-        referer: [{
-            ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'caracteristicas_terreno', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'TERRENO',
-        }],
+        referer: [
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'ccaracteristicas_terreno', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'TERRENO'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'cascensor', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'crampas', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'cplano_aprobado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'cplan_mantenimiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'cescalera_emergencia', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'},
+            {ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'cparqueo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION'}
+        ],
     },
 
     estructura: {
@@ -717,7 +740,209 @@ const PARAMETROS = {
 
     repo_acrehab:{
         alias: 'Reporte',
-    }
+    },
+
+    //modulos segun estructura RUES 3
+    r3estucturan: {
+        table: 'r_institucion_salud_estructura',
+        alias: 'Estructuras',
+        cardinalidad: "n",
+        linked: 'r3estuctura',
+        campos: "estructura_id as idx, 'r3estuctura' as linked, estructura, material, estado, observacion",
+        camposView: [{ value: "desc_estructura", text: "Clasificador" }, { value: "desc_material", text: "Material" },
+         { value: "desc_estado", text: "Estado" }, { value: "observacion", text: "Observacion" },
+        ],
+        key: ['institucion_id'],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'estructura', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_estructura', condicion: 'R3ESTRUCTURA' },
+            { ref: 'r_is_atributo as atr2', camporef: 'atr2.atributo_id', camporefForeign: 'material', alias: 'grupo_atributo', campos: 'atr2.atributo as desc_material', condicion: 'R3ESTRUCTURAMATERIAL' },            
+            { ref: 'r_is_atributo as atr3', camporef: 'atr3.atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: 'atr3.atributo as desc_estado', condicion: 'ESTRUCTURAESTADO' },
+            
+        ],
+    },
+
+    r3estuctura: {
+        table: 'r_institucion_salud_estructura',
+        alias: 'Estructura',
+        cardinalidad: "1",
+        campos: {                
+            estructura: ['Clasificador', true, true, 'C'],
+            material: ['Material', true, true, 'C'],
+            estado: ['Estado', true, true, 'C'],
+            observacion:['Observaciones', true, false, 'TA',1000],
+        },         
+        key: ['estructura_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estructura', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3ESTRUCTURA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'material', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3ESTRUCTURAMATERIAL', linked:{campos:[['atributo_id','value']],ref:'atributos', alias:'grplinkn', dependency:'estructura' }},
+
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            
+        ],
+    },
+
+    r3areasn: {
+        table: 'r_institucion_salud_areas',
+        alias: 'Areas',
+        cardinalidad: "n",
+        linked: 'r3areas',
+        campos: "area_id as idx, 'r3areas' as linked, area, ambiente, estado, superficie,nro_camas,nro_camillas,  observacion",
+        camposView: [{ value: "desc_area", text: "Area" }, { value: "desc_ambiente", text: "Ambiente" },
+         { value: "desc_estado", text: "Estado" }, 
+         { value: "nro_camas", text: "Nro Camas" }, { value: "nro_camillas", text: "Nro Camillas" },
+         { value: "observacion", text: "Observacion" }
+        ],
+        key: ['institucion_id'],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'area', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_area', condicion: 'R3AREA' },
+            { ref: 'r_is_atributo as atr2', camporef: 'atr2.atributo_id', camporefForeign: 'ambiente', alias: 'grupo_atributo', campos: 'atr2.atributo as desc_ambiente', condicion: 'R3AREAAMBIENTE' },            
+            { ref: 'r_is_atributo as atr3', camporef: 'atr3.atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: 'atr3.atributo as desc_estado', condicion: 'ESTRUCTURAESTADO' },
+            
+        ],
+    },
+
+    r3areas: {
+        table: 'r_institucion_salud_areas',
+        alias: 'Estructura',
+        cardinalidad: "1",
+        campos: {                
+            area: ['Clasificador', true, true, 'C'],
+            ambiente: ['Material', true, true, 'C'],
+            estado: ['Estado', true, true, 'C'],
+            superficie: ['Superficie', true, true, 'TD'],
+            nro_camas:['Nro de Camas', true, true, 'TN'],
+            nro_camillas:['Nro de Camillas', true, true, 'TN'],
+            observacion:['Observaciones', true, false, 'TA',1000],
+        },         
+        key: ['area_id'],
+        update: [],
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'area', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3AREA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'ambiente', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3AREAAMBIENTE', linked:{campos:[['atributo_id','value']],ref:'atributos', alias:'grplinkn', dependency:'area' }},
+            
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            
+        ],
+    },
+
+    r3mobiliarion: {
+        table: 'r_is_atributo area, r_is_atributo amb, r_institucion_salud_areas ias, r_institucion_salud_areas_mobequi iasmq',
+        alias: 'Mobiliarios',
+        cardinalidad: "n",
+        linked: 'r3mobiliario',
+        campos: "registro_id as idx, 'r3mobiliario' as linked, area.atributo as area, amb.atributo as ambiente, iasmq.tipo, iasmq.descripcion as mobiliario,iasmq.estado, iasmq.funcionamiento, iasmq.financiamiento, iasmq.cantidad, iasmq.anio_compra, iasmq.observacion, iasmq.tipo_registro",
+        camposView: [{ value: "area", text: "Area" }, { value: "ambiente", text: "Ambiente" },
+        { value: "desc_desc", text: "mobiliario" }, { value: "desc_estado", text: "Estado" }, 
+        { value: "desc_funcionamiento", text: "Funcionamiento" }, { value: "desc_financiamiento", text: "Financiamiento" },
+        { value: "anio_compra", text: "Año Compra" }, { value: "observacion", text: "Observacion" }
+        ],
+        key: ['institucion_id'],
+        precondicion: ["area.atributo_id=ias.area", "amb.atributo_id=ambiente",
+                        "ias.area_id=iasmq.area_id",
+                        "iasmq.tipo_registro='MOBILIARIO'", "activo='Y'"],
+        update: [],       
+        referer: [
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'tipo', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_tipo', condicion: 'R3MOBITIPO' },
+            { ref: 'r_is_atributo as atr2', camporef: 'atr2.atributo_id', camporefForeign: 'descripcion', alias: 'grupo_atributo', campos: 'atr2.atributo as desc_desc', condicion: 'REMOBITIPODESC' },
+            { ref: 'r_is_atributo as atr3', camporef: 'atr3.atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: 'atr3.atributo as desc_estado', condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'r_is_atributo as atr4', camporef: 'atr4.atributo_id', camporefForeign: 'financiamiento', alias: 'grupo_atributo', campos: 'atr4.atributo as desc_financiamiento', condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'r_is_atributo as atr5', camporef: 'atr5.atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: 'atr5.atributo as desc_funcionamiento', condicion: 'FUNCIONA' },
+            { ref: 'r_is_atributo as atr6', camporef: 'atr6.atributo_id', camporefForeign: 'en_mantenimiento', alias: 'grupo_atributo', campos: 'atr6.atributo as desc_mantenimiento', condicion: 'AFIRMACION' },
+            { ref: 'r_is_atributo as atr7', camporef: 'atr7.atributo_id', camporefForeign: 'en_uso', alias: 'grupo_atributo', campos: 'atr7.atributo as desc_uso', condicion: 'AFIRMACION' },
+        ],
+    },
+    
+    r3mobiliario:{
+        table: 'r_institucion_salud_areas_mobequi',
+        alias: 'Mobiliario',
+        cardinalidad: "1",        
+        campos: {
+            area_id: ['Area/Ambiente', false, true, 'C'],
+            tipo: ['Tipo Mobiliario', true, true, 'C'],
+            descripcion: ['Mobiliario', true, true, 'C'],
+            estado: ['Estado', true, true, 'C'],
+            financiamiento: ['Finaciamiento', true, true, 'C'],
+            funcionamiento: ['Funcionamiento', true, true, 'C'],            
+            cantidad: ['Cantidad', true, false, 'TN',3],
+            anio_compra: ['Año de Compra', true, false, 'TN',4],
+            observaciones: ['Observaciones', true, false, 'TA',1500],  
+            en_mantenimiento: ['En Mantenimiento', true, true, 'R'],
+            en_uso: ['En Uso', true, true, 'R'],                       
+        },         
+        key: ['registro_id'],
+        update: [],
+        ilogic:{area_id:"SELECT area_id AS value, ar.atributo||'/'||am.atributo as text FROM r_institucion_salud_areas a, r_is_atributo ar, r_is_atributo am WHERE a.area=ar.atributo_id AND a.ambiente=am.atributo_id AND institucion_id='idxLogin' ORDER BY 2"},
+        referer: [
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3MOBITIPO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'descripcion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'REMOBITIPODESC', linked:{campos:[['atributo_id','value']],ref:'atributos', alias:'grplinkn', dependency:'tipo' } },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'financiamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FUNCIONA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'en_mantenimiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'en_uso', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+        ],
+    },
+
+    r3equipamienton: {
+        table: 'r_is_atributo area, r_is_atributo amb, r_institucion_salud_areas ias, r_institucion_salud_areas_mobequi iasmq',
+        alias: 'Equipamientos',
+        cardinalidad: "n",
+        linked: 'r3equipamiento',
+        campos: "registro_id as idx, 'r3equipamiento' as linked, area.atributo as area, amb.atributo as ambiente, iasmq.tipo, iasmq.descripcion as mobiliario,iasmq.estado, iasmq.funcionamiento, iasmq.financiamiento, iasmq.cantidad, iasmq.anio_compra, iasmq.observacion, iasmq.tipo_registro",
+        camposView: [{ value: "area", text: "Area" }, { value: "ambiente", text: "Ambiente" },
+        { value: "desc_desc", text: "Equipamiento" }, { value: "desc_estado", text: "Estado" }, 
+        { value: "desc_funcionamiento", text: "Funcionamiento" }, { value: "desc_financiamiento", text: "Financiamiento" },
+        { value: "anio_compra", text: "Año Compra" }, { value: "observacion", text: "Observacion" }
+        ],
+        key: ['institucion_id'],
+        precondicion: ["area.atributo_id=ias.area", "amb.atributo_id=ambiente",
+                        "ias.area_id=iasmq.area_id",
+                        "iasmq.tipo_registro='EQUIPAMIENTO'", "activo='Y'"],
+        update: [],       
+        referer: [
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'tipo', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_tipo', condicion: 'R3EQUITIPO' },
+            { ref: 'r_is_atributo as atr2', camporef: 'atr2.atributo_id', camporefForeign: 'descripcion', alias: 'grupo_atributo', campos: 'atr2.atributo as desc_desc', condicion: 'R3EQUITIPODESC' },
+            { ref: 'r_is_atributo as atr3', camporef: 'atr3.atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: 'atr3.atributo as desc_estado', condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'r_is_atributo as atr4', camporef: 'atr4.atributo_id', camporefForeign: 'financiamiento', alias: 'grupo_atributo', campos: 'atr4.atributo as desc_financiamiento', condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'r_is_atributo as atr5', camporef: 'atr5.atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: 'atr5.atributo as desc_funcionamiento', condicion: 'FUNCIONA' },
+            { ref: 'r_is_atributo as atr6', camporef: 'atr6.atributo_id', camporefForeign: 'en_mantenimiento', alias: 'grupo_atributo', campos: 'atr6.atributo as desc_mantenimiento', condicion: 'AFIRMACION' },
+            { ref: 'r_is_atributo as atr7', camporef: 'atr7.atributo_id', camporefForeign: 'en_uso', alias: 'grupo_atributo', campos: 'atr7.atributo as desc_uso', condicion: 'AFIRMACION' },
+        ],
+    },
+    
+    r3equipamiento:{
+        table: 'r_institucion_salud_areas_mobequi',
+        alias: 'Equipamiento',
+        cardinalidad: "1",        
+        campos: {
+            area_id: ['Area/Ambiente', false, true, 'C'],
+            tipo: ['Tipo Equipamiento', true, true, 'C'],
+            descripcion: ['Equipamiento', true, true, 'C'],
+            estado: ['Estado', true, true, 'C'],
+            financiamiento: ['Finaciamiento', true, true, 'C'],
+            funcionamiento: ['Funcionamiento', true, true, 'C'],            
+            cantidad: ['Cantidad', true, false, 'TN',3],
+            anio_compra: ['Año de Compra', true, false, 'TN',4],
+            observaciones: ['Observaciones', true, false, 'TA',1500],  
+            en_mantenimiento: ['En Mantenimiento', true, true, 'R'],
+            en_uso: ['En Uso', true, true, 'R'],                       
+        },         
+        key: ['registro_id'],
+        update: [],
+        ilogic:{area_id:"SELECT area_id AS value, ar.atributo||'/'||am.atributo as text FROM r_institucion_salud_areas a, r_is_atributo ar, r_is_atributo am WHERE a.area=ar.atributo_id AND a.ambiente=am.atributo_id AND institucion_id='idxLogin' ORDER BY 2"},
+        referer: [        
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'tipo', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3EQUITIPO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'descripcion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'R3EQUITIPODESC', linked:{campos:[['atributo_id','value']],ref:'atributos', alias:'grplinkn', dependency:'tipo' } },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'estado', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ESTRUCTURAESTADO' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'financiamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FINANCIAMIENTOFUENTE' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'funcionamiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'FUNCIONA' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'en_mantenimiento', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'en_uso', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+        ],
+    },
 
 }
 

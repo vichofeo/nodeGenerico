@@ -140,11 +140,11 @@ const menuGeoreferencia = async (token) => {
             ok: true,
             data: {
                 ...dataMenu,
-                R_prueba: [
+                /*R_prueba: [
                     {
                         "value": "/hl7",
                         "text": "report H"
-                    }],
+                    }],*/
 
             },
             moredata: { institucion: result.nombre_corto },
