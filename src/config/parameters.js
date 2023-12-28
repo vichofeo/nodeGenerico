@@ -613,7 +613,7 @@ const PARAMETROS = {
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'nivel_atencion', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'NIVELATENCION' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'subsector', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'SUBSECTOR' },
             { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'urbano_rural', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AREA' },
-            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'snis', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'AFIRMACION' },
+            { ref: 'atributos', camporef: 'atributo_id', camporefForeign: 'snis', alias: 'grupo_atributo', campos: ['atributo_id', 'atributo'], condicion: 'ACTIVE' },
         ],
     },
 
