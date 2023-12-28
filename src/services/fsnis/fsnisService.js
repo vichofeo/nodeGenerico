@@ -108,7 +108,7 @@ const fsnisReportParams = async (dto) => {
             if (selected_cbos && selected_cbos[control] && selected_cbos[control].value != '-1') {
                 //verifica si se trata de opcin de mes inicial y final para modificar where
                 if (COMBOSSNIS.name_cbo[control] == 'mesini') {
-                    if (selected_cbos[control + 1].value != '-1')
+                    if (selected_cbos[control + 1] && selected_cbos[control + 1].value != '-1')
                         wheres = ` ${wheres} AND (${selects[control][0]}>='${selected_cbos[control].value}' and ${selects[control][0]}<='${selected_cbos[control + 1].value}' )`
                     else wheres = ` ${wheres} AND ${selects[control][0]}='${selected_cbos[control].value}' `
                 } else
