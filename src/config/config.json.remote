@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "postgres.2023",
-    "database": "ssaep",
+    "database": "aeb_testdb",
     "host": "localhost",
     "dialect": "postgres",
     "PORT": 5432,
