@@ -23,7 +23,7 @@ const reportController =  require('../controllers/georef/reportsController')
 
 const snis =  require('../controllers/fsnis/fsnisController')
 
-const hl7 = require('../controllers/hl7Controller')
+//const hl7 = require('../controllers/hl7Controller')
 
 //define rutas de la aplicacion en una sola funcion 
 const rutas = (app) => {
@@ -34,6 +34,7 @@ const rutas = (app) => {
    app.post('/api/login', credencialController.login)
    app.post('/api/getUsrLgn',authMiddleWare.verifyAuth , credencialController.getLogin )
 
+   // ****opciones para prototipo de control de usuario, deprecated
    //usrOptions
    app.get('/api/usr', authMiddleWare.verifyAuth ,credencialController.listar)
    app.post('/api/usr', credencialController.guardar)
@@ -57,7 +58,7 @@ const rutas = (app) => {
    //config rol
    app.post("/api/admin/rolemod", authMiddleWare.verifyAuth, moduloController.rolCnfListar)
 
-    //usuaRIOS PEOPLE
+    //usuarios
   app.post("/api/admin/people", authMiddleWare.verifyAuth, moduloController.peopleSearch)
   app.post("/api/admin/getDataConfigCre", authMiddleWare.verifyAuth, moduloController.peopleDataCredencial)
   //app.post("/api/admin/saveConfigCre", authMiddleWare.verifyAuth, moduloController.peopleDataCredencialSave)
@@ -70,34 +71,35 @@ const rutas = (app) => {
   //app.post("/gestores", productoController.getGestor)
   //app.post("/establecimientos", productoController.getESalud)
 
-  //opciones de menu
+  //datos para menu de opciones segun: ASSUS, EG, EESS
   app.get("/api/geo/menu", authMiddleWare.verifyAuth, menuController.menuGeoreferencia)
 
-  //opciones para modulo georef de mapas
+  //datos para modulo de georeferencia e informacion de establecimiento
   app.get("/api/geo/ssepi/:idx", authMiddleWare.verifyAuth, egController.dataEESS)
   app.put("/api/geo/ssepi", authMiddleWare.verifyAuth, egController.saveDataEESS)
   app.get("/api/geo/ssepi/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmGroupModel)
   
-  //mi establecimiento
+  //mi establecimiento: para usuario de un solo establecimiento
   app.get("/api/geo/eess/:modelo", authMiddleWare.verifyAuth, egController.getDataModelParam)
   app.get("/api/geo/eess/:idx/:modelo", authMiddleWare.verifyAuth, egController.getDataFrmByModel)
   app.post("/api/geo/eess/get", authMiddleWare.verifyAuth, egController.getDataModelByIdxParam)
-  //llama comboxe persnalizado con dependientes
+  
+  //llama comboxs personalizado con dependientes de acreditacion/habilitacion, datos para combodependencias
   app.post("/api/geo/eess/cbox", authMiddleWare.verifyAuth, egController.cbxUtil)
   app.post("/api/geo/eess/cboxAcre", authMiddleWare.verifyAuth, egController.cbxUtilAcreHab)
 
   app.post("/api/geo/eess", authMiddleWare.verifyAuth, egController.saveDataModelByIdxParam)
   app.post("/api/geo/eess/save", authMiddleWare.verifyAuth, egController.saveDataModifyInsertByModel)
 
-  //opciones submodulo de usuarios logueado
+  //opciones submodulo de usuarios: pide datos de todos, individual y guarda datos
   app.get("/api/geo/weusers", authMiddleWare.verifyAuth, egController.weUsersget)
   app.get("/api/geo/weusers/:idx", authMiddleWare.verifyAuth, egController.weUserget)
   app.post("/api/geo/weuser", authMiddleWare.verifyAuth, egController.weUserSave)
   
-  //mis establecimientos
+  //mis establecimientos: servicio que entrega datos de los establecimientos segun tipo de usuario
   app.get("/api/geo/miseess", authMiddleWare.verifyAuth, egController.misEess)
 
-    ///Repportes
+   ///Repportes: dinamicos para todos los modulos
   app.get("/api/geo/reportgral/:model", authMiddleWare.verifyAuth, reportController.getReports)
 
   //Grupo para formularios SNIS

@@ -2,7 +2,7 @@
  * Servicios para opciones de ente gestor para mapas, establecimiento de salud
  * 1. requiere cargar lo modelos
  * 2. algunos servicios requiren de parametros ubicados en el config
- * 3. requiere de una clase para la realizacion la interaccion con datos de los modelos
+ * 3. requiere de un utilitario para realizar la interaccion con datos de los modelos
  * @vichofeo
  */
 const { v4: uuidv4 } = require('uuid');
@@ -13,26 +13,24 @@ const { QueryTypes, UUIDV4 } = require("sequelize")
 const db = require('../../models/index')
 const tk = require('./../utilService')
 
+//para realizar consultas textuales
+const sequelize = db.sequelize;
+
+
+//varibles Json de configuracion
+//por temas de mutabilidad propias del javascript se realiza esta rutina
+const AUXILIAR = JSON.stringify(require('../../config/parameters'))
+const PARAMETROS = JSON.parse(AUXILIAR)
+const original = JSON.parse(AUXILIAR)
+const { AGRUPADO } = require('../../config/agrupado')
+
+//modelos
 const eessModel = db.ae_institucion
 const dptoModel = db.al_departamento
 
 const credencialModel = db.apu_credencial
 const ins_perModel = db.aep_institucion_personal
 const app_instModel = db.ape_aplicacion_institucion
-
-const sequelize = db.sequelize;
-
-
-
-const AUXILIAR = JSON.stringify(require('../../config/parameters'))
-const PARAMETROS = JSON.parse(AUXILIAR)
-const original = JSON.parse(AUXILIAR)
-
-/*const immutableObject = (obj) =>
-    typeof obj === 'object' ? Object.values(obj).forEach(immutableObject) || Object.freeze(obj) : obj;
-*/
-
-const { AGRUPADO } = require('../../config/agrupado')
 
 /**
  * obsjeto dbmodel, contiene los modelos para ser relacionados con PARAMETROS
@@ -283,7 +281,7 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
 /**
  * servicio que obtiene datos de establecimientos de salud para el dibjado del mapa
  * @param {token, idx:cod_dpto} data 
- * @returns 
+ * @returns {data:[{resultData}], cnf:{zoom:Double, center:{lat, lng}}, niveles:[{}]}
  * @vichofeo
  */
 const dataEESS = async (data) => {
@@ -336,7 +334,11 @@ const dataEESS = async (data) => {
 
 }
 
-
+/**
+ * Funcion servicio para guardar informacion de modificacion de latitud y longitid en mapa
+ * @param {idx:Identificador Institucion, coordenadas:{lat,lng}} data 
+ * @returns ok or nok
+ */
 const saveDataEESS = async (data) => {
     try {
 
@@ -362,6 +364,15 @@ const saveDataEESS = async (data) => {
     }
 
 }
+
+/**
+ * Funcion interna para cambiar posicion 5 de PARAMETROS.campos segun tipo de session:ASUSS,EG,EESS
+ * @param {PARAMETROS} parametros 
+ * @param String tipo 
+ * @param {PARAMETROS} original 
+ * @param Boolean noverify 
+ * @returns {PARAMETROS}
+ */
 function verificaParamEdicion(parametros, tipo, original, noverify = false) {
 
     let claves = Object.keys(parametros.campos);
@@ -577,7 +588,13 @@ console.log("////////////////////////////////////////////////////////////Paramet
     };
 
 }
-
+/**
+ * Funcion de servicio que entrega datos de establecimiento segun modelo de PARAMETROS AGRUPADOS
+ * principalmente para añadir nuevo establecimiento de salud: Identificacion, Propietario, Responsable
+ * @param {modelo: String, token:String} dto 
+ * @returns {data:{datos segun parametros}, institucion:{datos institucion logueada}}
+ * @vichofeo
+ */
 const getDataFrmAgrupado = async (dto) => {
     //['eess_corto', 'propietario', 'responsable']
     //['institucion', dto.modelo, 'propietario', 'responsablen', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
@@ -588,7 +605,12 @@ const getDataFrmAgrupado = async (dto) => {
     delete result.institucion
     return result
 }
-
+/**
+ * Funcion de servicio que entrega datos de establecimiento segun modelo de PARAMETROS
+ * @param {modelo: String, token:String} dto 
+ * @returns {data:{datos segun parametros}, institucion:{datos institucion logueada}}
+ * @vichofeo
+ */
 const getDataModelParam = async (dto) => {
     dto.modelos = [dto.modelo]
     const result = getDataParams(dto)
@@ -596,7 +618,12 @@ const getDataModelParam = async (dto) => {
     return result
 }
 
-
+/**
+ * Funcion de servicio para guardar datos de modelos 
+ * los datos a guardar depende de los resultados que otroga la funcion "getDataFrmAgrupado" y la configuracion de AGRUPADO
+ * @param {token: String, modelo:String, eg:{ente gestor}, data:[{datos}]} dto 
+ * @returns ok or nok
+ */
 const saveDataModelByIdxParam = async (dto) => {
     try {
         const session = tk.getCnfApp(dto.token)
@@ -800,7 +827,13 @@ const saveDataModifyInsertByModel = async (dto) => {
 
 }
 
-
+/**
+ * Funcion servicio que busca datos de los usuarios registrados segun session
+ * swAll= true obtener todos los usuarios
+ * swAll= false obtener dato de usuario para edicion o solo obtener cifiguracion para objetos del HTML
+ * @param {toke:String, swAll:Boolean} dto 
+ * @returns {[dataResult]}
+ */
 const weUsersget = async (dto) => {
     try {
         //idx, token, modelos
@@ -814,7 +847,7 @@ const weUsersget = async (dto) => {
             result.data[modeloAlias].campos[key][5] =  false
         
         
-        console.log(result.data[modeloAlias].campos)
+        console.log("camposs",result.data[modeloAlias].campos)
         const institucionLogeada = result.institucion
 
         if (dto.swAll) {
@@ -936,6 +969,13 @@ const weUsersget = async (dto) => {
 
 }
 
+/**
+ * Funcion servicio q almacena datos segun lo entregado por weUsersget
+ * insert =  true se trata de una insercion 
+ * insert =  false se trata de una modificacion
+ * @param {token:String, data:[{}], insert:Boolean} dto 
+ * @returns ok or nok
+ */
 const weUserSave = async (dto) => {
     try {
 
@@ -1007,7 +1047,11 @@ const weUserSave = async (dto) => {
 
 }
 
-
+/**
+ * Funcion de servicio para entregar datos de establecimientos de datos para formar el arbol de establecimientos
+ * @param {token:String, modelo:String} dto 
+ * @returns {data:[{result:{children:[{}]}}]}
+ */
 const misEess = async (dto) => {
     try {
         const datos = tk.getCnfApp(dto.token)

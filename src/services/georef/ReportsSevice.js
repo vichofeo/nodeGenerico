@@ -4,21 +4,30 @@ const { QueryTypes } = require("sequelize")
 const db = require('../../models/index')
 const sequelize = db.sequelize;
 
-const eessModel = db.ae_institucion
-
-
 const { REPORTS } = require('../../config/reports')
 const tk = require('./../utilService')
 
-
+//modelos
+const eessModel = db.ae_institucion
 const dbmodel = {}
 
+/**
+ * funcion interna: obtiene datos de institucion de la session
+ * @param String token 
+ * @returns {institucion} 
+ */
 async function getDataCnf(token) {
     const datos = tk.getCnfApp(token)
     const eess = new QueriesUtils(eessModel)
     return await eess.findID(datos.inst)
 }
-
+/**
+ * funcion interna recursiva para extraer datos de institucion dependientes por el parent_id
+ * @param Object obj 
+ * @param String parent_id 
+ * @param Array resultado 
+ * @returns [{instituciones}]
+ */
 async function RecorreTree(obj, parent_id = '-1', resultado = []) {
     const cnf = {
         attributes: ['institucion_id', 'cod_dpto'],
@@ -35,16 +44,25 @@ async function RecorreTree(obj, parent_id = '-1', resultado = []) {
         return resultado
     } else return resultado
 }
-
+/**
+ * Funcion de servicio de datos, recibe un objeto json con el token y el modelo de reporte a desplegar segun json REPORTS
+ * @param {token:String, modelo:String} dto 
+ * @returns {
+ *           data:{values:[resultado], 
+ *          headers:[camposreporte], 
+ *          cnf:{configuracion reporte}}   }
+ * @vichofeo
+ */
 const reports = async (dto) => {
     try {
 
         const institucion = await getDataCnf(dto.token)
         const modelo = dto.modelo
+        //obtiene instituciones relacionadas con la institucion de la session
         const instResults = await RecorreTree(new QueriesUtils(eessModel), institucion.institucion_id)
         const datosResult = {}
 
-        //verifica q tipo de institucion pertenece usuario logueado
+        //verifica q tipo de institucion pertenece usuario de la session
         let condicion = ''
         if (institucion.tipo_institucion_id == 'EG')
             condicion = ` aei.institucion_root= '${institucion.institucion_id}'`
@@ -57,7 +75,7 @@ const reports = async (dto) => {
             condicion = ` aei.institucion_id= '${institucion.institucion_id}'`
         }
 
-        //hace query
+        //construye query de datos
         console.log("*****************************************::::::::::::::", REPORTS[modelo].referer.length)
         let campos = REPORTS[modelo].campos
         let from = REPORTS[modelo].table
@@ -79,7 +97,7 @@ const reports = async (dto) => {
         if (REPORTS[modelo].precondicion && REPORTS[modelo].precondicion.length)
             where = `${where} AND ${REPORTS[modelo].precondicion.join(' AND ')}`
 
-
+//ejecuta query construido
         let result = await sequelize.query(`SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
         let headers = []
         //convierte en array resultados
@@ -89,6 +107,7 @@ const reports = async (dto) => {
             result.unshift(headers)
         }
 
+        //construye datos de configuracion para reporte dinamico
         const cnf={
             tipo_agregacion: REPORTS[modelo].tipo, 
             campos_ocultos: REPORTS[modelo].camposOcultos,

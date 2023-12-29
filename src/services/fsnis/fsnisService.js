@@ -7,25 +7,44 @@ const db = require('../../models/index')
 const tk = require('./../utilService')
 const srveg = require('../georef/EgService')
 
+//modelos
 const sequelize = db.sequelize;
 const snisModel = db.s301
 const eessModel = db.ae_institucion
 
+//json de configuracion para la generacion de combos dependientes
 const COMBOSSNIS = {
     campos_db: [['eg.institucion_id', 'eg.nombre_corto'], ['ente.institucion_id', 'ente.nombre_institucion'],
-    ['snis.gestion', 'snis.gestion'], ['snis.mes', "to_char(snis.mes,'00')"], ['snis.mes', "to_char(snis.mes,'00')"],
-    ['snis.formulario', 'snis.formulario'], ['snis.grupo', 'snis.grupo']],
+                ['snis.gestion', 'snis.gestion'], ['snis.mes', "to_char(snis.mes,'00')||'-'||snis.mes_name"], ['snis.mes', "to_char(snis.mes,'00')||'-'||snis.mes_name"],
+                ['snis.formulario', 'snis.formulario'], ['snis.grupo', 'snis.grupo']],
     labels: ['Ente Gestor', 'Establecimiento de salud', 'Gestion', 'Mes Inicial', 'Mes Final', 'Formulario', 'Grupo'],
     name_cbo: ['eg', 'eess', 'gestion', 'mesini', 'mesfin', 'frm', 'grp'],
     default_cbo: [true, true, false, true, true, false, false]
 }
 
+/**
+ * funcion interna para convertir en formato par de valores en array a string 
+ * @param {[id, descripcion]} campo 
+ * @returns String 'id as value, descripcion as text'
+ * @vichofeo
+ */
 function convertCampoValueText(campo = Array) {
     return ` ${campo[0]} as value, ${campo[1]} as text `
 }
+/**
+ * funcion interna que toma un para de campos para convertirlos en un string de agrupacion
+ * @param {[id, descripcion]} campo 
+ * @returns String 
+ */
 function convertCampoGroupBy(campo) {
     return ` ${campo[0]}, ${campo[1]} `
 }
+/**
+ * funcion interna que busca entre una coleccion de objetos de la forma {value, text}, devuelve el index de la coleccion de objetos
+ * @param {[{value, text}]} vectordatos 
+ * @param {{value, text}} objSearch 
+ * @returns Integer
+ */
 function buscaOpDefaultCbox(vectordatos, objSearch) {
     let i = 0
     for (const ii in vectordatos) {
@@ -117,8 +136,8 @@ const fsnisReportParams = async (dto) => {
 
             cboxData[COMBOSSNIS.name_cbo[control]] = { items: aux, selected: selected_cbos[control], label: COMBOSSNIS.labels[control] }
             if (COMBOSSNIS.name_cbo[control] == 'mesini' && selected_cbos && selected_cbos[control]) {
-                const iResult = buscaOpDefaultCbox(aux, selected_cbos[control+1])
-                selected_cbos[control+1] = aux[iResult]
+                const iResult = buscaOpDefaultCbox(aux, selected_cbos[control + 1])
+                selected_cbos[control + 1] = aux[iResult]
                 cboxData[COMBOSSNIS.name_cbo[control + 1]] = { items: aux, selected: selected_cbos[control + 1], label: COMBOSSNIS.labels[control + 1] }
                 control++
             }

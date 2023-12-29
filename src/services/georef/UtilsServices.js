@@ -1,3 +1,7 @@
+/** 
+ * SERVICIO DE UTILITARIOS PARA SERVICIOS DE ACREDITACION Y HABILITACION
+ * 
+ */
 const { v4: uuidv4 } = require('uuid');
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
@@ -6,17 +10,19 @@ const { QueryTypes, UUIDV4 } = require("sequelize")
 const db = require('../../models/index')
 const tk = require('./../utilService')
 const srveg = require('./EgService');
-const { text } = require('express');
 
+//modelos
 const sequelize = db.sequelize;
 const snisModel = db.s301
 const eessModel = db.ae_institucion
 
+//json de configuracion para la construccion de combodenpendencias
 const COMBOS = {}
+//combos acreditacion
 COMBOS.acrehab = {
     campos_db: [['eg.institucion_id', 'eg.nombre_corto'], 
-    ['dpto.cod_dpto','dpto.nombre_dpto'],
-    ['ente.institucion_id', 'ente.nombre_institucion']],
+                ['dpto.cod_dpto','dpto.nombre_dpto'],
+                ['ente.institucion_id', 'ente.nombre_institucion']],
     labels: ['Ente Gestor', 'Departamento', 'Establecimeinto'],
     name_cbo: ['eg', 'dpto' ,'eess'],
     default_cbo: [false, false, false, true, false, false],
@@ -28,12 +34,12 @@ COMBOS.acrehab = {
     AND n.atributo_id=isld.nivel_atencion
     AND dpto.cod_pais= ente.cod_pais AND dpto.cod_dpto= ente.cod_dpto `
 }
+//para obtener datos de tablaVisual
 COMBOS.repo_acrehab = {
     campos_db: [['eg.institucion_id', 'eg.nombre_corto'], 
-    ['dpto.cod_dpto','dpto.nombre_dpto'],
-    ['ente.institucion_id', 'ente.nombre_institucion'],
-    ['ah.tipo_registro', 'ah.tipo_registro'],
-],
+                ['dpto.cod_dpto','dpto.nombre_dpto'],
+                ['ente.institucion_id', 'ente.nombre_institucion'],
+                ['ah.tipo_registro', 'ah.tipo_registro']],
     labels: ['Ente Gestor', 'Departamento', 'Establecimiento', 'Tipo'],
     name_cbo: ['eg', 'dpto' ,'eess', 'tipo'],
     default_cbo: [true, true, true, true, true, false],
@@ -47,12 +53,15 @@ COMBOS.repo_acrehab = {
     AND a2.atributo_id=ah.estado_acrehab AND a3.atributo_id=ah.activo `
 }
 
+//esta funcion es su gemelo de report.... comentario: debo de volverlo objeto
 function convertCampoValueText(campo = Array) {
     return ` ${campo[0]} as value, ${campo[1]} as text `
 }
+//esta funcion es su gemelo de report.... comentario: debo de volverlo objeto
 function convertCampoGroupBy(campo) {
     return ` ${campo[0]}, ${campo[1]} `
 }
+//esta funcion es su gemelo de report.... comentario: debo de volverlo objeto
 function buscaOpDefaultCbox(vectordatos, objSearch) {    
     let i = 0
     for (const ii in vectordatos) {
@@ -65,9 +74,10 @@ function buscaOpDefaultCbox(vectordatos, objSearch) {
 }
 
 /**
- * 
+ * funcion interna construye datos para los combos dependientes en forma {items, selecteds}
  * @param {selected:[{value:String, text:String}], idx:id_dpto, token:String, model:String} dto 
- * @returns 
+ * @returns {cboxData:[{items,selected, label}], where:String, pre_query:String}
+ * @vichofeo
  */
 const baseDataForCbx = async (dto) => {
     try {
@@ -82,7 +92,7 @@ const baseDataForCbx = async (dto) => {
 
 
         const combox =  COMBOS[model]
-
+//obtiene indentificadores de las instituciones segun session
         const result = await srveg.getDataTreeEntidades(idx, eess.tipo_institucion_id, eess.institucion_root, eess.institucion_id)
         let ids =  result.map(obj=>obj.idx)
         ids =  ` AND  isld.institucion_id  IN ('${ids.join("','")}')`
@@ -91,7 +101,7 @@ const baseDataForCbx = async (dto) => {
         ${COMBOS[model].pre_query} ${ids} 
         `
 
-        
+        //parametros iniciales de los combos
         const initial = { value: '-1', text: '-Todos-' }
         const sd= { value: '-999'  , text: '-Sin Dato-' }
         
@@ -101,7 +111,8 @@ const baseDataForCbx = async (dto) => {
         const cboxData = {}
         
         console.log("00000000000000000000000000IINICIA00000000000000000000000", selects)
-        
+
+        //recorres json de configuracion para obtencion de items para los combos en forma secuencial
         for (let control = 0; control < selects.length; control++) {
             //index: 0
             console.log(control, '*************************: ',control)            
@@ -147,7 +158,12 @@ const baseDataForCbx = async (dto) => {
         }
     }
 }
-
+/**
+ * funcion servicio para obtener los datos de tabla acreditacion/habilitacion con alertas: Vigente, vencimiento proximo, vencido
+ * @param {selected:[{value:String, text:String}], idx:id_dpto, token:String, model:String} dto 
+ * @returns {data: [{resultDataTable}], label:[{value, text}], cbox:[{datos comboBox}]}
+ * @vichofeo
+ */
 const repoAcreHab = async (dto)=>{
 try {
     const results =  await baseDataForCbx(dto)
@@ -210,7 +226,11 @@ try {
     }
 } 
 }
-
+/**
+ * Funcion servicio que obtiene informacion de combos segun parametos json COMBOS
+ * @param {*} dto 
+ * @returns {cboxData:[{items,selected, label}]}
+ */
 const getDataForCbx = async (dto) =>{
     try {
         const results =  await baseDataForCbx(dto)
