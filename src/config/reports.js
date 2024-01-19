@@ -423,7 +423,7 @@ const REPORTS = {
       'ae_institucion aei, al_departamento dpto , ae_institucion ges, s301 as sn,  r_institucion_salud ins',
     alias: 'SNIS F.301',
     tipo: 'Sum',
-    campos: `dpto.nombre_dpto as "Departamento",   ges.nombre_corto AS "Ente Gestor", aei.nombre_institucion AS "Establecimiento", ins.snis AS "Con RUES", sn.formulario, sn.grupo, sn.variable, sn.subvariable, sn.totalv as "Total Varones", sn.totalm as "Total Mujeres", sn.totalg as "Total total" `,
+    campos: `dpto.nombre_dpto as "Departamento",   ges.nombre_corto AS "Ente Gestor", aei.nombre_institucion AS "Establecimiento", ins.snis AS "Con RUES", sn.formulario, sn.grupo, sn.variable, sn.subvariable, sn.totalv as "Total Varones", sn.totalm as "Total Mujeres", sn.totalg as "Total total", gestion, mes_name as "Mes" `,
     camposOcultos: ['Total Varones', 'Total Mujeres', 'Total total'],
     rows: ['Departamento', 'Ente Gestor', 'formulario'],
     cols: ['grupo'],

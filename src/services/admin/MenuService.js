@@ -75,6 +75,7 @@ const menuGeoreferencia = async (token) => {
         let misEstablecimientos = {}
         let menuReportes = []
         let menuAcreHab = []
+        let frmMenu = {}
 
         switch (result.tipo_institucion_id) {
             case 'EG':
@@ -90,8 +91,9 @@ const menuGeoreferencia = async (token) => {
                 }
                 break;
             case 'ASUSS':
-                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
+                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }                
                 if(result.institucion_root == '-1'){
+                    frmMenu = { value: '/frm/config', text: 'Config Formularios' }
                     menuAcreHab = []
                     for (const key of AGRUPADO.acre_hab) {                        
                         menuAcreHab.push({ value: `/ssepi/acrehab/${key}`, text: PARAMETROS[key].alias })
@@ -133,6 +135,7 @@ const menuGeoreferencia = async (token) => {
         dataMenu["Reportes"] = menuReportes
         Object.keys(misEstablecimientos).length > 0 ? dataMenu['Mis Establecimientos'] = misEstablecimientos : ""
         Object.keys(menuAcreHab).length > 0 ? dataMenu['Acreditacion / Habilitacion'] = menuAcreHab : ""
+        Object.keys(frmMenu).length > 0 ? dataMenu['Mis Formularios'] = frmMenu : ""
 
         dataMenu["Frms Snis"] = result3
 

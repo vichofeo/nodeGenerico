@@ -23,6 +23,8 @@ const reportController =  require('../controllers/georef/reportsController')
 
 const snis =  require('../controllers/fsnis/fsnisController')
 
+const frmsController = require('../controllers/frms/frmsController')
+
 //const hl7 = require('../controllers/hl7Controller')
 
 //define rutas de la aplicacion en una sola funcion 
@@ -104,6 +106,9 @@ const rutas = (app) => {
 
   //Grupo para formularios SNIS
   app.post("/api/snis/f301", authMiddleWare.verifyAuth, snis.fsnisReportParams)
+
+  //para fmormularios personalizado
+  app.get("/api/frms/:modelo", authMiddleWare.verifyAuth, frmsController.getDataModelParam)
 
 /*
   app.post('/api/hl7', hl7.recibe)
