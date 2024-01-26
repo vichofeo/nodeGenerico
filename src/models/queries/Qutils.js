@@ -51,7 +51,7 @@ module.exports = class Qutils {
   setAliasInclude(alias){
     this.#alias = alias
   }
-  setInclude(tableDBNameIncluded){
+  setIncludeLigado(tableDBNameIncluded){
     this.#include = [{ 
       model: db[tableDBNameIncluded], 
       as: this.#alias, 
@@ -60,12 +60,19 @@ module.exports = class Qutils {
       order: this.#order, 
     }]
   }
-  
+  setInclude(cnf_include={}){
+    this.#include = [cnf_include]
+  }
+  pushInclude(cnf_include={}){
+    this.#include.push(cnf_include)
+  }
   setQuery(query){
     this.#query =  query
   }
 //getters
-
+getTableInstance(tableDBName){
+return db[tableDBName]
+}
 getResults(){
   return this.#results
 }
@@ -106,8 +113,10 @@ getResults(){
    * @param {String} datoKey 
    * @returns 
    */
-  findID(datoKey) {
-    this.#results = this.#table.findByPk(datoKey).then((data) => data ? data.dataValues : {})      
+  async findID(datoKey) {    
+    const data = await this.#table.findByPk(datoKey)
+    this.#results= data ? data.dataValues:{}
+    
   }
   
 
@@ -195,7 +204,7 @@ getResults(){
    * @param {{value:xx, text:yy}} selected 
    * @returns 
    */
-  searchSelectedInDataComboBox(data, selected) {
+  searchSelectedInDataComboBox(data, selected) {    
     try {
       const datos = data
       let i = 0
@@ -203,19 +212,21 @@ getResults(){
       for (const ii in datos) {
         sw = 1
         if (datos[ii].value == selected.value) {
-          i = ii
+          i = ii      
           break
         }
       }
-
+      
       if (sw) return datos[i]
       else return this.#sinDatoByCombo
     } catch (error) {
       console.log(error);
       return this.#sinDatoByCombo
     };
+  }
 
-
+  searchSelectedForComboBox(selected){
+    return this.searchSelectedInDataComboBox(this.#results, selected)
   }
 
  

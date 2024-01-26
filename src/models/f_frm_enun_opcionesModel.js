@@ -9,13 +9,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_frm_enun_opciones.belongsTo(models.f_frm_enunciado, {
+        as:'enunciado',
+        foreignKey:'enunciado_id',
+        targetKey:'enunciado_id'
+      })
     }
   }
   f_frm_enun_opciones.init(
-    {
-      subfrm_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
+    {      
+      opcion_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true},
       enunciado_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
-      opcion_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
+      subfrm_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
+      formulario_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
+            
+
       tipo_enunciado_id:{type: DataTypes.INTEGER, allowNull: true},
       respuesta:{type: DataTypes.TEXT, allowNull: true},
       peso:{type: DataTypes.INTEGER, allowNull: false, defaultValue: 1},

@@ -5,19 +5,33 @@ module.exports = class FrmsUtils {
     #parametros
     #qUtils
     #uService
+    #results
+    #dataSession
     constructor() {
         if (FrmsUtils.instance)
             return FrmsUtils.instance
         this.#qUtils = new Qutils()
         this.#uService = tk
+        this.#results = null
+        this.#dataSession = null
+        
         FrmsUtils.instance = this
+    }
+    #getDataSession(){
+        return this.#dataSession
+    }
+    #setDataSession(data){
+        this.#dataSession = data
     }
     setParametros(parametrosJson) {
         this.#parametros = parametrosJson
     }
     getDataParams = async (dto) => {
-        try {
+        //try {
             const datos = this.#uService.getCnfApp(dto.token)
+             console.log("data cnf............", datos)
+            this.#setDataSession(datos)
+            
             //this.#qUtils.setTableInstance('ae_institucion')
             //const institucion = await this.#qUtils.findID(datos.inst)
             //const tipo_institucion = institucion.tipo_institucion_id
@@ -38,15 +52,16 @@ module.exports = class FrmsUtils {
 
                 if (this.#parametros[modelo].cardinalidad == '1') {
                     datosResult[this.#parametros[modelo].alias] = await this.#getDataparam1(modelo, idx)
-                    console.log("PASO111:::::::::", datosResult[this.#parametros[modelo].alias])
+                    //console.log("cardinadlidad 111:::::::::", datosResult[this.#parametros[modelo].alias])
                 } else { //>-- FIN CARDINALIDAD ==1
                     //cardinalidad n
                     datosResult[this.#parametros[modelo].alias] = await this.#getDataParamN(modelo, idx)
-                    console.log("PASONNN*****",datosResult[this.#parametros[modelo].alias])
+                    //console.log("PASONNN*****",datosResult[this.#parametros[modelo].alias])
                 }
             }
 
-            return {
+            this.#results = datosResult
+           /* return {
                 ok: true,
                 data: datosResult,
                 //institucion: institucion,
@@ -61,7 +76,7 @@ module.exports = class FrmsUtils {
                 message: "Error de sistema: OBJFRMUTILS",
                 error: error.message
             }
-        };
+        };*/
 
     }
     #getDataParamN = async (nameModeloFromParam, idx) => {
@@ -140,7 +155,7 @@ module.exports = class FrmsUtils {
         console.log("**************************ENTRANDO A REFERERE *****************************")
         //obtiene referencias PARA LOS COMBOS Y OTROS
         parametros = await this.#getDataparamReferer(parametros, objModel.referer)
-        console.log("**************************ENTRANDO A REFERERE *****************************")
+        console.log("**************************SALIENDO A REFERERE *****************************")
         //complementa referencia si existe el campo ilogic que contiene querys textuales q solo funcionan con el id instutucion logueado
         if (objModel.ilogic) {
             for (const key in objModel.ilogic) {
@@ -172,101 +187,107 @@ console.log("finnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",nameModeloFromParam
          //obtiene referencias PARA LOS COMBOS Y OTROS
          
          for (const element of referer) {
-            
+            this.#qUtils.setResetVars()
             const tablaRef = element.ref
-            const campoRef = element.camporef
-            const campoForeign = element.camporefForeign
-            const campoLink = element.campoLink ? element.campoLink : element.camporefForeign
-            const alias = element.alias
-            const condicion = element.condicion
+            const apropiacion = element.apropiacion
+            const campos =  this.#qUtils.transAttribByComboBox(element.campos)
+            const condicion =  element.condicion ? element.condicion : {}
+            const condicional = element.condicional ? this.#getCondicionalTransform(element.condicional):{}
+            const where = Object.assign(condicion, condicional)
+            const aux = parametros.valores[apropiacion]
+           
 
-            const tipoCampoHtml = parametros.campos[campoForeign][3].slice(0, 1)
-
-            //const where = element.condicion ? { [alias]: condicion } : {}
-            element.campoLink ? where[campoRef] = parametros.valores[campoLink] : ""
-
-            console.log(":::: REFERERENCIANDO :", tablaRef, '--', element)
+            //instanciando utilidades
             this.#qUtils.setTableInstance(tablaRef)
-
-            this.#qUtils.setAttributes(tipoCampoHtml == 'T' ? element.campos : this.#qUtils.transAttribByComboBox(element.campos))
-            this.#qUtils.setWhere(tipoCampoHtml == 'T' ? { [campoRef]: parametros.valores[campoLink] ? parametros.valores[campoLink] : "-1" } : 
-                                                            element.condicion ? { [alias]: condicion } : {})
+            this.#qUtils.setAttributes(campos)
+            this.#qUtils.setWhere(where)
             this.#qUtils.setOrder([element.campos[element.campos.length - 1]])
-
-            console.log("******", campoForeign)
-            console.log("***!!!!!!!", parametros.campos[campoForeign][3])
-            //console.log("!!!!!!!!!!!!!!!!!!!", cnfData)
-
-
-            let r = null
-            let dependency = false
-            if (element.linked) {//hace el link con la referencia de definicion en model segun cfn de parametros
-                               
-                this.#qUtils.setAliasInclude(element.linked.alias)
-                this.#qUtils.setInclude(element.linked.ref)
-                this.#qUtils.setAttributes(element.linked.campos)
-                this.#qUtils.setWhere(null)
-                //cnfData.order.push([sequelize.col(element.linked.alias+'.'+element.campos[element.campos.length - 1])])
-                //delete cnfData.where
-                await this.#qUtils.findData1toNFromReferer()
-                r = this.#qUtils.getResults()
-                dependency = element.linked.dependency
-                
-                this.#qUtils.setResetVars()
-            } else{
-                await this.#qUtils.findTune()
-                r = this.#qUtils.getResults()
-}
-            console.log("////////////////////////////////////////////////////////////Parametors caja html", tipoCampoHtml)
-            if (tipoCampoHtml == 'T') {
-                parametros.valores[campoForeign] = r[0] ? r[0][element.campos] : ""
-            } else {
-                const aux = parametros.valores[campoForeign]
-                if (dependency) console.log("aki es", dependency, "matis datis::::::::::::::::::::::::::::::::::::::::::", parametros.valores[dependency].selected.value)
-                parametros.valores[campoForeign] = {
-                    selected: dependency ? this.#qUtils.searchSelectedInDataComboBox(r[parametros.valores[dependency].selected.value], { value: aux }) : this.#qUtils.searchSelectedInDataComboBox(r, { value: aux }),
-                    items: r,
-                    dependency: dependency
-                }
-
+            await this.#qUtils.findTune()
+           const selected = this.#qUtils.searchSelectedForComboBox({ value: aux })
+            parametros.valores[apropiacion] = {
+                //s01: { value: aux },
+                selected: selected,
+                items: this.#qUtils.getResults(),
+                dependency: false
             }
+            
+            //let dependency = false
+            //element.linked
+            
         }//fin for referer
+        this.#qUtils.setResetVars()
         return parametros
     }
-
-    getDataComboDependency(dto){
-        try {
+getResults(){
+    console.log("results:",this.#results)
+    return this.#results
+}
+    makerDataComboDependency= async (dto)=>{
+        
             const datos = this.#uService.getCnfApp(dto.token)            
-            const idxLogin = datos.inst
+            this.#setDataSession(datos)
+            
 
             const objParamModel =  this.#parametros[dto.modelo]
+            const dataIn = dto.data
             let parametros =  {}
             parametros.campos =  objParamModel.campos
+            parametros.valores = {}
 
-
-            //seteo de slected
-            for (const referer of objParamModel.referer) {
-
-            }
-            
             //recorre referer
             this.#qUtils.setResetVars()
+            let selected = dataIn ? {value: Object.values(dataIn)[0]} :{value: null}
+            //console.log("..............", selected)
+            
             for (const referer of objParamModel.referer) {
                 //instancia campos
                 this.#qUtils.setTableInstance(referer.ref)
                 this.#qUtils.setAttributes(this.#qUtils.transAttribByComboBox(referer.campos))
-                const where = []
-                //referer.campoLink ? 
-                
-            }
+                let where = {}
+                if(referer.condicion){                   
+                    where = {...where, ...referer.condicion}                    
+                }
+                if(referer.condicional){
+                    where = {...where, ...this.#getCondicionalTransform(referer.condicional)}                    
+                }
+                if(referer.campoForeign){
+                    where = {...where, [referer.campoForeign]:selected.value}
+                }
             
-        } catch (error) {
-            console.log(error)
-            return {
-                ok: false,
-                message: "Error de sistema: OBJFRMCBOXDEP",
-                error: error.message
-            }
+                this.#qUtils.setWhere(where)
+                this.#qUtils.setOrder([referer.campos[1]])
+                await this.#qUtils.findTune()
+                selected= this.#qUtils.searchSelectedForComboBox({ value: dataIn? dataIn[referer.apropiacion]: null })
+            
+                parametros.valores[referer.apropiacion] = {
+                    items: this.#qUtils.getResults(),
+                    selected: selected
+                }
+                this.#qUtils.setResetVars()
+            }//fin for referer
+           
+            this.#results = parametros// {[objParamModel.alias]:parametros}
+            
+            
+    }
+
+    #replaceStringByDataSession(stringSepararedByComa){
+        
+        const vars = ['$app','$inst','$dni','$usr']
+        const d =  this.#getDataSession()
+        const equi = [d.app, d.inst, d.dni, d.usr]
+        for(let i=0; i<vars.length; i++){
+        stringSepararedByComa = stringSepararedByComa.replaceAll(vars[i], equi[i])        
+    }
+    
+    return stringSepararedByComa
+    }
+    #getCondicionalTransform(condicional=Array){
+        let result = {}
+        for(let i=0; i<condicional.length; i++){
+            const aux =  this.#replaceStringByDataSession(condicional[i]).split(',')
+            result =  {...result, [aux[0]]:aux[1]}
         }
+        return result
     }
 }

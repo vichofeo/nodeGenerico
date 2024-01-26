@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_frm_opcionales_tipo.hasMany(models.f_frm_opcionales,{
+        as:'opciones',
+        foreignKey:'tipo_opcion_id'
+      })
     }
   }
   f_frm_opcionales_tipo.init(

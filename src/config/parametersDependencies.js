@@ -2,7 +2,7 @@
 "use strict"
 const PDEPENDENCIES = {
     frmc_box:{        
-        alias: 'frms',        
+        alias: 'cboxs',        
         campos: {
             grupo_formulario_id: ['Grupo de Formularios', false, true, 'C'],
             formulario_id: ['Formulario', true, true, 'C']
@@ -10,8 +10,8 @@ const PDEPENDENCIES = {
         }, 
         ilogic: null,
         referer: [        
-            { ref: 'f_formulario_grupo', campos: ['grupo_formulario_id', 'nombre_grupo_formulario'], camporef: 'grupo_formulario_id', campoLink:null,  extraCondicion: null },
-            { ref: 'f_formulario', campos: ['formulario_id', 'nombre_formulario'], camporef: 'formulario_id', campoLink:'grupo_formulario_id', extraCondicion: null},
+            { ref: 'f_formulario_grupo', apropiacion: 'grupo_formulario_id', campos: ['grupo_formulario_id', 'nombre_grupo_formulario'],  campoForeign: null,   condicion: {}, condicional:['aplicacion_id,$app'] },
+            { ref: 'f_formulario', apropiacion: 'formulario_id', campos: ['formulario_id', 'nombre_formulario'],  campoForeign: 'grupo_formulario_id', condicion: {}, condicional: null},
             
         ],
     }

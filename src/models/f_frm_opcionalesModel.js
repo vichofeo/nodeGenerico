@@ -9,6 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_frm_opcionales.belongsTo(models.f_frm_opcionales_tipo,{
+        as: 'frm',
+        foreignKey: 'tipo_opcion_id',
+        targetKey:'tipo_opcion_id'
+      }),
+      f_frm_opcionales.belongsTo(models.f_formulario,{
+        as: 'formulario',
+        foreignKey: 'formulario_id',
+        targetKey:'formulario_id'
+      })
     }
   }
   f_frm_opcionales.init(

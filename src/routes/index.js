@@ -108,7 +108,10 @@ const rutas = (app) => {
   app.post("/api/snis/f301", authMiddleWare.verifyAuth, snis.fsnisReportParams)
 
   //para fmormularios personalizado
-  app.get("/api/frms/:modelo", authMiddleWare.verifyAuth, frmsController.getDataModelParam)
+  app.post("/api/frms/:modelo", authMiddleWare.verifyAuth, frmsController.getfrmsConstuct)
+  app.get("/api/frms/:idx", authMiddleWare.verifyAuth, frmsController.getFrmsInfo)
+  app.get("/api/cnffrms/:modelo", authMiddleWare.verifyAuth, frmsController.getCnfForms)
+  app.get("/api/cnffrms/:idx/:modelo", authMiddleWare.verifyAuth, frmsController.getCnfFormswIdx)
 
 /*
   app.post('/api/hl7', hl7.recibe)

@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_formulario_grupo.hasMany(models.f_formulario, {
+        as:'formulario',
+        foreignKey: 'grupo_formulario_id'
+      })
     }
   }
   f_formulario_grupo.init(
