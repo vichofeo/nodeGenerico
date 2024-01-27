@@ -229,5 +229,27 @@ getResults(){
     return this.searchSelectedInDataComboBox(this.#results, selected)
   }
 
+  searchSelectedForMultipleComboBox(selected){
+    try {
+      const datos = this.#results
+      let i = 0
+      let sw = 0
+      const results = []
+      for (const ii in datos) {
+        sw = 1
+        const resultado = selected.find((obj) => obj.value === datos[ii].value);
+        if (resultado) {
+          results.push(datos[ii])
+        }
+      }
+      
+      if (sw) return results
+      else return this.#sinDatoByCombo
+    } catch (error) {
+      console.log(error);
+      return this.#sinDatoByCombo
+    };
+  }
+
  
 }

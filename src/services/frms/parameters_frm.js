@@ -19,6 +19,7 @@ const PARAMETROS = {
 
         },
         key: ['grupo_formulario_id'],
+        moreData:[],
         update: [],
         referer: [],
     },
@@ -31,10 +32,13 @@ const PARAMETROS = {
             codigo_formulario: ['Asigne un Codigo al Formulario', true, false, 'TT',25],
             nombre_formulario: ['Nombre del Formulario', true, true, 'TT',80],            
             descripcion:['Descripcion del formulario', true, true, 'TA',512],            
+            tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, false, 'H']
         },
-        key: ['grupo_formulario_id'],
+        key: ['formulario_id'],
+        moreData:[{ ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },],
         update: [],
-        referer: [{ ref: 'f_formulario_clase', apropiacion: 'cod_clase', campos: ['cod_clase', 'nombre_clase'], condicion: null, condicional:null },],
+        referer: [{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
+            { ref: 'f_formulario_clase', apropiacion: 'cod_clase', campos: ['cod_clase', 'nombre_clase'], condicion: null, condicional:null },],
     },
 }
 

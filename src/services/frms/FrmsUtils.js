@@ -121,36 +121,21 @@ module.exports = class FrmsUtils {
         parametros.campos = Object.assign({}, objModel.campos)
         //pregunta si se trata de un modelo dual de datos
         let result = {}
-        if (objModel.dual) {
-
-            const tmp = objModel.dual//PARAMETROS[modelo].dual.split(',')
-            const keys = objModel.keyDual
-            let idxAux = idx
-            for (const i in tmp) {
-                const element = tmp[i]
-                console.log("0000000000000000000000 DUAL ::=>", element, '1111111111111111 IDX==> ', idxAux)
-                //alterna idx, el primer idx es de la tabla principal
-                this.#qUtils.setTableInstance(element)
-                await this.#qUtils.findID(idxAux)
-                const aux = this.#qUtils.getResults()
-                if (aux) {
-                    idxAux = aux[keys[i]]
-                    result = { ...result, ...aux }
-                }
-            }
-
-        } else {
+        
             this.#qUtils.setTableInstance(objModel.table)
             await this.#qUtils.findID(idx)
             const aux = this.#qUtils.getResults()
             if (aux)
                 result = aux
-        }
+        
 
         parametros.valores = result
         parametros.exito = Object.keys(parametros.valores).length ? true : false
 
-        console.log("$$$$$$$$$$$$$$$::::::: RESULtS", result)
+        console.log("\n\n **** OBTENIENDO MOREdATA A VALORES")
+        //OBTENIENDO MOREDATA SI EXISTE
+        parametros =  await this.#getMoreDataParam(parametros, objModel.moreData, idx)
+
 
         console.log("**************************ENTRANDO A REFERERE *****************************")
         //obtiene referencias PARA LOS COMBOS Y OTROS
@@ -190,6 +175,7 @@ console.log("finnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",nameModeloFromParam
             this.#qUtils.setResetVars()
             const tablaRef = element.ref
             const apropiacion = element.apropiacion
+            const multiple = element.multiple
             const campos =  this.#qUtils.transAttribByComboBox(element.campos)
             const condicion =  element.condicion ? element.condicion : {}
             const condicional = element.condicional ? this.#getCondicionalTransform(element.condicional):{}
@@ -203,9 +189,9 @@ console.log("finnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",nameModeloFromParam
             this.#qUtils.setWhere(where)
             this.#qUtils.setOrder([element.campos[element.campos.length - 1]])
             await this.#qUtils.findTune()
-           const selected = this.#qUtils.searchSelectedForComboBox({ value: aux })
+           const selected = multiple ? this.#qUtils.searchSelectedForMultipleComboBox(aux): this.#qUtils.searchSelectedForComboBox({ value: aux })
             parametros.valores[apropiacion] = {
-                //s01: { value: aux },
+                s01: { value: aux },
                 selected: selected,
                 items: this.#qUtils.getResults(),
                 dependency: false
@@ -218,6 +204,33 @@ console.log("finnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",nameModeloFromParam
         this.#qUtils.setResetVars()
         return parametros
     }
+
+    #getMoreDataParam =  async (parametros, moreData, idx) =>{
+        //sete de variables
+        this.#qUtils.setResetVars()
+        for (const element of moreData) {
+            const tablaRef = element.ref
+            const apropiacion = element.apropiacion
+            const campos =  this.#qUtils.transAttribByComboBox(element.campos)
+            const condicion =  element.condicion ? element.condicion : {}
+            const condicional = element.condicional ? this.#getCondicionalTransform(element.condicional):{}
+            let where = Object.assign(condicion, condicional)
+            where = element.campoForeign ? {...where, [element.campoForeign]:idx} : where
+            
+            
+            //instanciando utilidades
+            this.#qUtils.setTableInstance(tablaRef)
+            this.#qUtils.setAttributes(campos)
+            this.#qUtils.setWhere(where)            
+            await this.#qUtils.findTune()
+            const items =  this.#qUtils.getResults()
+            parametros.valores[apropiacion] =  items
+            this.#qUtils.setResetVars()
+        }//fin bucle moredata
+        
+        return parametros
+    }
+
 getResults(){
     console.log("results:",this.#results)
     return this.#results
