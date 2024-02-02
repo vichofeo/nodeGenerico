@@ -44,10 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       c_hlab:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
       c_cnts:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
       version:{type: DataTypes.INTEGER, allowNull: false, defaultValue: 1,},
-      activo:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y'},
+      activo:{type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y'},
       dni_register:{type: DataTypes.STRING(25), allowNull: false},
-      create_date:{type: DataTypes.DATE, allowNull: true},
-      last_modify_date_time:{type: DataTypes.DATE, allowNull: false},
+      create_date:{type: DataTypes.DATE, allowNull: false},
+      last_modify_date_time:{type: DataTypes.DATE, allowNull: true},
       
   
     },

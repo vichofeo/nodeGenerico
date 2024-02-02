@@ -1,4 +1,4 @@
-const { QueryTypes, UUIDV4 } = require("sequelize")
+const { QueryTypes, UUIDV4, Op } = require("sequelize")
 const db = require('../index')
 const tk = require('./../../services/utilService')
 
@@ -15,6 +15,12 @@ module.exports = class Qutils {
   #alias
   #query
   #results
+  #opOptions
+  #op
+  #opSelect
+
+
+  #transac
 
   constructor() {  
     if(Qutils.instance)  
@@ -23,6 +29,7 @@ module.exports = class Qutils {
     this.#sequelize = db.sequelize
     this.#sinDatoByCombo = { value: '-1', text: '-Sin Dato-' }
     this.#initialByCombo = { value: '-1', text: '-Todos-' }
+    this.#transac = null
     this.setResetVars()
     Qutils.instance =  this
   }
@@ -35,6 +42,10 @@ module.exports = class Qutils {
     this.#include =  null
     this.query = ""
     this.#alias =  null
+    this.#opOptions = {}
+    this.#op = {notin:Op.notIn, in:Op.in, between:Op.between}
+    this.#opSelect =  null
+    //this.#transac = null
   }
   setTableInstance(tableDBName){
     this.#table = db[tableDBName]
@@ -44,6 +55,9 @@ module.exports = class Qutils {
   }
   setAttributes(attributes){
     this.#attributes =  attributes
+  }
+  setDataset(dataSet={}){
+    this.#set =  dataSet
   }
   setOrder(order){
     this.#order =  order
@@ -69,12 +83,27 @@ module.exports = class Qutils {
   setQuery(query){
     this.#query =  query
   }
+  setOpSelect(stringOp){
+    this.#opSelect =  this.#op[stringOp]
+  }
+  setOpOptions(dataArray=[]){
+    this.#opOptions = {...this.#opOptions, [this.#opSelect]: dataArray}    
+  }
+  setOpOptionsReset(){
+    this.#opOptions = {}
+  }
 //getters
 getTableInstance(tableDBName){
 return db[tableDBName]
 }
+getGestor(){
+  return this.#sequelize
+}
 getResults(){
   return this.#results
+}
+getOpOptions(){
+  return this.#opOptions
 }
   /**
    * select * all
@@ -107,7 +136,14 @@ getResults(){
     })
     this.#transformResultToArray()    
   }
-
+async findUnique(){
+  this.#results =  await this.#table.findOne({
+    attributes: this.#attributes,
+      where: this.#where,
+      order: this.#order,
+      include:this.#include
+  })
+}
   /**
    * select * from where id=??
    * @param {String} datoKey 
@@ -126,17 +162,19 @@ getResults(){
    * @param {objDatos} dato 
    * @returns 
    */
-  create() {
-    this.#results = this.#table.create(this.#set).then((data) => data)      
+  async create() {
+    this.#results = await this.#table.create(this.#set, { transaction: this.#transac, include: this.#include })   
   }
   /**
    * update
    * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data 
    */
-  modify() {
-    this.#results = this.#table.update(this.#set, { where: this.#where }).then((data)=>data)
+  async modify() {
+    this.#results = await this.#table.update(this.#set, { where: this.#where }, {transaction: this.#transac})
   }
-
+async createwLote(){
+  this.#results =  await this.#table.bulkCreate(this.#set, { transaction: this.#transac, ignoreDuplicates: true, include: this.#include } )
+}
   
  async excuteSelect(){
   this.#results = await this.#sequelize.query(this.#query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, })
@@ -151,12 +189,21 @@ getResults(){
     this.#results =  result    
 }
 
+async startTransaction(){
+  this.#transac= await this.#sequelize.transaction()
+}
+async commitTransaction(){
+  await this.#transac.commit();  
+}
+async rollbackTransaction(){
+  await this.#transac.rollback();  
+}
 // ------------------------ utilitarios complementarios a la clase
 /**
    * transforma result a array normal
    * @param {results} datos 
    * @returns 
-   */
+   */ 
 #transformResultToArray() {
   if (Array.isArray(this.#results)){
     const datos = this.#results

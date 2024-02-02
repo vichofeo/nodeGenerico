@@ -112,6 +112,7 @@ const rutas = (app) => {
   app.get("/api/frms/:idx", authMiddleWare.verifyAuth, frmsController.getFrmsInfo)
   app.get("/api/cnffrms/:modelo", authMiddleWare.verifyAuth, frmsController.getCnfForms)
   app.get("/api/cnffrms/:idx/:modelo", authMiddleWare.verifyAuth, frmsController.getCnfFormswIdx)
+  app.post("/api/cnffrms", authMiddleWare.verifyAuth, frmsController.saveCnfForms)
 
 /*
   app.post('/api/hl7', hl7.recibe)

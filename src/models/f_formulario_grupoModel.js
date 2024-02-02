@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       nombre_grupo_formulario:{type: DataTypes.STRING(80), allowNull: false},
       descripcion:{type: DataTypes.STRING(4000), allowNull: false},
       activo:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y'},
-      create_date:{type: DataTypes.DATE, allowNull: true},
-      last_modify_date_time:{type: DataTypes.DATE, allowNull: false},
+      create_date:{type: DataTypes.DATE, allowNull: false},
+      last_modify_date_time:{type: DataTypes.DATE, allowNull: true},
       dni_register:{type: DataTypes.STRING(25), allowNull: false},
       aplicacion_id:{type: DataTypes.STRING(64), allowNull: true},
       

@@ -41,10 +41,12 @@ const getFrmsInfo = async (dto) => {
     qUtils.setAttributes([
       ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name']
     ])
+    
+    qUtils.setOrder([qUtils.getGestor().col('sections.orden')])
     let cnf = {
       as: 'grupo',
       attributes: [['nombre_grupo_formulario','grupo']],
-      model: qUtils.getTableInstance('f_formulario_grupo'),
+      model: qUtils.getTableInstance('f_formulario_grupo'),      
     }
     qUtils.setInclude(cnf)
     cnf = {
@@ -54,9 +56,8 @@ const getFrmsInfo = async (dto) => {
     }
     qUtils.pushInclude(cnf)
     cnf = {
-      as: 'sections',
-      attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm']],
-      model: qUtils.getTableInstance('f_frm_subfrm'),
+      association: 'sections',
+      attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm']],      
       include: [
         {
           as: 'questions',
@@ -75,7 +76,8 @@ const getFrmsInfo = async (dto) => {
     qUtils.pushInclude(cnf)
      cnf = {      
       association:'others',        
-      attributes: [['tipo_opcion_id','tipo']],            
+      attributes: [['tipo_opcion_id','tipo']],
+      where:{activo:'Y'},            
       include:[{        
         association:'frm',
         attributes: [['titulo','title'],['tipo_opcion_id','type']],
@@ -122,8 +124,36 @@ const getCnfForms = async (dto)=>{
     }
   }
 }
+
+const saveCnfForms = async (dto)=>{
+  try {
+    dto.modelos = [dto.modelo]
+    objService.setParametros(PARAMFRM)
+    await objService.saveDataParams(dto)
+    const result = objService.getResults()
+
+    if(result)
+    return {
+      ok: true,     
+      r:result, 
+      message: 'Resultado exitoso. Parametros Guardados',
+    }
+    else return {
+      ok: false,
+      r:result,       
+      message: 'La Transaccion ha fallado. vuelva a intentarlo o comuniquese con su administrador',
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: OBJSAVEFRMCNF',
+      error: error.message,
+    }
+  }
+}
 module.exports = {
   getfrmsConstuct,
-  getFrmsInfo,
-  getCnfForms
+  getFrmsInfo, getCnfForms, 
+  saveCnfForms
 }
