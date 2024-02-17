@@ -45,8 +45,8 @@ const PARAMETROS = {
         alias: 'fsection',
         cardinalidad: "1",
         campos: {
-            nombre_subfrm: ['Nombre de la seccion', true, false, 'TT',80],
-            descripcion: ['Descripcion de la seccion', true, true, 'TA',512],            
+            nombre_subfrm: ['Nombre de la seccion', true, true, 'TT',80],
+            descripcion: ['Descripcion de la seccion', true, false, 'TA',512],            
             orden: ['Orden de Aparicion', true, true, 'TN',2],            
 
         },
@@ -69,6 +69,25 @@ const PARAMETROS = {
         },
         key: ['enunciado_id'],        
         keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'f_frm_enun_tipo', apropiacion: 'tipo_enunciado_id', campos: ['tipo_enunciado_id', 'nombre_tipo_pregunta'], condicion: null, condicional:null, multiple:false}
+        ],
+    },
+    fficnf:{
+        table: 'f_formulario_institucion_cnf',
+        alias: 'fficnf',
+        cardinalidad: "1",
+        included: null, //{}
+        campos: {
+            
+            formulario_id: ['Formulario', true, true, 'C'],
+            institucion_id: ['Establecimiento de salus', true, true, 'C']
+
+        },
+        key: ['institucion_id','formulario_id'],        
+        keyRoot: null,//'enunciado_root',
         moreData:[],
         update: [],
         referer: [

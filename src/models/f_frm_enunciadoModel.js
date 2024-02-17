@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       f_frm_enunciado.hasMany(models.f_frm_enun_opciones, {
         as:'answers',
         foreignKey: 'enunciado_id'
+      }),
+      f_frm_enunciado.hasMany(models.f_frm_enunciado, {
+        as:'questions',
+        foreignKey: 'enunciado_root'
       })
     }
   }

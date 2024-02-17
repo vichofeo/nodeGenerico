@@ -18,8 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       activo:{type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y'},
       opcional:{type: DataTypes.INTEGER, allowNull: true},
       dni_register:{type: DataTypes.STRING(25), allowNull: false},
-      create_date:{type: DataTypes.DATE, allowNull: true},
-      last_modify_date_time:{type: DataTypes.DATE, allowNull: false}, 
+      create_date:{type: DataTypes.DATE, allowNull: false},
+      last_modify_date_time:{type: DataTypes.DATE, allowNull: true}, 
     },
     {
       sequelize,

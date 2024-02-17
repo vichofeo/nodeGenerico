@@ -42,7 +42,7 @@ const getFrmsInfo = async (dto) => {
       ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name']
     ])
     
-    qUtils.setOrder([qUtils.getGestor().col('sections.orden')])
+    qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
     let cnf = {
       as: 'grupo',
       attributes: [['nombre_grupo_formulario','grupo']],
@@ -60,15 +60,24 @@ const getFrmsInfo = async (dto) => {
       attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm']],      
       include: [
         {
-          as: 'questions',
-          attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm']],
-          model: qUtils.getTableInstance('f_frm_enunciado'),
+          association: 'questions',
+          attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root']],          
+          where: {enunciado_root:'-1'},
+          required: false,
           include: [
             {
               as: 'answers',
               attributes:[['respuesta','answer'],['tipo_enunciado_id', 'type'], ['orden','ord'], ['opcion_id','ofrm']],
               model: qUtils.getTableInstance('f_frm_enun_opciones'),
             },
+            {
+              association: 'questions',
+              attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm']],
+              include:[{
+                association: 'answers',
+                attributes:[['respuesta','answer'],['tipo_enunciado_id', 'type'], ['orden','ord'], ['opcion_id','ofrm']],
+              }]
+            }
           ],
         },
       ],

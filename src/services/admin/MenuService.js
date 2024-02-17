@@ -12,6 +12,7 @@ const tk = require('./../utilService')
 
 
 const appModel = db.ae_institucion
+const frms =  db.f_formulario_institucion_cnf
 const sequelize = db.sequelize
 
 const getDataTree = async (parent_id = '-1', root, resultado = []) => {
@@ -76,6 +77,7 @@ const menuGeoreferencia = async (token) => {
         let menuReportes = []
         let menuAcreHab = []
         let frmMenu = {}
+        let frmEess = {}
 
         switch (result.tipo_institucion_id) {
             case 'EG':
@@ -89,6 +91,10 @@ const menuGeoreferencia = async (token) => {
                     console.log("key: ", key)
                     menuMiEstablecimiento.push({ value: `/ssepi/eess/${key}`, text: PARAMETROS[key].alias })
                 }
+                const frmaApp =  new QueriesUtils(frms)
+                const rfrms =  await frmaApp.findTune({where:{institucion_id:result.institucion_id}})
+                frmEess = rfrms.map((obj, i)=>({value: `/frm/ll/${obj.formulario_id}`, text: 'FoRMuLario_' + i}))
+
                 break;
             case 'ASUSS':
                 misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }                
@@ -136,6 +142,8 @@ const menuGeoreferencia = async (token) => {
         Object.keys(misEstablecimientos).length > 0 ? dataMenu['Mis Establecimientos'] = misEstablecimientos : ""
         Object.keys(menuAcreHab).length > 0 ? dataMenu['Acreditacion / Habilitacion'] = menuAcreHab : ""
         Object.keys(frmMenu).length > 0 ? dataMenu['Mis Formularios'] = frmMenu : ""
+        Object.keys(frmEess).length > 0 ? dataMenu['Formularios'] = frmEess : ""
+        
 
         dataMenu["Frms Snis"] = result3
 

@@ -135,7 +135,7 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
     const dpto = {}
     for (const key in rc) {
         const ar = rc[key]
-        ar.branch = branches
+        ar.branch = key//branches
         //ar.children = []
 
         const link_node = ar.institucion_id
@@ -167,16 +167,16 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
         // recorre consulta
         if (tipo_institucion != "EESS") {
             sweess = 0
-            resultado.push({ id: `${branches}-${tipo_institucion}-${link_node}`, name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion: ar.name, idx: ar.institucion_id, type: ar.ptype })
+            resultado.push({ id: `${branches}-${tipo_institucion}-${key}-${link_node}`, name: ar.name, nombre_corto: ar.nombre_corto, nombre_institucion: ar.name, idx: ar.institucion_id, type: ar.ptype })
             branches++;
             resultado[resultado.length - 1].children = []
             await display_full_tree(tipo, link_node, branches, resultado[resultado.length - 1].children)
             //branches = branches - 1
         }
-    }
+    }//fin recorrido de resultados de query
     if (sweess == 1) {
         //pasa los valores
-        let indice = 1000
+        let indice = 9000
         const temp = Object.values(dpto)
         for (const dpto of temp) {
             indice++
@@ -195,14 +195,14 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
                     return dpto[eg].children.indexOf(item) === index;
                 })
                 dpto[eg].children = []
-                dpto[eg].id = `${indice}-${dpto[eg].type}-${dpto[eg].idx}`
+                dpto[eg].id = `${indice}-${branches}-${dpto[eg].type}-${dpto[eg].idx}`
                 dpto[eg].egdpto = dpto.cod_dpto
                 dpto[eg].lat = dpto.lat
                 dpto[eg].lng = dpto.lng
                 console.log("$$$$$$$$$$$$$$$$$ EG INDEX:", dpto[eg].id)
                 for (const eess of reess) {
                     indice++
-                    dpto[eg][eess].id = `${indice}-${dpto[eg][eess].type}-${dpto[eg][eess].idx}`
+                    dpto[eg][eess].id = dpto[eg][eess].idx//`${indice}-${dpto[eg][eess].type}-${dpto[eg][eess].idx}`
                     console.log("%%%%%%%%%%%%%%%%%% EESS INDEX:", dpto[eg][eess].id)
                     dpto[eg].children.push(dpto[eg][eess])
                     delete dpto[eg][eess]
@@ -217,7 +217,7 @@ const display_full_tree = async (tipo, node = '-1', branches = 0, resultado = []
         }
 
     }
-    console.log("###############################################", resultado.length)
+    //console.log("###############################################", resultado.length)
 
     return resultado
 }

@@ -356,56 +356,71 @@ module.exports = class FrmsUtils {
 
       for (const modelo of modelos) {
         const objModel = this.#parametros[modelo]
+
         const data = datos[objModel.alias]
         const idx_aux = objModel.key
         let obj = {}
         //setea objeto sql
-        this.#qUtils.setTableInstance(objModel.table)        
+        this.#qUtils.setTableInstance(objModel.table)
         if (dto.idx) {
+                    
           //ES EDICION
-           obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
+          obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
           delete obj.create_date
           obj[idx_aux] = dto.idx
           obj.last_modify_date_time = new Date()
           const wheres = { [idx_aux]: dto.idx }
+          
+          this.#qUtils.setDataset(obj)
           this.#qUtils.setWhere(wheres)
           await this.#qUtils.modify()
         } else {
           //es INSERCION
-          obj = Array.isArray(data)? data: Object.assign(data, this.#seteaObjWithDataSession(), complemento)
-        
-        
-          if (objModel.included) {            
+          obj = Array.isArray(data) ? data : Object.assign(data, this.#seteaObjWithDataSession(), complemento)
 
-            if(Array.isArray(obj)){
+          //sitiene parametros en included 
+          if (objModel.included) {
+            if (Array.isArray(obj)) {
               //es un caso de autoreflexiva
               let temp = '-1'
-              obj = obj.map((o, ii)=>{
-                
-                o[idx_aux] = uuidv4()                
-                if(ii == 0)   temp = o[idx_aux]
-                  
-                o[objModel.keyRoot]= temp
-                
-                const objAux =  Object.assign(o, this.#seteaObjWithDataSession(), complemento)
-                if(objAux[objModel.included.ref])
-                objAux[objModel.included.ref] = objAux[objModel.included.ref].map(oo => (Object.assign(oo, complemento, { [idx_aux]: o[idx_aux], [objModel.included.key]: uuidv4() }, this.#seteaObjWithDataSession())))            
-              else objAux[objModel.included.ref]=[]
+              obj = obj.map((o, ii) => {
+
+                o[idx_aux] = uuidv4()
+                if (ii == 0) {
+                  o[objModel.keyRoot] = temp
+                  temp = o[idx_aux]
+                } else o[objModel.keyRoot] = temp
+
+                const objAux = Object.assign(o, this.#seteaObjWithDataSession(), complemento)
+                if (objAux[objModel.included.ref])
+                  objAux[objModel.included.ref] = objAux[objModel.included.ref].map(oo => (Object.assign(oo, complemento, { [idx_aux]: o[idx_aux], [objModel.included.key]: uuidv4() }, this.#seteaObjWithDataSession())))
+                else objAux[objModel.included.ref] = []
                 return objAux
               })
-                            
-              this.#qUtils.setDataset(obj)  
 
-            }else{     
-              obj[idx_aux] = uuidv4()         
-              obj[objModel.included.ref] = obj[objModel.included.ref].map(o => (Object.assign(o, complemento, { [idx_aux]: obj[idx_aux], [objModel.included.key]: uuidv4() }, this.#seteaObjWithDataSession())))            
+              this.#qUtils.setDataset(obj)
+
+            } else {
+              obj[idx_aux] = uuidv4()
+              obj[objModel.included.ref] = obj[objModel.included.ref].map(o => (Object.assign(o, complemento, { [idx_aux]: obj[idx_aux], [objModel.included.key]: uuidv4() }, this.#seteaObjWithDataSession())))
               this.#qUtils.setDataset([obj])
             }
             this.#qUtils.setInclude(objModel.included.ref)
-          }else{
-            //insercion normal
-            obj[idx_aux] = uuidv4()
-            this.#qUtils.setDataset([obj])
+          } else {
+            if (Array.isArray(obj)) {
+              
+              obj = obj.map(oo => {                
+                let aux= Object.assign(complemento, this.#seteaObjWithDataSession())
+                return {...aux, ...oo}
+              })
+              
+              this.#qUtils.setDataset(obj)
+            } else {
+              //insercion normal
+              obj[idx_aux] = uuidv4()
+              this.#qUtils.setDataset([obj])
+            }
+
           }
           //await this.#qUtils.create()
           await this.#qUtils.createwLote()
