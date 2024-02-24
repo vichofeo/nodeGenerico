@@ -28,11 +28,11 @@ const PARAMETROS = {
         alias: 'ffrm',
         cardinalidad: "1",
         campos: {
-            cod_clase:['CLase de Formulario', true, false, 'C'],
+            cod_clase:['CLase de Formulario', true, true, 'C'],
             codigo_formulario: ['Asigne un Codigo al Formulario', true, false, 'TT',25],
             nombre_formulario: ['Nombre del Formulario', true, true, 'TT',80],            
             descripcion:['Descripcion del formulario', true, true, 'TA',512],            
-            tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, true, 'H']
+            tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, false, 'H']
         },
         key: ['formulario_id'],
         moreData:[{ ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },],

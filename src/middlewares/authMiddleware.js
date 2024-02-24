@@ -1,35 +1,34 @@
 //verifyAuth
-var jwt = require("jsonwebtoken");
-var config = require("./../config/config.cnf");
+const handleToken = require("./../utils/handleToken")
+const HandleErrors = require("./../utils/handleErrors")
+ const handleError = new HandleErrors()
 
-const verifyAuth = (req, res, next) => {
-    //var token = req.headers['token'];
-    var token = null;
-    if (req.headers.authorization)
-        token = req.headers.authorization.split(' ')[1];
-    //console.log(token)
-    if (!token) {
-        return res.status(403).send({
-            auth: false,
-            mensaje: "No se proporcionó el token de seguridad"
-        })
+const verifyToken = async  (req, res, next) => {
+handleError.setRes(res)
+    try {
+        handleError.setCode(409)
+        handleError.setMessage("NOT_ALLOW")
+        if(!req.headers.authorization){            
+            handleError.handleErrorResponse()
+        }
+
+        const tmp =  req.headers.authorization.split(" ").pop()
+        if(!tmp) {
+            handleError.setCode(403)       
+            handleError.handleErrorResponse({message: "No se proporcionó el token de seguridad"}) 
+        }
+        const token =  await handleToken.verifyToken(tmp)
+        if(token){
+            next()
+        }else{
+            handleError.setCode(500)
+            handleError.handleErrorResponse({message:"Error de Autenticación"})
+        }
+    } catch (error) {
+        handleError.handleHttpError(error)
     }
 
-    jwt.verify(token, config.JWT_SECRET, (error, decoded) => {
-        if (error)
-            return res.status(500).send({
-                auth: false,
-                mensaje: "Error de Autenticación"
-            })
-
-        /*req.user = {
-            usuario: decoded.usuario,
-            id: decoded._id
-        }*/
-        next()
-    })
+    
 }
 
-module.exports = {
-    verifyAuth
-}
+module.exports = verifyToken

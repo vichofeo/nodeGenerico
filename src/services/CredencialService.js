@@ -5,9 +5,8 @@ const credencialModel = require('./../models/queries/auCredencialQueries')
 
 const tk = require('./../services/utilService')
 
-const jwt = require('jsonwebtoken')
-const config = require('./../config/config.cnf')
-const bcrypt = require('bcrypt')
+const handleJwt =  require("./../utils/handleJwt")
+const handleToken = require("./../utils/handleToken")
 
 const eessModel = db.ae_institucion
 const userModel = db.au_persona
@@ -47,76 +46,64 @@ const getLogin = async (dto) => {
 
 }
 
-
-const login = async (usr) => {
-  try {
-    const result = await credencialModel.findDataOne(usr)
-
-    if (!result) return { message: 'Usuario incorrecto', ok: false }
-    else {
-      const aux = await bcrypt.compare(usr.password, result.hash)
-      if (aux) {
-        const payload = {
-          usr: result.login, //usr.usuario
-          dni: result.dni_persona, //usr._id
-          app: result.aplicacion_id,
-          inst: result.institucion_id,
-          time: new Date(),
-        }
-
-        let token = jwt.sign(payload, config.JWT_SECRET, {
-          expiresIn: config.JWT_TIME,
-        })
-
-        return {
-          ok: true,
-          message: 'Bienvenido Al Sistema: ' + result.login,
-          access_token: token,
-          pages: [],
-          usuario: payload
-
-        }
-      } else {
-        return { mensaje: 'Contraseña incorrecto', ok: false }
-      }
-    }
-  } catch (error) {
-    console.log("error:::", error)
-    return {
-      ok: false,
-      message: "Error de sistema: CRESRV",
-      error: error.message
-    }
-  };
-
-}
-
-const guardar = async (usr) => {
+const guardar = async (usr, handleError) => {
   //verifica si esta registrado
   const result = await credencialModel.find(usr)
 
   if (result.length > 0) {
-    return { ok: false, mensaje: 'El usuario Introducido ya esta registrado' }
+    handleError.setCode(401)
+    handleError.setMessage('USER_EXISTS')
+    return { ok: false, message: 'El usuario Introducido ya esta registrado' }
   } else {
-    try {
-      const BCRYPT_SALT_ROUNDS = 12
-      usr.password = await bcrypt.hash(usr.password, BCRYPT_SALT_ROUNDS)
-
+    try {      
+      usr.password = await handleJwt.encrypt(usr.password)
+      
       const user = await credencialModel.Create(usr)
 
       return {
         ok: true,
         datos: user,
-        mensaje: 'Usuario Registrado exitosamente',
+        message: 'Usuario Registrado exitosamente',
       }
     } catch (error) {
-      return {
-        ok: false,
-        message: error,
-      }
+      handleError.setMessage("Error de sistema: CRUDLGNSRV")
+        handleError.handleHttpError(error.message)    
     }
   }
+} 
+
+const login = async (usr, handleError) => {
+  try {
+    const result = await credencialModel.findDataOne(usr)
+
+    if (!result) {
+      handleError.setMessage("USER_NOT_EXISTS")
+      handleError.setCode(404)
+      return { message: 'Usuario incorrecto', ok: false }
+    } else {
+      const aux = await handleJwt.compare(usr.password, result.hash)      
+      if (aux) {
+        
+        const  token = await handleToken.tokenSign(result)
+        return {
+          ok: true,
+          message: 'Bienvenido Al Sistema: ' + result.login,
+          access_token: token,
+        }
+      } else {
+        handleError.setMessage("PASSWORD_INVALID")
+        handleError.setCode(402)
+        return { message: 'Contraseña incorrecto', ok: false }
+      }
+    }
+  } catch (error) {        
+        handleError.setMessage("Error de sistema: CRESRV")
+        handleError.handleHttpError(error.message)    
+  };
+
 }
+
+
 
 const modify = async (dto) => {
 

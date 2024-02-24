@@ -4,51 +4,44 @@ const { REPORTS } = require('../../config/reports')
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
 
-const { QueryTypes } = require("sequelize")
-
-const db = require('../../models/index')
-
-const tk = require('./../utilService')
 
 
-const appModel = db.ae_institucion
-const frms =  db.f_formulario_institucion_cnf
-const sequelize = db.sequelize
+
+
+
+const handleToken = require("./../../utils/handleToken")
+const QUtils = require('./../../models/queries/Qutils')
+const qUtil =  new QUtils()
+
+
+
+
 
 const getDataTree = async (parent_id = '-1', root, resultado = []) => {
 
-    let query = `SELECT 
-    DISTINCT ins.institucion_id, '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor 
-    FROM ae_institucion ins
-    LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
-    WHERE 
-    ins.parent_grp_id = '${parent_id}'    
-    -- and dpto.nombre_dpto is not null
-    ORDER BY 2`
-
-    if (root == '-1') {
-        query = `SELECT 
-      DISTINCT ins.institucion_id, '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor
-    FROM ae_institucion ins
-    LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
-    WHERE 
-    ins.institucion_root = '${parent_id}'    
-    -- and dpto.nombre_dpto is not null
-    ORDER BY 2`
+    qUtil.setTableInstance('ae_institucion')
+    qUtil.setAttributes(['institucion_id', [qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
+    let cnf = {
+        //required: false,
+        association: 'dpto',
+        attributes: qUtil.transAttribByComboBox([qUtil.literal("'/ssepi/sssscp/'||dpto.cod_dpto"), 'nombre_dpto'])
     }
+    qUtil.setInclude(cnf)
+    //qUtil.setWhere({ formulario_id: idx })
+    root == '-1' ? qUtil.setWhere({ institucion_root: parent_id }) : qUtil.setWhere({ parent_grp_id: parent_id })
+    qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
+    await qUtil.findTune()
+    const result = qUtil.getResults()
+    qUtil.setResetVars()
 
-
-    const result = await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
 
     if (result.length > 0) {
         for (const i in result) {
-            if (result[i].text)
-                resultado[result[i].text] = { value: result[i].value, text: result[i].text, atributo: result[i].atributo, valor: result[i].valor }
-            //resultado = { ...resultado, [result[i].text]: { value: result[i].value, text: result[i].text }, index:i }
-
-            await getDataTree(result[i].institucion_id, root, resultado);
-
-
+            const tmp = result[i].dpto?.dataValues
+            if (tmp) {
+                resultado[tmp.text] = { value: tmp.value, text: tmp.text, atributo: result[i].atributo, valor: result[i].valor, }
+            }
+            await getDataTree(result[i].institucion_id, root, resultado)
         }
 
         return resultado
@@ -56,22 +49,25 @@ const getDataTree = async (parent_id = '-1', root, resultado = []) => {
 
 }
 
-const menuGeoreferencia = async (token) => {
+const menuGeoreferencia = async (token, handleError=HandleErrors) => {
     try {
-        const datos = tk.getCnfApp(token)
+        const datos = handleToken.filterHeaderTokenVerify(token)
 
+        qUtil.setTableInstance('ae_institucion')
+        qUtil.setWhere({institucion_id: datos.inst})
+        let cnf = {
+            association: 'appis',
+            attributes:['nombre_aplicacion', 'nombre_comercial'],
+            through: {attributes: []}
+        }
+        qUtil.setInclude(cnf)
+        await qUtil.findTune()//findID(datos.inst)
+        
+        let result = qUtil.getResults()[0]
+        qUtil.setResetVars()
 
-        const app = new QueriesUtils(appModel)
-        //verifica si es usuario por tipo de institucion
-        let result = await app.findID(datos.inst)
-
-
-        let query = `SELECT 
-        DISTINCT '/ssepi/sssscp/'||dpto.cod_dpto AS value, dpto.nombre_dpto AS text, 'sepi' as atributo, dpto.cod_dpto as valor
-        FROM ae_institucion ins
-        LEFT JOIN al_departamento dpto ON (ins.cod_dpto =  dpto.cod_dpto)
-        WHERE         
-        `
+        
+        
         let menuMiEstablecimiento = {}
         let misEstablecimientos = {}
         let menuReportes = []
@@ -79,35 +75,42 @@ const menuGeoreferencia = async (token) => {
         let frmMenu = {}
         let frmEess = {}
 
+        let whereAux = null
+
         switch (result.tipo_institucion_id) {
             case 'EG':
-                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
-                query = ` ${query} ins.institucion_root = '${result.institucion_id}' order by 2`
+                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }                
+                whereAux = {institucion_root: result.institucion_id}
                 break;
-            case 'EESS':
-                query = ` ${query} ins.institucion_id = '${result.institucion_id}'`
+            case 'EESS':                
+                whereAux = {institucion_id: result.institucion_id}
                 menuMiEstablecimiento = []
                 for (const key of AGRUPADO.all) {
-                    console.log("key: ", key)
+                    console.log("key: ", key) 
                     menuMiEstablecimiento.push({ value: `/ssepi/eess/${key}`, text: PARAMETROS[key].alias })
                 }
-                const frmaApp =  new QueriesUtils(frms)
-                const rfrms =  await frmaApp.findTune({where:{institucion_id:result.institucion_id}})
-                frmEess = rfrms.map((obj, i)=>({value: `/frm/ll/${obj.formulario_id}`, text: 'FoRMuLario_' + i}))
+                
+                qUtil.setTableInstance('f_formulario_institucion_cnf')
+                qUtil.setWhere({ institucion_id: result.institucion_id })
+                await qUtil.findTune()
+                const rfrms = qUtil.getResults()
+                qUtil.setResetVars()
+
+                frmEess = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: 'FoRMuLario_' + i }))
 
                 break;
             case 'ASUSS':
-                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }                
-                if(result.institucion_root == '-1'){
+                misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
+                if (result.institucion_root == '-1') {
                     frmMenu = { value: '/frm/config', text: 'Config Formularios' }
                     menuAcreHab = []
-                    for (const key of AGRUPADO.acre_hab) {                        
+                    for (const key of AGRUPADO.acre_hab) {
                         menuAcreHab.push({ value: `/ssepi/acrehab/${key}`, text: PARAMETROS[key].alias })
                     }
                 }
                 break;
             default:
-                query = "SELECT '' AS VALUE, '' AS text"
+                let query = "SELECT '' AS VALUE, '' AS text"
                 break;
         }
 
@@ -115,24 +118,43 @@ const menuGeoreferencia = async (token) => {
         for (const key in REPORTS)
             menuReportes.push({ value: `/ssepi/report/${key}`, text: REPORTS[key].alias, atributo: 'reports', valor: key })
 
-        //const tmp = await getDataTree(result.institucion_id, result.institucion_root)
 
-        let result2 =
-            result.tipo_institucion_id == 'ASUSS' ? Object.values(await getDataTree(result.institucion_id, result.institucion_root)) :
-                await sequelize.query(query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
+        let result2 = null
 
+        if (result.tipo_institucion_id == 'ASUSS')
+            result2 = Object.values(await getDataTree(result.institucion_id, result.institucion_root))
+        else {
+            
+            qUtil.setTableInstance('ae_institucion')
+            qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
+            cnf = {
+                association: 'dpto',
+                attributes: qUtil.transAttribByComboBox([qUtil.literal("'/ssepi/sssscp/'||dpto.cod_dpto"), 'nombre_dpto'])
+            }
+            qUtil.setInclude(cnf)
+            
+            qUtil.setWhere(whereAux)
+            qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
+                        
+            await qUtil.findTune()
+            result2 = qUtil.getResults()   
+            
+            qUtil.setResetVars()
+            result2 = result2.map(obj => ({ ...obj.dpto.dataValues, atributo: obj.atributo, valor: obj.valor }))
+        }
 
-        let result3 = result2 
-        if (result2.length > 1){
+        //procesando Results
+        let result3 = result2
+        if (result2.length > 1) {
             result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo: 'ssepi', valor: 'all' })
             result3 = result2.map(obj => ({ ...obj, value: obj.value.replaceAll('/ssepi/sssscp/', '/ssepi/snis/') }))
-        }else if (result2.length == 1){
+        } else if (result2.length == 1) {
             result2 = result2[0]
-            result3 = {...result2, value : result2.value.replaceAll('/ssepi/sssscp/', '/ssepi/snis/')}
+            result3 = { ...result2, value: result2.value.replaceAll('/ssepi/sssscp/', '/ssepi/snis/') }
         }
-            
 
-         
+
+
         //menusss
         const dataMenu = {}
         dataMenu.georeferencia = result2
@@ -143,7 +165,7 @@ const menuGeoreferencia = async (token) => {
         Object.keys(menuAcreHab).length > 0 ? dataMenu['Acreditacion / Habilitacion'] = menuAcreHab : ""
         Object.keys(frmMenu).length > 0 ? dataMenu['Mis Formularios'] = frmMenu : ""
         Object.keys(frmEess).length > 0 ? dataMenu['Formularios'] = frmEess : ""
-        
+
 
         dataMenu["Frms Snis"] = result3
 
@@ -158,17 +180,14 @@ const menuGeoreferencia = async (token) => {
                     }],*/
 
             },
-            moredata: { institucion: result.nombre_corto },
+            moredata: result,
             message: 'Resultado exitoso'
         }
 
-    } catch (error) {
-        console.log(error)
-        return {
-            ok: false,
-            message: "Error de sistema: MNGEOSRV",
-            error: error.message
-        }
+    } catch (error) {   
+        console.log("erorrrr", error)     
+        handleError.setMessage("Error de sistema: MENUGEOSRV")
+        handleError.handleHttpError(error.message) 
     };
 
 }

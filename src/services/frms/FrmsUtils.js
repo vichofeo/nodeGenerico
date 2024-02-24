@@ -89,7 +89,8 @@ module.exports = class FrmsUtils {
     )
     let campos = objModel.campos
     let from = objModel.table
-    let where = `${objModel.key[0]} = '${idx}'`
+    let where = objModel.key.length>0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
+    
     let leftjoin = ''
     for (let i = 0; i < objModel.referer.length; i++) {
       console.log(i)
@@ -101,13 +102,15 @@ module.exports = class FrmsUtils {
         leftjoin = `${leftjoin} LEFT JOIN ${objModel.referer[i].ref} ON (${objModel.referer[i].camporef} = ${objModel.referer[i].camporefForeign})`
       }
     }
-
+    
     if (objModel.precondicion && objModel.precondicion.length) {
       for (let i = 0; i < objModel.precondicion.length; i++)
         where = `${where} AND ${objModel.precondicion[i]}`
     }
+    
     const query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
 
+    
     this.#qUtils.setQuery(query)
     await this.#qUtils.excuteSelect()
     const result = this.#qUtils.getResults()
@@ -265,6 +268,8 @@ module.exports = class FrmsUtils {
     const datos = this.#uService.getCnfApp(dto.token)
     this.#setDataSession(datos)
 
+console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------" ,this.#parametros)
+
     const objParamModel = this.#parametros[dto.modelo]
     const dataIn = dto.data
     let parametros = {}
@@ -362,7 +367,7 @@ module.exports = class FrmsUtils {
         let obj = {}
         //setea objeto sql
         this.#qUtils.setTableInstance(objModel.table)
-        if (dto.idx) {
+        if (dto.idx && dto.idx !='-1') {
                     
           //ES EDICION
           obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)

@@ -34,9 +34,10 @@ const getCnfFormswIdx = async(req, res)=>{
   res.json(result)
 }
 
-const saveCnfForms = async(req, res)=>{
+const saveCnfForms = async(req, res)=>{  
   //const modelo = req.params.modelo
   const token =  req.headers.authorization  
+  
   const result = await frmService.saveCnfForms({token: token, ...req.body})
   res.json(result)
 }

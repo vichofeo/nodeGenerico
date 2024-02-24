@@ -1,9 +1,8 @@
-const AUXILIAR = JSON.stringify(require('../../config/parametersDependencies'))
-const PAUX =  JSON.stringify(require('./parameters_frm'))
-const PARAMETROS = JSON.parse(AUXILIAR)
-const original = JSON.parse(AUXILIAR)
+const cnf_cboxs = JSON.stringify(require('./params_cboxs'))
+const PCBOXS = JSON.parse(cnf_cboxs)
 
-const PARAMFRM = JSON.parse(PAUX)
+const parametros =  JSON.stringify(require('./parameters'))
+const PARAMETROS = JSON.parse(parametros)
 
 const services = require('./FrmsUtils')
 const objService = new services()
@@ -12,7 +11,7 @@ const QUtils = require('../../models/queries/Qutils')
 const getfrmsConstuct = async (dto) => {
   try {
     dto.modelos = [dto.modelo]
-    objService.setParametros(PARAMETROS)
+    objService.setParametros(PCBOXS)
     await objService.makerDataComboDependency(dto)
     const CboxResult = objService.getResults()
 
@@ -42,7 +41,8 @@ const getFrmsInfo = async (dto) => {
       ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name']
     ])
     
-    qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
+    //qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
+    qUtils.setOrder([qUtils.col('sections.orden'), qUtils.col('sections.questions.orden'), qUtils.col('sections.questions.answers.orden'), qUtils.col('sections.questions.questions.orden')])
     let cnf = {
       as: 'grupo',
       attributes: [['nombre_grupo_formulario','grupo']],
@@ -115,7 +115,7 @@ const getFrmsInfo = async (dto) => {
 const getCnfForms = async (dto)=>{
   try {
     dto.modelos = [dto.modelo]
-    objService.setParametros(PARAMFRM)
+    objService.setParametros(PARAMETROS)
     await objService.getDataParams(dto)
     const result = objService.getResults()
 
@@ -137,7 +137,8 @@ const getCnfForms = async (dto)=>{
 const saveCnfForms = async (dto)=>{
   try {
     dto.modelos = [dto.modelo]
-    objService.setParametros(PARAMFRM)
+    console.log("\n\n\n---------------------------GUARDANDO... MODELO:", dto.modelo,"\n\n\n")
+    objService.setParametros(PARAMETROS)
     await objService.saveDataParams(dto)
     const result = objService.getResults()
 

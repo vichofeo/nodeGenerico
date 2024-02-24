@@ -9,20 +9,25 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      ap_aplicacion.belongsToMany(
+        models.ae_institucion, {
+        as: "appis",
+        through: { model: models.ape_aplicacion_institucion, unique: false },//'Parent_Child',
+        foreignKey: 'aplicacion_id'
+      }),
+      ap_aplicacion.hasMany(models.ape_aplicacion_institucion, {
+        as: 'appi',
+        foreignKey:'aplicacion_id'
+      })
     }
   }
   ap_aplicacion.init(
     {
-      aplicacion_id: { type: DataTypes.STRING(64) ,
-      allowNull: false, primaryKey: true},
-       nombre_aplicacion:  {type: DataTypes.STRING(50),
-      allowNull: true},
-       version:  {type: DataTypes.DOUBLE,
-      allowNull: false},
-       nombre_comercial: { type: DataTypes.STRING(128) ,
-      allowNull: false},
-       descripcion : {type: DataTypes.TEXT ,
-      allowNull: false}, 
+      aplicacion_id: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true },
+      nombre_aplicacion: { type: DataTypes.STRING(50), allowNull: true },
+      version: { type: DataTypes.DOUBLE, allowNull: false },
+      nombre_comercial: { type: DataTypes.STRING(128), allowNull: false },
+      descripcion: { type: DataTypes.TEXT, allowNull: false },
     },
     {
       sequelize,

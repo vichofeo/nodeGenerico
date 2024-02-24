@@ -9,123 +9,54 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      ae_institucion.hasMany(models.al_departamento, {
-        as: 'rdptoins',
+      ae_institucion.belongsTo(models.al_departamento, {
+        as: 'dpto',
         foreignKey: 'cod_dpto',
-      })
+        targetKey: 'cod_dpto'
+      }),
+        ae_institucion.belongsToMany(
+          models.ap_aplicacion, {
+          as: "appis",
+          through: { model: models.ape_aplicacion_institucion, unique: false },//'Parent_Child',
+          foreignKey: 'institucion_id'
+        }),
+        ae_institucion.hasMany(models.ape_aplicacion_institucion, {
+          as: 'appi',
+          foreignKey: 'institucion_id'
+        })
+      //User.belongsToMany(Role, { as: 'Roles', through: { model: UserRole, unique: false }, foreignKey: 'user_id' });
+
     }
   }
   ae_institucion.init(
     {
-      institucion_id: {
-        //type: DataTypes.STRING(64),
-        //allowNull: false, primaryKey: true,
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        allowNull: false,
-        primaryKey: true
-      },
-      id_ente_gestor: {
-        type: DataTypes.STRING(64),
-        allowNull: false
-      },
-      nombre_institucion: {
-        type: DataTypes.STRING(80),
-        allowNull: false
-      },
-      nombre_corto: {
-        type: DataTypes.STRING(10),
-        allowNull: false
-      },
-      telefono: {
-        type: DataTypes.STRING(15),
-        allowNull: true
-      },
-      telefono_emergencia: {
-        type: DataTypes.STRING(15),
-        allowNull: true
-      },
-      correo_electronico: {
-        type: DataTypes.STRING(64),
-        allowNull: true
-      },
-      direccion_web: {
-        type: DataTypes.STRING(128),
-        allowNull: true
-      },
-      fecha_creacion: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-      fecha_actividades: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
+      institucion_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true },
+      id_ente_gestor: { type: DataTypes.STRING(64), allowNull: false },
+      nombre_institucion: { type: DataTypes.STRING(80), allowNull: false },
+      nombre_corto: { type: DataTypes.STRING(10), allowNull: false },
+      telefono: { type: DataTypes.STRING(15), allowNull: true },
+      telefono_emergencia: { type: DataTypes.STRING(15), allowNull: true },
+      correo_electronico: { type: DataTypes.STRING(64), allowNull: true },
+      direccion_web: { type: DataTypes.STRING(128), allowNull: true },
+      fecha_creacion: { type: DataTypes.DATE, allowNull: true },
+      fecha_actividades: { type: DataTypes.DATE, allowNull: true },
 
-      cod_pais: {
-        type: DataTypes.STRING(4),
-        allowNull: true
-      },
-      cod_dpto: {
-        type: DataTypes.STRING(10),
-        allowNull: true
-      },
-      cod_municipio: {
-        type: DataTypes.STRING(10),
-        allowNull: true
-      },
-      ciudad: {
-        type: DataTypes.STRING(64),
-        allowNull: true
-      },
-      avenida_calle: {
-        type: DataTypes.STRING(128),
-        allowNull: true
-      },
-      zona_barrio: {
-        type: DataTypes.STRING(128),
-        allowNull: true
-      },
-      latitud: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      longitud: {
-        type: DataTypes.DOUBLE,
-        allowNull: true
-      },
-      dni_register: {
-        type: DataTypes.STRING(25),
-        allowNull: true
-      },
-      activo: {
-        type: DataTypes.CHAR(1),
-        allowNull: false, defaultValue: 'Y'
-      },
-      create_date: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-      last_modify_date_time: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-      institucion_root: {
-        type: DataTypes.STRING(64),
-        allowNull: true
-      },
-      parent_grp_id: {
-        type: DataTypes.STRING(64),
-        allowNull: true
-      },
-      root: {
-        type: DataTypes.STRING(64),
-        allowNull: true
-      },
-      tipo_institucion_id: {
-        type: DataTypes.STRING(64),
-        allowNull: false
-      },
+      cod_pais: { type: DataTypes.STRING(4), allowNull: true },
+      cod_dpto: { type: DataTypes.STRING(10), allowNull: true },
+      cod_municipio: { type: DataTypes.STRING(10), allowNull: true },
+      ciudad: { type: DataTypes.STRING(64), allowNull: true },
+      avenida_calle: { type: DataTypes.STRING(128), allowNull: true },
+      zona_barrio: { type: DataTypes.STRING(128), allowNull: true },
+      latitud: { type: DataTypes.DOUBLE, allowNull: true },
+      longitud: { type: DataTypes.DOUBLE, allowNull: true },
+      dni_register: { type: DataTypes.STRING(25), allowNull: true },
+      activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
+      create_date: { type: DataTypes.DATE, allowNull: true },
+      last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
+      institucion_root: { type: DataTypes.STRING(64), allowNull: true },
+      parent_grp_id: { type: DataTypes.STRING(64), allowNull: true },
+      root: { type: DataTypes.STRING(64), allowNull: true },
+      tipo_institucion_id: { type: DataTypes.STRING(64), allowNull: false },
     },
     {
       sequelize,

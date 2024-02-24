@@ -242,7 +242,7 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
         query = ` AND ins.parent_grp_id='${parent_id}' ${query} `
     else if (tipo == "EG") query = ` AND ins.institucion_root='${parent_id}' ${query} `
     else query = ` AND ins.institucion_id='${parent_id}' ${query} `
-
+ 
     query = `SELECT ins.institucion_id as idx,
     ins.nombre_institucion, ins.telefono, ins.direccion_web, dpto.nombre_dpto,
     ins.latitud, ins.longitud, ins.avenida_calle, ins.zona_barrio,
@@ -1002,12 +1002,12 @@ const weUserSave = async (dto) => {
             //verifica si existe aplicacion institucion
             const app_institucion = await app_instModel.findOne({ where: { institucion_id: dto.data.institucion.value, aplicacion_id: appData[0].aplicacion_id } })
             if (!(app_institucion && app_institucion.institucion_id))
-                await app_instModel.create({ institucion_id: dto.data.institucion.value, aplicacion_id: appData[0].aplicacion_id, create_date: Date(), dni_register: inst.dni })
+                await app_instModel.create({ institucion_id: dto.data.institucion.value, aplicacion_id: appData[0].aplicacion_id, create_date: new Date(), dni_register: inst.dni })
             console.log("*************** apliacon_institucion exito")
 
 
             //institucion persona
-            await ins_perModel.create({ dni_persona: tmp.dni_persona, institucion_id: dto.data.institucion.value, create_date: Date(), dni_register: inst.dni })
+            await ins_perModel.create({ dni_persona: tmp.dni_persona, institucion_id: dto.data.institucion.value, create_date: new Date(), dni_register: inst.dni })
             console.log("================= intitucion persona exito")
             //credencial            
             const hash = await tk.genPass(tmp.login, tmp.passs)
@@ -1018,7 +1018,7 @@ const weUserSave = async (dto) => {
                 login: tmp.login,
                 password: 'hiloss',
                 hash: hash,
-                create_date: Date(),
+                create_date: new Date(),
                 dni_register: inst.dni
             })
             console.log("================= LOGIN")
@@ -1038,6 +1038,7 @@ const weUserSave = async (dto) => {
             message: "Usuario creado exitosamente"
         }
     } catch (error) {
+        console.log("*********************************************************\n\n\n", error)
         return {
             ok: false,
             message: "Error de sistema: GEOWEUSRSAVESRV",

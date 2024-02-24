@@ -9,25 +9,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      
+      al_departamento.hasMany(models.ae_institucion, {
+        as: 'institucion',
+        foreignKey: 'cod_dpto',
+      })
     }
   }
   al_departamento.init(
     {
-      cod_dpto: {type: DataTypes.STRING(10) ,
-      allowNull: false, primaryKey: true,},
-       cod_pais: {type: DataTypes.STRING(4) ,
-      allowNull: false, primaryKey: true},
-       nombre_dpto:  {type: DataTypes.STRING(64), 
-      allowNull: true},
-       nombre_largo:  {type: DataTypes.STRING(512), 
-      allowNull: true},
-       geoname_id:  {type: DataTypes.STRING(12), 
-      allowNull: true},
-      latitud: { type: DataTypes.DOUBLE,
-        allowNull: true},
-         longitud: { type: DataTypes.DOUBLE,
-        allowNull: true}
+      cod_dpto: { type: DataTypes.STRING(10), allowNull: false, primaryKey: true, },
+      cod_pais: { type: DataTypes.STRING(4), allowNull: false, primaryKey: true },
+      nombre_dpto: { type: DataTypes.STRING(64), allowNull: true },
+      nombre_largo: { type: DataTypes.STRING(512), allowNull: true },
+      geoname_id: { type: DataTypes.STRING(12), allowNull: true },
+      latitud: { type: DataTypes.DOUBLE, allowNull: true },
+      longitud: { type: DataTypes.DOUBLE, allowNull: true }
     },
     {
       sequelize,
