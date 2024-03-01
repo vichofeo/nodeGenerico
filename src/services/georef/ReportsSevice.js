@@ -64,6 +64,8 @@ const reports = async (dto) => {
 
         //verifica q tipo de institucion pertenece usuario de la session
         let condicion = ''
+        if(!REPORTS[modelo].sw){
+        
         if (institucion.tipo_institucion_id == 'EG')
             condicion = ` aei.institucion_root= '${institucion.institucion_id}'`
         else if (institucion.tipo_institucion_id == 'ASUSS') {
@@ -74,6 +76,7 @@ const reports = async (dto) => {
         }else if(institucion.tipo_institucion_id == 'EESS') {
             condicion = ` aei.institucion_id= '${institucion.institucion_id}'`
         }
+    }else condicion = '1=1'
 
         //construye query de datos
         console.log("*****************************************::::::::::::::", REPORTS[modelo].referer.length)

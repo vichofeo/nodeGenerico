@@ -33,7 +33,7 @@ const PARAMETROS = {
     },
     amodulon:{
         table: 'ap_module',
-        alias: 'Personals',
+        alias: 'Modulos',
         cardinalidad: "n",
         linked:"amodulo",
         campos: `module as idx, 'amodulo' as linked, 
@@ -47,9 +47,47 @@ const PARAMETROS = {
         update: [],
         referer: [            
         ],
-    }
+    },
+    acomponente:{
+        table: 'ap_component',
+        alias: 'acomponente',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {            
+            component: ['Codigo Componente', true, true, 'TT',24],   
+            route_access:['Ruta de acceso', true, true, 'TT', 32],
+            name_component:['Nombre componente', true, false, 'TT', 50],
+            base_folder:['Ruta Folder', true, false, 'TT', 80],
+            prop:['Requiere props (solo /:id)', true, false, 'SW', 1],                     
+            description: ['Descripcion', true, true, 'TA',250],            
+            activo: ['Activo', true, true, 'C', 2],
+        },
+        key: ['component'],        
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo', apropiacion: 'activo', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'ACTIVE'}, condicional:null, multiple:false }
+        ],
+    },
+    acomponenten:{
+        table: 'ap_component',
+        alias: 'Componentes',
+        cardinalidad: "n",
+        linked:"acomponente",
+        campos: `component as idx, 'acomponente' as linked, 
+        route_access, name_component, base_folder,activo`,
 
-    
+        camposView: [{ value: "component", text: "Cod." }, { value: "name_component", text: "Nombre componente" }, { value: "route_access", text: "Ruta" },        
+                    { value: "base_folder", text: "Folder" }, { value: "activo", text: "Activo" }
+        ],
+        key: [],
+        precondicion: [],
+        update: [],
+        referer: [            
+        ],
+    }   
  
 }
 

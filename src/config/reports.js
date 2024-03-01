@@ -477,6 +477,72 @@ const REPORTS = {
       { ref: 'r_is_atributo as na', camporef: 'na.atributo_id', camporefForeign: 'isld.nivel_atencion', campos: 'na.atributo AS "Nivel Atencion"',},
     ],
   },
+  matriz: {
+    sw:true,
+    table:
+      'tmp_calidad_2',
+    alias: 'MATRIZ AMES CONTEO',
+    tipo: 'Count',
+    campos: `"NUMERO", "N_DE_AME", "CASO", "GESTION", "DEPARTAMENTO", "ESTABLECIMIENTO", "ENTE_GESTOR",
+    "SERVICIO", "ART_63", "ART_64-2", "ART_64-4", "FECHA_EMISION", "CRONOGRAMA", "SEGUIMIENTO", "APELACION"`,
+    camposOcultos: [],
+    rows: ['DEPARTAMENTO'],
+    cols: ['ENTE_GESTOR'],
+    mdi: 'mdi-snowman',
+    key: ['NUMERO'],
+    precondicion: [ ],
+
+    referer: [ ],
+  },
+  matriz_des: {
+    sw:true,
+    table:
+      'tmp_calidad_2',
+    alias: 'MATRIZ AMES SUMATORIO',
+    tipo: 'Sum',
+    campos: `"NUMERO", "N_DE_AME", "CASO", "GESTION", "DEPARTAMENTO", "ENTE_GESTOR", "ESTABLECIMIENTO",
+    "SERVICIO", "ART_63", "ART_64-2", "ART_64-4", "FECHA_EMISION", "CRONOGRAMA", "SEGUIMIENTO", "APELACION"`,
+    camposOcultos: ["ART_63", "ART_64-2", "ART_64-4"],
+    rows: ['GESTION'],
+    cols: ['ENTE_GESTOR','SERVICIO'],
+    mdi: 'mdi-snowman',
+    key: ['NUMERO'],
+    precondicion: [ ],
+
+    referer: [ ],
+  },
+  matriz_ori: {
+    sw:true,
+    table: 'tmp_calidad',
+    alias: 'M. AMES ORIGINAL CONTEO',
+    tipo: 'Count',
+    campos: `"NUMERO", "N_DE_AME", "CASO", "GESTION", "DEPARTAMENTO", "ESTABLECIMIENTO", "ENTE_GESTOR",
+    "SERVICIO", "ART_63", "ART_64-2", "ART_64-4", "FECHA_EMISION", "CRONOGRAMA", "SEGUIMIENTO", "APELACION"`,
+    camposOcultos: [],
+    rows: ['DEPARTAMENTO'],
+    cols: ['ENTE_GESTOR'],
+    mdi: 'mdi-snowman',
+    key: ['NUMERO'],
+    precondicion: [ ],
+
+    referer: [ ],
+  },
+  matriz_ori_des: {
+    sw:true,
+    table:'tmp_calidad',
+    alias: 'M. AMES ORIGINAL SUMATORIO',
+    tipo: 'Sum',
+    campos: `"NUMERO", "N_DE_AME", "CASO", "GESTION", "DEPARTAMENTO", "ENTE_GESTOR", "ESTABLECIMIENTO",
+    "SERVICIO", "ART_63", "ART_64-2", "ART_64-4", "FECHA_EMISION", "CRONOGRAMA", "SEGUIMIENTO", "APELACION"`,
+    camposOcultos: ["ART_63", "ART_64-2", "ART_64-4"],
+    rows: ['GESTION'],
+    cols: ['ENTE_GESTOR','SERVICIO'],
+    mdi: 'mdi-snowman',
+    key: ['NUMERO'],
+    precondicion: [ ],
+
+    referer: [ ],
+  },
 }
 
 module.exports = {

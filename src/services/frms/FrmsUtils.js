@@ -422,7 +422,9 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
               this.#qUtils.setDataset(obj)
             } else {
               //insercion normal
-              obj[idx_aux] = uuidv4()
+              if(!objModel.noKeyAutomatic)
+              obj[idx_aux] =   uuidv4()
+            
               this.#qUtils.setDataset([obj])
             }
 
