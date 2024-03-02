@@ -8,6 +8,7 @@ const adminController = require('../controllers/admin/adminController')
 router.get("/:modelo", authMiddleWare, adminController.getDataForParam)
 router.get("/:idx/:modelo", authMiddleWare, adminController.getDataModelByIdxModel)
 router.post("/new", authMiddleWare, adminController.getDataModelForNewReg)
+router.post("/cbox", authMiddleWare, adminController.getDataCboxForModel)
 
 router.post("/save", authMiddleWare, adminController.saveDataModifyInsertByModel)
 

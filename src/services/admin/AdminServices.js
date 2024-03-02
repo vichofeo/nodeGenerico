@@ -1,6 +1,9 @@
 const parametros =  JSON.stringify(require('./parameters'))
 const PARAMETROS =  JSON.parse(parametros)
 
+const cnf_cboxs = JSON.stringify(require('./params_cboxs'))
+const PCBOXS = JSON.parse(cnf_cboxs)
+
 const QUtils =  require('./../../models/queries/Qutils')
 const qUtil =  new QUtils()
 
@@ -35,6 +38,16 @@ const getDataForParam = async (dto)=>{
     services.setParametros(PARAMETROS)
     await services.getDataParams(dto)
     const result = services.getResults()
+    //dato nuevo cambia estado de edicion sy hubiese
+    if(dto.new){
+      for (const key in result) {
+        for (const index in result[key].campos) {
+          if(!result[key].campos[index][1])
+          result[key].campos[index][1] = true
+        }
+      }
+    }
+    
     return {
       ok: true,
       data: result,      
@@ -71,8 +84,33 @@ const saveDataModifyInsertByModel = async (dto) => {
   }
 }
 
+const getDataCboxForModel = async (dto)=>{
+  try {
+    dto.modelos = [dto.modelo]
+    services.setParametros(PCBOXS)
+    await services.makerDataComboDependency(dto)
+    const CboxResult = services.getResults()
+
+    return {
+      ok: true,
+      data: {
+        ...CboxResult,
+      },
+      message: 'Resultado exitoso. Parametros obtenidos',
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: OBJADMINCBOXDEP',
+      error: error.message,
+    }
+  }
+}
+
   module.exports={
     getDataForParam,
     getDataModelByIdxModel,
-    saveDataModifyInsertByModel
+    saveDataModifyInsertByModel,
+    getDataCboxForModel
   }

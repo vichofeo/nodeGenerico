@@ -55,7 +55,7 @@ const PARAMETROS = {
         noKeyAutomatic: true,
         included: null, //para el caso de una asociacion con table
         campos: {            
-            component: ['Codigo Componente', true, true, 'TT',24],   
+            component: ['Codigo Componente', false, true, 'TT',24],   
             route_access:['Ruta de acceso', true, true, 'TT', 32],
             name_component:['Nombre componente', true, false, 'TT', 50],
             base_folder:['Ruta Folder', true, false, 'TT', 80],
@@ -87,7 +87,89 @@ const PARAMETROS = {
         update: [],
         referer: [            
         ],
-    }   
+    },
+    arole:{
+        table: 'ap_aplicacion_role',
+        alias: 'arole',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {       
+            aplicacion_id: ['Elija la Aplicacion', false, true, 'C'],   
+            role: ['Rol cod.', false, true, 'TT',24],   
+            name_role: ['Nombre del rol', true, true, 'TT',50],   
+            description: ['Descripcion', true, true, 'TA',250],            
+            activo: ['Activo', true, true, 'C', 2],            
+            end_date : ['Fecha Finalizacion', true, true, 'F',10],                
+            
+        },
+        key: ['role'],        
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo', apropiacion: 'activo', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'ACTIVE'}, condicional:null, multiple:false },
+            { ref: 'ap_aplicacion', apropiacion: 'aplicacion_id', campos: ['aplicacion_id', 'nombre_aplicacion'], condicion: null, condicional:null, multiple:false }
+        ],
+    },
+    arolen:{
+        table: 'ap_aplicacion_role r, ap_aplicacion a',
+        alias: 'Roles',
+        cardinalidad: "n",
+        linked:"arole",
+        campos: `role as idx, 'arole' as linked, 
+        a.nombre_aplicacion, r.role, r.name_role, r.end_date, r.activo`,
+
+        camposView: [{ value: "nombre_aplicacion", text: "Aplicacion" }, { value: "role", text: "Rol" }, { value: "name_role", text: "Nombre Rol" },        
+                    { value: "end_date", text: "Validez" }, { value: "activo", text: "Activo" }
+        ],
+        key: [],
+        precondicion: ['r.aplicacion_id=a.aplicacion_id'],
+        update: [],
+        referer: [            
+        ],
+    }, 
+    acnf_role:{
+        table: 'ap_aplicacion_role',
+        alias: 'arole',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {       
+            aplicacion_id: ['Elija la Aplicacion', false, true, 'C'],   
+            role: ['Rol cod.', false, true, 'TT',24],   
+            name_role: ['Nombre del rol', true, true, 'TT',50],   
+            description: ['Descripcion', true, true, 'TA',250],            
+            activo: ['Activo', true, true, 'C', 2],            
+            end_date : ['Fecha Finalizacion', true, true, 'F',10],                
+            
+        },
+        key: ['role'],        
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo', apropiacion: 'activo', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'ACTIVE'}, condicional:null, multiple:false },
+            { ref: 'ap_aplicacion', apropiacion: 'aplicacion_id', campos: ['aplicacion_id', 'nombre_aplicacion'], condicion: null, condicional:null, multiple:false }
+        ],
+    },
+    acnf_rolen:{
+        table: 'ap_routes_cnf rc, ap_aplicacion a, ap_aplicacion_role ar, ap_module m, ap_component c',
+        alias: 'cnf_rol',
+        cardinalidad: "n",
+        linked:"acnf_role",
+        campos: `ar.role as idx, 'acnf_role' as linked, 
+        a.nombre_aplicacion, ar.name_role, m.name_module, c.name_component, rc.activo`,
+
+        camposView: [{ value: "nombre_aplicacion", text: "Aplicacion" }, { value: "name_role", text: "Rol" }, { value: "name_module", text: "Modulo" },        
+                    { value: "name_component", text: "Componente" }, { value: "activo", text: "Activo" }
+        ],
+        key: [],
+        precondicion: ['rc.aplicacion_id=ar.aplicacion_id','rc.role=ar.role', 'rc.module=m.module' , 'rc.component=c.component', 'ar.aplicacion_id=a.aplicacion_id'],
+        update: [],
+        referer: [            
+        ],
+    }  
  
 }
 

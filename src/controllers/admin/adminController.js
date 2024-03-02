@@ -20,7 +20,7 @@ const getDataModelForNewReg =  async(req, res) =>{
   const idx = req.body.idx    
   const modelo = req.body.modelo
   const token =  req.headers.authorization            
-  const result = await srv.getDataModelByIdxModel({idx:idx, modelo:modelo, token: token})
+  const result = await srv.getDataModelByIdxModel({idx:idx, modelo:modelo, token: token, new:true})
   res.json(result)
 }
 
@@ -33,10 +33,20 @@ const saveDataModifyInsertByModel =  async(req, res) =>{
   res.json(result)
 }
 
+const getDataCboxForModel =  async(req, res) =>{
+  const idx = req.body.idx    
+  const modelo = req.body.modelo
+  const token =  req.headers.authorization            
+  const result = await srv.getDataCboxForModel({idx:idx, modelo:modelo, token: token, ...req.body})
+  res.json(result)
+}
+
 
 module.exports = {
   getDataForParam,
   getDataModelByIdxModel,
   getDataModelForNewReg,
-  saveDataModifyInsertByModel
+  saveDataModifyInsertByModel,
+
+  getDataCboxForModel
 }
