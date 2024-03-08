@@ -370,7 +370,10 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
         if (dto.idx && dto.idx !='-1') {
                     
           //ES EDICION
-          obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
+          //obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
+          if(data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data,  complemento)
+            else obj = Object.assign(data, this.#seteaObjWithDataSession(),   complemento)
+
           delete obj.create_date
           obj[idx_aux] = dto.idx
           obj.last_modify_date_time = new Date()
@@ -381,8 +384,11 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
           await this.#qUtils.modify()
         } else {
           //es INSERCION
-          obj = Array.isArray(data) ? data : Object.assign(data, this.#seteaObjWithDataSession(), complemento)
-
+          if(Array.isArray(data)) obj =  data
+          else{
+            if(data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data,  complemento)
+            else obj = Object.assign(data, this.#seteaObjWithDataSession(),   complemento)
+          }
           //sitiene parametros en included 
           if (objModel.included) {
             if (Array.isArray(obj)) {
@@ -411,7 +417,7 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
               this.#qUtils.setDataset([obj])
             }
             this.#qUtils.setInclude(objModel.included.ref)
-          } else {
+          } else {           
             if (Array.isArray(obj)) {
               
               obj = obj.map(oo => {                
@@ -420,10 +426,11 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
               })
               
               this.#qUtils.setDataset(obj)
-            } else {
+            } else {              
               //insercion normal
               if(!objModel.noKeyAutomatic)
               obj[idx_aux] =   uuidv4()
+            
             
               this.#qUtils.setDataset([obj])
             }

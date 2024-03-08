@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
-      end_date: { type: DataTypes.DATE, allowNull: true },
+      end_date: { type: DataTypes.DATEONLY, allowNull: true },
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
       
     },

@@ -13,10 +13,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   ap_routes_cnf.init(
     {
-      aplicacion_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true },
-      role: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true },
-      module: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true },
-      component: { type: DataTypes.STRING(64), allowNull: false },      
+      idx: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
+      aplicacion_id: { type: DataTypes.UUID,  allowNull: false, unique: true },
+      role: { type: DataTypes.STRING(32), allowNull: false, unique: true },
+      module: { type: DataTypes.STRING(32), allowNull: false, unique: true },
+      component: { type: DataTypes.STRING(32), allowNull: false, unique: true },      
       
       create_date: { type: DataTypes.DATE, allowNull: false },
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },   

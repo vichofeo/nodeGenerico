@@ -15,6 +15,16 @@ const PDEPENDENCIES = {
             
         ],
     },
-    
+    inst_box:{        
+        alias: 'ainstcboxs',        
+        campos: {
+            aplicacion_id: ['Aplicacion', false, true, 'C'],
+        }, 
+        ilogic: null,
+        referer: [        
+            { ref: 'ap_aplicacion', apropiacion: 'aplicacion_id', campos: ['aplicacion_id', 'nombre_aplicacion'],  campoForeign: null,   condicion: {}, condicional:null },            
+            
+        ],
+    },
 }
 module.exports = PDEPENDENCIES

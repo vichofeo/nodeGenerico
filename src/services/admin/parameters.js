@@ -13,6 +13,7 @@ const PARAMETROS = {
         table: 'ap_module',
         alias: 'amodulo',
         cardinalidad: "1",
+        noKeyAutomatic: true,
         included: null, //para el caso de una asociacion con table
         campos: {            
             module: ['Codigo Modulo', false, true, 'TT',24],   
@@ -130,27 +131,27 @@ const PARAMETROS = {
         ],
     }, 
     acnf_role:{
-        table: 'ap_aplicacion_role',
-        alias: 'arole',
+        table: 'ap_routes_cnf',
+        alias: 'acnf_role',
         cardinalidad: "1",
         noKeyAutomatic: true,
         included: null, //para el caso de una asociacion con table
         campos: {       
-            aplicacion_id: ['Elija la Aplicacion', false, true, 'C'],   
-            role: ['Rol cod.', false, true, 'TT',24],   
-            name_role: ['Nombre del rol', true, true, 'TT',50],   
-            description: ['Descripcion', true, true, 'TA',250],            
+            //aplicacion_id: ['Elija la Aplicacion', false, true, 'C'],   
+            //role: ['Rol cod.', false, true, 'C',24],   
+            module: ['Modulo', true, true, 'C',50],   
+            component: ['Componente', true, true, 'C',250],            
             activo: ['Activo', true, true, 'C', 2],            
-            end_date : ['Fecha Finalizacion', true, true, 'F',10],                
-            
         },
-        key: ['role'],        
+        key: ['idx'],        
         //keyRoot: 'enunciado_root',
         moreData:[],
         update: [],
         referer: [
             { ref: 'r_is_atributo', apropiacion: 'activo', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'ACTIVE'}, condicional:null, multiple:false },
-            { ref: 'ap_aplicacion', apropiacion: 'aplicacion_id', campos: ['aplicacion_id', 'nombre_aplicacion'], condicion: null, condicional:null, multiple:false }
+            { ref: 'ap_module', apropiacion: 'module', campos: ['module', 'name_module'], condicion: {activo:'Y'}, condicional:null, multiple:false },
+            { ref: 'ap_component', apropiacion: 'component', campos: ['component', 'name_component'], condicion: {activo:'Y'}, condicional:null, multiple:false },
+            
         ],
     },
     acnf_rolen:{
@@ -158,8 +159,8 @@ const PARAMETROS = {
         alias: 'cnf_rol',
         cardinalidad: "n",
         linked:"acnf_role",
-        campos: `ar.role as idx, 'acnf_role' as linked, 
-        a.nombre_aplicacion, ar.name_role, m.name_module, c.name_component, rc.activo`,
+        campos: `idx, 'acnf_role' as linked, 
+        a.nombre_aplicacion, ar.name_role, m.name_module, c.name_component, rc.activo, ar.aplicacion_id, ar.role`,
 
         camposView: [{ value: "nombre_aplicacion", text: "Aplicacion" }, { value: "name_role", text: "Rol" }, { value: "name_module", text: "Modulo" },        
                     { value: "name_component", text: "Componente" }, { value: "activo", text: "Activo" }
