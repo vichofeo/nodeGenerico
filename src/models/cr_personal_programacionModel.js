@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class apu_credencial_rol extends Model {
+  class cr_personal_programacion extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,29 +11,28 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  apu_credencial_rol.init(
+  cr_personal_programacion.init(
     {
       idx: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
+      actividad_id: { type: DataTypes.INTEGER, allowNull: false },
+      dni_persona: { type: DataTypes.STRING(25), allowNull: true },
       
-
-      aplicacion_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false,  },
-      role: { type: DataTypes.STRING(64), allowNull: false, },
-      login: { type: DataTypes.STRING(15), allowNull: false },
-
-      
+      programacion_id: { type: DataTypes.INTEGER, allowNull: false },
+      dni_register: { type: DataTypes.STRING(25), allowNull: true },
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
-      dni_register: { type: DataTypes.STRING(25), allowNull: true },
+
+      
     },
     {
       sequelize,
-      modelName: 'apu_credencial_rol',
+      modelName: 'cr_personal_programacion',
       timestamps: false,
       freezeTableName: true,
-      tableName: 'apu_credencial_rol',
+      tableName: 'cr_personal_programacion',
       classMethods: {},
     }
   )
-  return apu_credencial_rol
+  return cr_personal_programacion
 }

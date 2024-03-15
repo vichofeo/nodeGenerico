@@ -33,6 +33,14 @@ const saveDataModifyInsertByModel =  async(req, res) =>{
   res.json(result)
 }
 
+const saveUsr =  async(req, res) =>{
+  console.log("\n\n\n\n\n GUARDANDOOOO .......................")
+  const token =  req.headers.authorization   
+  console.log("\n\nPAYLOAD, ", req.body)         
+  const result = await srv.saveUsr({token:token, ...req.body})
+  res.json(result)
+}
+
 const getDataCboxForModel =  async(req, res) =>{
   const idx = req.body.idx    
   const modelo = req.body.modelo
@@ -41,12 +49,20 @@ const getDataCboxForModel =  async(req, res) =>{
   res.json(result)
 }
 
+const getTreeEess =  async(req, res) =>{
+  const idx = req.body.idx    
+  //const modelo = req.body.modelo
+  const token =  req.headers.authorization            
+  const result = await srv.treeEess({idx:idx, token: token, ...req.body})
+  res.json(result)
+}
 
 module.exports = {
   getDataForParam,
   getDataModelByIdxModel,
   getDataModelForNewReg,
-  saveDataModifyInsertByModel,
+  saveDataModifyInsertByModel,saveUsr,
 
-  getDataCboxForModel
+  getDataCboxForModel, 
+  getTreeEess,
 }

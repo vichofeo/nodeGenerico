@@ -89,8 +89,8 @@ module.exports = class FrmsUtils {
     )
     let campos = objModel.campos
     let from = objModel.table
-    let where = objModel.key.length>0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
-    
+    let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
+
     let leftjoin = ''
     for (let i = 0; i < objModel.referer.length; i++) {
       console.log(i)
@@ -102,15 +102,15 @@ module.exports = class FrmsUtils {
         leftjoin = `${leftjoin} LEFT JOIN ${objModel.referer[i].ref} ON (${objModel.referer[i].camporef} = ${objModel.referer[i].camporefForeign})`
       }
     }
-    
+
     if (objModel.precondicion && objModel.precondicion.length) {
       for (let i = 0; i < objModel.precondicion.length; i++)
         where = `${where} AND ${objModel.precondicion[i]}`
     }
-    
+
     const query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
 
-    
+
     this.#qUtils.setQuery(query)
     await this.#qUtils.excuteSelect()
     const result = this.#qUtils.getResults()
@@ -149,6 +149,12 @@ module.exports = class FrmsUtils {
     parametros.valores = result
     parametros.exito = Object.keys(parametros.valores).length ? true : false
 
+    if(!parametros.exito){
+      for (const key in parametros.campos) {
+        parametros.valores[key] = ""
+      }
+    }
+
     console.log('\n\n **** OBTENIENDO MOREdATA A VALORES')
     //OBTENIENDO MOREDATA SI EXISTE
     parametros = await this.#getMoreDataParam(parametros, objModel.moreData, idx)
@@ -163,18 +169,18 @@ module.exports = class FrmsUtils {
     )
     //complementa referencia si existe el campo ilogic que contiene querys textuales q solo funcionan con el id instutucion logueado
     if (objModel.ilogic) {
+      console.log('!!!!!!!!!!!!EXISTE ILOGIC PRINCIPAL ****** ')
       for (const key in objModel.ilogic) {
-        console.log('!!!!!!!!!!!!EXISTE ILOGIC!!!!!!! llave:', key)
-        const queryIlogic = objModel.ilogic[key] //objModel.ilogic[key].replaceAll('idxLogin', idxLogin)
+        
+        const queryIlogic = objModel.ilogic[key].replaceAll('$'+objModel.key[0], parametros.valores[objModel.key[0]])
+        
         console.log('************** almacen ilogic', parametros.valores[key])
         const tempo = parametros.valores[key]
         this.#qUtils.setQuery(queryIlogic)
         await this.#qUtils.excuteSelect() //await sequelize.query(queryIlogic, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
         const result = this.#qUtils.getResults()
         parametros.valores[key] = {
-          selected: this.#qUtils.searchSelectedInDataComboBox(result, {
-            value: tempo,
-          }),
+          selected: this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo}),
           items: result,
           dependency: false,
         }
@@ -264,13 +270,18 @@ module.exports = class FrmsUtils {
     console.log('results:', this.#results)
     return this.#results
   }
+  /**
+   * metodo para obtener informacion de para comboDependencias
+   * @param {*} dto 
+   */
   makerDataComboDependency = async (dto) => {
     const datos = this.#uService.getCnfApp(dto.token)
     this.#setDataSession(datos)
 
-console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------" ,this.#parametros)
+    console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------")
 
     const objParamModel = this.#parametros[dto.modelo]
+    console.log("\n *************************** \n\n modelo:", dto.modelo, "----------- OBJETO SELECT", objParamModel)
     const dataIn = dto.data
     let parametros = {}
     parametros.campos = objParamModel.campos
@@ -278,17 +289,15 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
 
     //recorre referer
     this.#qUtils.setResetVars()
-    let selected = dataIn
-      ? { value: Object.values(dataIn)[0] }
-      : { value: null }
+    let selected = dataIn ? { value: Object.values(dataIn)[0] } : { value: null }
     //console.log("..............", selected)
 
     for (const referer of objParamModel.referer) {
       //instancia campos
       this.#qUtils.setTableInstance(referer.ref)
-      this.#qUtils.setAttributes(
-        this.#qUtils.transAttribByComboBox(referer.campos)
-      )
+
+      //atributos de seleccion forma {value, text}
+      this.#qUtils.setAttributes(this.#qUtils.transAttribByComboBox(referer.campos))
       let where = {}
       if (referer.condicion) {
         where = { ...where, ...referer.condicion }
@@ -303,6 +312,7 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
         where = { ...where, [referer.campoForeign]: selected.value }
       }
 
+      referer.included ? this.#qUtils.setInclude(referer.included) : ''
       this.#qUtils.setWhere(where)
       this.#qUtils.setOrder([referer.campos[1]])
       await this.#qUtils.findTune()
@@ -316,6 +326,29 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
       }
       this.#qUtils.setResetVars()
     } //fin for referer
+
+    if (objParamModel.ilogic) {
+      for (const key in objParamModel.ilogic) {
+        console.log('!!!!!!!!!!!!EXISTE ILOGIC!!!!!!! llave:', key)
+        let queryIlogic = objParamModel.ilogic[key] //objModel.ilogic[key].replaceAll('idxLogin', idxLogin)
+
+        const tempo = dataIn ? dataIn[key] : {} //parametros.valores[key] ? parametros.valores[key] : {}
+
+        console.log('************** almacen ilogic si existe seleccionado', tempo)
+        queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
+
+        this.#qUtils.setQuery(queryIlogic)
+        await this.#qUtils.excuteSelect()
+
+        const result = this.#qUtils.getResults()
+        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo }),
+          console.log('************** DEFAUL SELECTED', selected)
+        parametros.valores[key] = {
+          selected: selected,
+          items: result
+        }
+      }
+    }
 
     this.#results = parametros // {[objParamModel.alias]:parametros}
   }
@@ -367,27 +400,27 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
         let obj = {}
         //setea objeto sql
         this.#qUtils.setTableInstance(objModel.table)
-        if (dto.idx && dto.idx !='-1') {
-                    
+        if (dto.idx && dto.idx != '-1') {
+
           //ES EDICION
           //obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
-          if(data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data,  complemento)
-            else obj = Object.assign(data, this.#seteaObjWithDataSession(),   complemento)
+          if (data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data, complemento)
+          else obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
 
           delete obj.create_date
           obj[idx_aux] = dto.idx
           obj.last_modify_date_time = new Date()
           const wheres = { [idx_aux]: dto.idx }
-          
+
           this.#qUtils.setDataset(obj)
           this.#qUtils.setWhere(wheres)
           await this.#qUtils.modify()
         } else {
           //es INSERCION
-          if(Array.isArray(data)) obj =  data
-          else{
-            if(data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data,  complemento)
-            else obj = Object.assign(data, this.#seteaObjWithDataSession(),   complemento)
+          if (Array.isArray(data)) obj = data
+          else {
+            if (data.aplicacion_id) obj = Object.assign(this.#seteaObjWithDataSession(), data, complemento)
+            else obj = Object.assign(data, this.#seteaObjWithDataSession(), complemento)
           }
           //sitiene parametros en included 
           if (objModel.included) {
@@ -417,21 +450,21 @@ console.log("\n *************************** \n\n modelo:", dto.modelo, "--------
               this.#qUtils.setDataset([obj])
             }
             this.#qUtils.setInclude(objModel.included.ref)
-          } else {           
+          } else {
             if (Array.isArray(obj)) {
-              
-              obj = obj.map(oo => {                
-                let aux= Object.assign(complemento, this.#seteaObjWithDataSession())
-                return {...aux, ...oo}
+
+              obj = obj.map(oo => {
+                let aux = Object.assign(complemento, this.#seteaObjWithDataSession())
+                return { ...aux, ...oo }
               })
-              
+
               this.#qUtils.setDataset(obj)
-            } else {              
+            } else {
               //insercion normal
-              if(!objModel.noKeyAutomatic)
-              obj[idx_aux] =   uuidv4()
-            
-            
+              if (!objModel.noKeyAutomatic)
+                obj[idx_aux] = uuidv4()
+
+
               this.#qUtils.setDataset([obj])
             }
 

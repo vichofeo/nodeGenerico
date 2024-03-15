@@ -54,6 +54,7 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
         const datos = handleToken.filterHeaderTokenVerify(token)
 
         qUtil.setTableInstance('ae_institucion')
+        
         qUtil.setWhere({institucion_id: datos.inst})
         let cnf = {
             association: 'appis',
@@ -68,12 +69,15 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
 
         
         
+        
         let menuMiEstablecimiento = {}
         let misEstablecimientos = {}
         let menuReportes = []
         let menuAcreHab = []
         let frmMenu = {}
         let frmEess = {}
+
+        let actividadMenu = {}
 
         let whereAux = null
 
@@ -101,8 +105,11 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
                 break;
             case 'ASUSS':
                 misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
+                actividadMenu = { value: '/actividad/cronograma', text: 'Cronograma Actividades' }
+
                 if (result.institucion_root == '-1') {
-                    frmMenu = { value: '/frm/config', text: 'Config Formularios' }
+                    frmMenu = { value: '/frm/config', text: 'Config Formularios' }                   
+
                     menuAcreHab = []
                     for (const key of AGRUPADO.acre_hab) {
                         menuAcreHab.push({ value: `/ssepi/acrehab/${key}`, text: PARAMETROS[key].alias })
@@ -166,8 +173,8 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
         Object.keys(frmMenu).length > 0 ? dataMenu['Mis Formularios'] = frmMenu : ""
         Object.keys(frmEess).length > 0 ? dataMenu['Formularios'] = frmEess : ""
 
-
         dataMenu["Frms Snis"] = result3
+        Object.keys(actividadMenu).length > 0 ? dataMenu['Actividades'] = actividadMenu : ""
 
         return {
             ok: true,

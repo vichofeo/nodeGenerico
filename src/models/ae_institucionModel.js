@@ -23,8 +23,17 @@ module.exports = (sequelize, DataTypes) => {
         ae_institucion.hasMany(models.ape_aplicacion_institucion, {
           as: 'appi',
           foreignKey: 'institucion_id'
-        })
+        }),
       //User.belongsToMany(Role, { as: 'Roles', through: { model: UserRole, unique: false }, foreignKey: 'user_id' });
+      ae_institucion.hasMany(models.ae_institucion, {
+        as:'children',
+        foreignKey: 'institucion_root'
+      }),
+      ae_institucion.belongsTo(models.ae_institucion, {
+        as:'father',
+        foreignKey:'institucion_id',
+        targetKey: 'institucion_id'
+      })
 
     }
   }

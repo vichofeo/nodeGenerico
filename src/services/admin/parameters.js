@@ -170,7 +170,77 @@ const PARAMETROS = {
         update: [],
         referer: [            
         ],
-    }  
+    },
+    acnfai:{
+        table: 'ape_aplicacion_institucion',
+        alias: 'acnfai',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {            
+            institucion_id: ['Institucion', false, true, 'TT',24],   
+            aplicacion_id:['Aplicacion', true, true, 'TT', 32],            
+            activo: ['Activo', true, true, 'C', 2],
+        },
+        key: ['aplicacion_id'],        
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo', apropiacion: 'activo', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'ACTIVE'}, condicional:null, multiple:false }
+        ],
+    },  
+
+    ausr:{
+        table: 'au_persona',
+        alias: 'ausr',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                   
+            tipo_dni:['Tipo Identificacion', true, true, 'TP'],  
+            dni_persona: ['DNI', true, true, 'TP',50],   
+            dni_complemento: ['Complemento', true, true, 'TP',250],            
+            primer_apellido: ['Apellido', true, true, 'TP', 2],  
+            nombres:['Nombres', true, true, 'TP', 2],
+            fecha_nacimiento: ['fecha Nacimiento', true, true, 'TP', 2],
+            estado_civil: ['Estado Civil', true, true, 'TP', 2],
+            genero: ['Genero', true, true, 'TP', 2],
+            discapacidad: ['Alguna Discapacidad', true, true, 'TP', 2],
+            telefono: ['Telefono', true, true, 'TP', 2],
+            register: ['Registrado', true, true, 'TP', 2],
+        },        
+        key: ['dni_persona'],        
+        ilogic:{register:`SELECT dni_persona as value, 'existe' as text FROM apu_credencial WHERE dni_persona = '$dni_persona' and  activo = 'Y'`},
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [],
+    },
+    ausrn:{
+        table: `apu_credencial cre, aep_institucion_personal ip, ape_aplicacion_institucion ai,
+        au_persona p, ae_institucion i,
+        apu_credencial_rol cr, ap_aplicacion_role rol, ap_aplicacion app`,
+        alias: 'ausrn',
+        cardinalidad: "n",
+        linked:"ausr",
+        campos: `cre.login as idx, 'ausr' as linked, 
+        cre.institucion_id, cre.aplicacion_id, cr.role,
+        i.nombre_institucion, 
+        p.dni_persona ,p.primer_apellido ||' - '|| p.nombres AS nombre, 
+        cre.login, rol.name_role, app.nombre_aplicacion`,
+
+        camposView: [{ value: "nombre_institucion", text: "Institucion" }, { value: "dni_persona", text: "DNI" }, { value: "nombre", text: "Usuario" },        
+                    { value: "login", text: "Login" }, { value: "name_role", text: "Rol" }, { value: "nombre_aplicacion", text: "Aplicacion" }
+        ],
+        key: [],
+        precondicion: ['cre.institucion_id = ip.institucion_id', 'cre.dni_persona=ip.dni_persona', 'ip.dni_persona = p.dni_persona', 'cre.institucion_id=ai.institucion_id',
+         'cre.aplicacion_id = ai.aplicacion_id', 'ai.institucion_id =  i.institucion_id', 'cre.login =  cr.login', 'cr.aplicacion_id =  rol.aplicacion_id' , 'cr.role= rol.role',
+         'rol.aplicacion_id =  app.aplicacion_id'],
+        update: [],
+        referer: [            
+        ],
+    },
  
 }
 

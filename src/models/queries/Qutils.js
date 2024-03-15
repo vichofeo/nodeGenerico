@@ -318,4 +318,12 @@ module.exports = class Qutils {
   col(cadenaCampoSelectInclude) {
     return this.#sequelize.col(cadenaCampoSelectInclude)
   }
+  /**
+   * devuele objeto de != para query
+   * @param {*} value 
+   * @returns 
+   */
+  distinto(value){
+    return {[Op.ne]: value}
+  }
 }

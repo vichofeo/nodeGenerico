@@ -20,7 +20,7 @@ const PDEPENDENCIES = {
         campos: {
             grupo_formulario_id: ['Grupo de Formularios', false, true, 'C'],
             formulario_id: ['Formulario', true, true, 'C'],
-            institucion_id: ['Establecimiento de salus', true, true, 'C']
+            institucion_id: ['Establecimiento de salud', true, true, 'C']
             
         }, 
         ilogic: null,

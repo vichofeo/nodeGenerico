@@ -11,6 +11,9 @@ router.post("/new", authMiddleWare, adminController.getDataModelForNewReg)
 router.post("/cbox", authMiddleWare, adminController.getDataCboxForModel)
 
 router.post("/save", authMiddleWare, adminController.saveDataModifyInsertByModel)
+router.post("/saveUsr", authMiddleWare, adminController.saveUsr)
+
+router.post("/eess", authMiddleWare, adminController.getTreeEess)
 
 /*router.post("/module", authMiddleWare, moduloController.guardar)
 //controller

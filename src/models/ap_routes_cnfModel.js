@@ -9,6 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      ap_routes_cnf.belongsTo(models.ap_module, {
+        as: 'modulo',
+        foreignKey: 'module',
+        targetKey: 'module'
+      }),
+      ap_routes_cnf.belongsTo(models.ap_component, {
+        as: 'componente',
+        foreignKey: 'component',
+        targetKey: 'component'
+      })
     }
   }
   ap_routes_cnf.init(

@@ -1,6 +1,9 @@
 const db = require('./../models/index')
 const QueriesUtils = require('./../models/queries/QueriesUtils')
 
+const QUtils =  require('./../models/queries/Qutils')
+const qUtil =  new QUtils()
+
 const credencialModel = require('./../models/queries/auCredencialQueries')
 
 const tk = require('./../services/utilService')
@@ -85,10 +88,58 @@ const login = async (usr, handleError) => {
       if (aux) {
         
         const  token = await handleToken.tokenSign(result)
+
+        //obtiene informacion del rol y sus componentes
+        qUtil.setTableInstance('apu_credencial')
+        qUtil.setAttributes(['dni_persona', 'login', 'activo', 'sw'])
+        let cnf =  {
+          association: 'rol',                    
+          where: { activo: 'Y' },    
+          attributes:['aplicacion_id','role']      
+        }
+        qUtil.setInclude(cnf)
+        qUtil.setWhere({login:result.login})
+        await qUtil.findTune()
+        const r =  qUtil.getResults()
+
+        //busca informacion de rutas
+        qUtil.setTableInstance('ap_routes_cnf')
+        let routes = []
+        let index = 0
+        for (const element of r[0].rol) {                              
+          const condicion = JSON.parse(JSON.stringify(element))// r[0].rol[index].dataValues
+          
+          cnf =  {
+            association: 'modulo',                    
+            where: { activo: 'Y' }             
+          }
+          qUtil.setInclude(cnf)
+          cnf =  {
+            association: 'componente',                    
+            where: { activo: 'Y' }             
+          }
+          qUtil.setAttributes(['role','module', 'component'])
+          qUtil.pushInclude(cnf)
+          qUtil.setWhere(condicion)
+          qUtil.setOrder(['module'])
+          await qUtil.findTune()
+          if(index==0)
+          routes= qUtil.getResults()
+        else 
+        routes.push(qUtil.getResults())
+          qUtil.setResetVars()
+
+        }
+        
+        
+
+
         return {
           ok: true,
           message: 'Bienvenido Al Sistema: ' + result.login,
           access_token: token,
+          rol: r[0],
+          routes: routes
         }
       } else {
         handleError.setMessage("PASSWORD_INVALID")
