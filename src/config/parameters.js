@@ -6,6 +6,9 @@
  * use-se la opcion dual cuando la interaccion y la insercion es con tablas de bd
  */
 "use strict"
+
+const { evaluacion } = require("../services/acrehab/parameters");
+
 const PARAMETROS = {
     eess: {
         table: 'r_institucion_salud',
@@ -740,6 +743,9 @@ const PARAMETROS = {
 
     repo_acrehab:{
         alias: 'Reporte',
+    },
+    evaluacionn:{
+        alias: 'Evaluaciones',
     },
 
     //modulos segun estructura RUES 3

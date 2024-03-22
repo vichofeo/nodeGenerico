@@ -1,16 +1,7 @@
 const HandleErrors = require('./../../utils/handleErrors')
 const handleError = new HandleErrors()
 
-const service =  require('./../../services/actividad/actividadService')
-
-const cronograma = async (req, res) => {
-    handleError.setRes(res)
-    const token = req.headers.authorization
-    const modelo = req.body.modelo
-
-    const result = []
-    handleError.handleResponse(result)
-}
+const service =  require('./../../services/acrehab/acrehabService')
 
 const getDataModelN = async (req, res)=>{
     
@@ -22,8 +13,7 @@ const getDataModelN = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
-const getDataModel1 = async (req, res)=>{
-    
+const getDataModel1 = async (req, res)=>{    
     const idx =  req.params.idx
     const modelo = req.params.modelo
     const token = req.headers.authorization
@@ -54,40 +44,12 @@ const getDataCboxLigado = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
-/**
- * crontrolador pa guardar cronograma fuera de  modelo
- * @param {*} req 
- * @param {*} res 
- */
-const cronogramaSave = async (req, res) =>{        
-    const token =  req.headers.authorization
 
-    const result =  await service.cronogramaSave({ token:token, ...req.body}, handleError) 
-    handleError.setResponse(result)
-    res.status(handleError.getCode()).json(handleError.getResponse())
-}
-
-const getProgramacion = async (req, res) =>{        
-    const token =  req.headers.authorization
-
-    const result =  await service.getProgramacion({ token:token }, handleError) 
-    handleError.setResponse(result)
-    res.status(handleError.getCode()).json(handleError.getResponse())
-}
-
-const getAllProg = async (req, res) =>{        
-    const token =  req.headers.authorization    
-    const result =  await service.getAllProg({ token:token, idx:'-1'}, handleError) 
-    handleError.setResponse(result)
-    res.status(handleError.getCode()).json(handleError.getResponse())
-}
 module.exports = {
-    cronograma,
+    
     
     getDataModel1, 
     getDataModelN, getDataModelNew, 
     getDataCboxLigado,
-    cronogramaSave,
 
-    getProgramacion, getAllProg
 }

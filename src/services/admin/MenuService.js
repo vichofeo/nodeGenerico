@@ -107,13 +107,13 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
                 misEstablecimientos = { value: '/ssepi/miseess', text: 'Mis Establecimientos' }
                 actividadMenu = { value: '/actividad/cronograma', text: 'Cronograma Actividades' }
 
-                if (result.institucion_root == '-1') {
-                    frmMenu = { value: '/frm/config', text: 'Config Formularios' }                   
-
-                    menuAcreHab = []
+                menuAcreHab = []
                     for (const key of AGRUPADO.acre_hab) {
-                        menuAcreHab.push({ value: `/ssepi/acrehab/${key}`, text: PARAMETROS[key].alias })
+                        menuAcreHab.push({ value: `/ucass/acrehab/${key}`, text: PARAMETROS[key].alias })
                     }
+
+                if (result.institucion_root == '-1') {
+                    frmMenu = { value: '/frm/config', text: 'Config Formularios' } 
                 }
                 break;
             default:

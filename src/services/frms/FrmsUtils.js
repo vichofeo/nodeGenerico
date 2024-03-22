@@ -1,6 +1,7 @@
 const { where } = require('sequelize');
 const Qutils = require('../../models/queries/Qutils')
-const tk = require('./../../services/utilService')
+//const tk = require('./../../services/utilService')
+const handleToken =  require('./../../utils/handleToken')
 const { v4: uuidv4 } = require('uuid');
 module.exports = class FrmsUtils {
   #parametros
@@ -8,17 +9,25 @@ module.exports = class FrmsUtils {
   #uService
   #results
   #dataSession
+  #_token
   constructor() {
     if (FrmsUtils.instance) return FrmsUtils.instance
     this.#qUtils = new Qutils()
-    this.#uService = tk
+    this.#uService = handleToken
     this.#results = null
     this.#dataSession = null
+    this.#_token =  null
 
     FrmsUtils.instance = this
   }
   #getDataSession() {
     return this.#dataSession
+  }
+  setToken(token){
+    this.#_token = token
+  }
+  #_getToken(){
+    return this.#_token
   }
   #setDataSession(data) {
     this.#dataSession = data
@@ -29,18 +38,19 @@ module.exports = class FrmsUtils {
   //entrga de datos segun parametros por peticion de modelo
   getDataParams = async (dto) => {
     //try {
-    const datos = this.#uService.getCnfApp(dto.token)
+      this.setToken(dto.token)
+    this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
+    const datos = this.#seteaObjWithDataSession()
+    
     console.log('data cnf............', datos)
-    this.#setDataSession(datos)
-
-    //this.#qUtils.setTableInstance('ae_institucion')
-    //const institucion = await this.#qUtils.findID(datos.inst)
+    
+     
     //const tipo_institucion = institucion.tipo_institucion_id
-    const idxLogin = datos.inst
+    const idxLogin = datos.institucion_id
 
     let idx = null
     if (dto.idx) idx = dto.idx
-    else idx = datos.inst
+    else idx = datos.institucion_id
 
     const modelos = dto.modelos //['institucion', dto.modelo, 'propietario', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
     //datos identificacions
@@ -62,22 +72,7 @@ module.exports = class FrmsUtils {
     }
 
     this.#results = datosResult
-    /* return {
-                ok: true,
-                data: datosResult,
-                //institucion: institucion,
-                message: 'Resultado exitoso. Parametros obtenidos'
-            }
-
-            //realiza consulta
-        } catch (error) {
-            console.log(error)
-            return {
-                ok: false,
-                message: "Error de sistema: OBJFRMUTILS",
-                error: error.message
-            }
-        };*/
+    
   }
   #getDataParamN = async (nameModeloFromParam, idx) => {
     //tabla de datos
@@ -108,7 +103,10 @@ module.exports = class FrmsUtils {
         where = `${where} AND ${objModel.precondicion[i]}`
     }
 
-    const query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
+    let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
+
+    //reemplaza query con variables de session si lo ubiera
+    query =  this.#replaceStringByDataSession(query)
 
 
     this.#qUtils.setQuery(query)
@@ -275,8 +273,10 @@ module.exports = class FrmsUtils {
    * @param {*} dto 
    */
   makerDataComboDependency = async (dto) => {
-    const datos = this.#uService.getCnfApp(dto.token)
-    this.#setDataSession(datos)
+    this.setToken(dto.token)
+    
+    this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
+    const datos = this.#seteaObjWithDataSession()
 
     console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------")
 
@@ -371,6 +371,13 @@ module.exports = class FrmsUtils {
     obj.create_date = new Date()
     return obj
   }
+
+  getObjSession(){
+    //this.setToken(token)
+    this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
+    return this.#seteaObjWithDataSession()
+  }
+
   #getCondicionalTransform(condicional = Array) {
     let result = {}
     for (let i = 0; i < condicional.length; i++) {
@@ -385,7 +392,9 @@ module.exports = class FrmsUtils {
     await this.#qUtils.startTransaction()
     try {
 
-      this.#setDataSession(this.#uService.getCnfApp(dto.token))
+      //seta token
+      this.setToken(dto.token)
+      this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
       const modelos = dto.modelos
       const datos = dto.data
       const complemento = dto.complementos ? dto.complementos : {}

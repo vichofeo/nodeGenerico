@@ -33,8 +33,12 @@ module.exports = (sequelize, DataTypes) => {
         as:'father',
         foreignKey:'institucion_id',
         targetKey: 'institucion_id'
+      }),
+      //link con actividades
+      ae_institucion.hasMany(models.cr_actividad, {
+        as: 'actividad',
+        foreignKey: 'institucion_id'
       })
-
     }
   }
   ae_institucion.init(

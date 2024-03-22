@@ -34,6 +34,25 @@ const PARAMETROS = {
         referer: [],
     },
     
+    actividadn:{
+        table: 'cr_actividad a, r_is_atributo a1, r_is_atributo a2',
+        alias: 'actividadn',
+        cardinalidad: "n",
+        linked:"actividad",
+        campos: `a.actividad_id as idx, 'actividad' as linked, 
+        a1.atributo as clase, a2.atributo as tipo,a.virtual,  a.nombre_actividad, a.inicio_proyecto,  a.finalizacion, a.concluido,  a.activo  `,
+
+        camposView: [{ value: "clase", text: "Clase" }, { value: "tipo", text: "Tipo" }, { value: "nombre_actividad", text: "Actividad" },        
+                    { value: "inicio_proyecto", text: "Inicio" }, { value: "finalizacion", text: "Finalizacion" }, 
+                    { value: "concluido", text: "Estado" },
+                    { value: "activo", text: "Activo" }
+        ],
+        key: [],
+        precondicion: ["a.institucion_id='$inst'", 'a.clase_actividad=a1.atributo_id' , 'a.tipo_actividad=a2.atributo_id', 'a.actividad_root IS not null'],
+        update: [],
+        referer: [            
+        ],
+    },
    
  
 }
