@@ -345,23 +345,25 @@ const getDataConteo = async (group_id, eval_id, codigo, vector=[]) => {
 
     await qUtil.findTune()
     const result = qUtil.getResults()
-    for (const element of result) {
-      console.log("/*********************::", element.codigo," ->", element.name)
-      
+    for (const element of result) {      
+      const codigo = element.codigo
       if(element.parametro){
         delete element.parametro
         element.evaluado = 0
         if(element.valor.length > 0){
           element.evaluado = 1
-          element[element.valor[0].valor] = 1
+          if(element.valor[0].valor===null) element['nulo'] = 1
+          else element[element.valor[0].valor] = 1
+
           element.obs =  element.valor[0].observacion ? 1 : 0          
         }
-        delete element.valor
+        delete element.valor 
+        delete element.codigo       
 
         vector.push(element)
       }
       
-      const tmp = await getDataConteo(group_id, eval_id, element.codigo, vector)
+      const tmp = await getDataConteo(group_id, eval_id, codigo, vector)
       
     }
   
@@ -393,9 +395,24 @@ const getDataMonitorView = async (dto, handleError) => {
     await qUtil.findTune()
     result =  qUtil.getResults()
     const datos = []
+    const cabeceras = []
     for (const key in result) {
         //busca datos contando
-        datos[key] = await getDataConteo(frm_group, idx, result[key].codigo)        
+         const tmp= await getDataConteo(frm_group, idx, result[key].codigo)   
+         const data = {evaluado: 0}
+        //hace el calculo por grupo        
+        for (const element of tmp) {
+              for (const index in element) {
+                if(typeof data[index] === 'undefined')
+                data[index] = 0
+              data[index] =  data[index] + element[index]                
+              }      
+        }      
+        datos[key] = {
+          codigo: result[key].codigo, 
+          formulario: result[key].nombre_frm,
+          total: tmp.length, ...data }
+        cabeceras.push(...Object.keys(data))  
     }
 
     
@@ -403,6 +420,7 @@ const getDataMonitorView = async (dto, handleError) => {
     return {
       ok: true,
       data: datos,
+      header:{formulario:'Formulario Inspeccion', codigo:'Codigo', total:'Nro. Parametros', evaluado:'Evaluados', si:'Si Cumplen', no:'No Cumplen', na:'No Aplica', nulo:'Nulo/Vacio'}, //cabeceras.filter(function (v, i, self) {return i == self.indexOf(v)}).sort(),
       message: 'Requerimiento Exitoso',
     }
   } catch (error) {
