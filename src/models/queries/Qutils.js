@@ -326,4 +326,11 @@ module.exports = class Qutils {
   distinto(value){
     return {[Op.ne]: value}
   }
+  /**
+   * sentencia not null 
+   * @returns 
+   */
+  notNull(){
+    return {[Op.not]: null}
+  }
 }

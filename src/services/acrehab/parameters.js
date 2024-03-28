@@ -43,12 +43,15 @@ const PARAMETROS = {
         d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
         p.primer_apellido ||' '|| p.segundo_apellido ||' '|| p.nombres AS evaluador,
         e.concluido, e.activo,
-        CASE WHEN '1'=e.dni_evaluador THEN true ELSE false  END AS ver`,
+        CASE WHEN '$dni'=e.dni_evaluador THEN false ELSE true  END AS ver,
+        TO_CHAR(e.create_date, 'dd/mm/yyyy') as creacion`,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },        
-                    { value: "evaluador", text: "Evaluador" }, { value: "concluido", text: "Concluido" },                     
-                    { value: "concluido", text: "Estado" }, { value: "activo", text: "Activo" },
-                    { value: "ver", text: "Accion" }                    
+                    { value: "evaluador", text: "Evaluador" }, 
+                    { value: "ver", text: "Accion" },
+                    { value: "concluido", text: "Concluido" },                     
+                    { value: "activo", text: "Activo" }, { value: "creacion", text: "Creacion" }
+                    
         ],
         key: [],
         precondicion: ['e.frm_id =  f.frm_id', 'e.tipo_acrehab =  t.atributo_id', 'e.institucion_id =  i.institucion_id', 'e.dni_evaluador =  p.dni_persona',

@@ -66,7 +66,7 @@ const cronogramaSave = async (req, res) =>{
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
-
+ 
 const getProgramacion = async (req, res) =>{        
     const token =  req.headers.authorization
 

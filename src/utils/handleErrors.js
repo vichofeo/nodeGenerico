@@ -44,8 +44,8 @@ module.exports = class HandleErrors {
     }
 
     setHttpErrorResponse(payload={}){
-        console.log("\n\n****Error pa log RESPONSE def\n\n")
-        this.setCode(204)
+        console.log("\n\n****Error pa log RESPONSE def\n\n", payload)
+        this.setCode(203)
         this.#setObjResponse({error: this.#_message, ...payload})
     }
 
@@ -76,7 +76,8 @@ module.exports = class HandleErrors {
                 if(payload?.ok){
                     this.setCode(200)
                     this.#setObjResponse(payload)                    
-                }else{                                        
+                }else{                   
+                                 
                     this.setHttpErrorResponse(payload)
                 }    
             }else {this.setCode(409)

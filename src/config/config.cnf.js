@@ -1,5 +1,5 @@
 module.exports={
-  PORT:4000,
+  PORT:3000,
   JWT_SECRET: "UNDOCIGOsECRETO",
   JWT_TIME: "2h"
 }

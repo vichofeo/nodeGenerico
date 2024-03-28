@@ -329,13 +329,16 @@ module.exports = class FrmsUtils {
 
     if (objParamModel.ilogic) {
       for (const key in objParamModel.ilogic) {
-        console.log('!!!!!!!!!!!!EXISTE ILOGIC!!!!!!! llave:', key)
-        let queryIlogic = objParamModel.ilogic[key] //objModel.ilogic[key].replaceAll('idxLogin', idxLogin)
+        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY!!!!!!! llave:', key)
+        let queryIlogic = objParamModel.ilogic[key] 
 
-        const tempo = dataIn ? dataIn[key] : {} //parametros.valores[key] ? parametros.valores[key] : {}
+        const tempo = dataIn ? dataIn[key] : {} 
 
         console.log('************** almacen ilogic si existe seleccionado', tempo)
         queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
+        queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
+        queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
+                
 
         this.#qUtils.setQuery(queryIlogic)
         await this.#qUtils.excuteSelect()
@@ -363,6 +366,14 @@ module.exports = class FrmsUtils {
 
     return stringSepararedByComa
   }
+  #replaceStringForQIlogic(query, valores) {    
+    
+    for (const key in valores)   {
+    //console.log("\n\n *********************************/REEEMPLAZO QLOGIC:::", valores,"\n\n")    
+      query =  query.replaceAll('$'+key, valores[key].selected.value)}
+    
+    return query
+  }
   #seteaObjWithDataSession() {
     const obj = {}
     obj.institucion_id = this.#dataSession.inst
@@ -380,8 +391,8 @@ module.exports = class FrmsUtils {
 
   #getCondicionalTransform(condicional = Array) {
     let result = {}
-    for (let i = 0; i < condicional.length; i++) {
-      const aux = this.#replaceStringByDataSession(condicional[i]).split(',')
+    for (const element of condicional) {
+      const aux = this.#replaceStringByDataSession(element).split(',')
       result = { ...result, [aux[0]]: aux[1] }
     }
     return result

@@ -3,6 +3,7 @@ const router =  express.Router()
 
 const  authMiddleWare = require('./../middlewares/authMiddleware')
 const controller = require('../controllers/acrehab/acrehabController')
+const evalController = require('../controllers/acrehab/evaluacionController')
 
 //admin
 router.get("/:modelo", authMiddleWare, controller.getDataModelN)
@@ -11,7 +12,17 @@ router.get("/:idx/:modelo", authMiddleWare, controller.getDataModel1)
 
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
 
-//router.post("/cron/save", authMiddleWare, controller.cronogramaSave) 
+router.post("/save", authMiddleWare, controller.acrehabEvalSave) 
+router.get("/eval/get/:idx", authMiddleWare, evalController.getDataFrm)
+router.get("/eval/getView/:idx", authMiddleWare, evalController.getDataFrmView)
+router.get("/eval/:idx/get/:key", authMiddleWare, evalController.getDataFrmSimplex)
+router.get("/eval/:idx/getView/:key", authMiddleWare, evalController.getDataFrmSimplexView)
+router.post("/eval/save", authMiddleWare, evalController.evalSimplexSave) 
+
+//servicio par adatos monitor y seguimiento
+router.get("/eval/getMon/:idx", authMiddleWare, evalController.getDataMonitorView)
+
+//accesos para proceso de evaluacion segun formulario
 
 //router.get("/cron/get/programacion", authMiddleWare, controller.getProgramacion)
 //router.get("/cron/get/all", authMiddleWare, controller.getAllProg)
