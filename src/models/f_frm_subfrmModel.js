@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       
       subfrm_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: true, primaryKey: true},
       formulario_id:{type: DataTypes.STRING(64), allowNull: true, primaryKey: true},
-      
+      codigo:{type: DataTypes.STRING(10), allowNull: true},
       nombre_subfrm:{type: DataTypes.STRING(200), allowNull: false},
       descripcion:{type: DataTypes.STRING(4000), allowNull: true},
       orden:{type: DataTypes.INTEGER, allowNull: true, defaultValue: 0},

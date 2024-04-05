@@ -324,11 +324,13 @@ const evalSimplexSave = async (dto, handleError) => {
   }
 }
 
-const getDataConteo = async (group_id, eval_id, codigo, vector=[]) => {
+const getDataConteo = async (group_id, eval_id, codigo, vector={conteo:[], all:[]}) => {
     
     qUtil.setTableInstance('u_frm')
     qUtil.setAttributes([        
-      'codigo', 'parametro'
+      'codigo', 
+      'nombre_frm', 'proposito',      
+      'parametro', 'ordenanza'
     ]) 
     qUtil.setWhere({
       codigo_root: codigo,
@@ -345,7 +347,8 @@ const getDataConteo = async (group_id, eval_id, codigo, vector=[]) => {
 
     await qUtil.findTune()
     const result = qUtil.getResults()
-    for (const element of result) {      
+    for (const element of result) {
+      vector.all.push(JSON.parse(JSON.stringify(element)))
       const codigo = element.codigo
       if(element.parametro){
         delete element.parametro
@@ -359,11 +362,14 @@ const getDataConteo = async (group_id, eval_id, codigo, vector=[]) => {
         }
         delete element.valor 
         delete element.codigo       
+        delete element.nombre_frm
+        delete element.proposito       
+        delete element.ordenanza              
 
-        vector.push(element)
+        vector.conteo.push(element)
       }
       
-      const tmp = await getDataConteo(group_id, eval_id, codigo, vector)
+      await getDataConteo(group_id, eval_id, codigo, vector)
       
     }
   
@@ -401,7 +407,7 @@ const getDataMonitorView = async (dto, handleError) => {
          const tmp= await getDataConteo(frm_group, idx, result[key].codigo)   
          const data = {evaluado: 0}
         //hace el calculo por grupo        
-        for (const element of tmp) {
+        for (const element of tmp.conteo) {
               for (const index in element) {
                 if(typeof data[index] === 'undefined')
                 data[index] = 0
@@ -411,7 +417,7 @@ const getDataMonitorView = async (dto, handleError) => {
         datos[key] = {
           codigo: result[key].codigo, 
           formulario: result[key].nombre_frm,
-          total: tmp.length, ...data }
+          total: tmp.conteo.length, ...data }
         cabeceras.push(...Object.keys(data))  
     }
 
@@ -429,11 +435,58 @@ const getDataMonitorView = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
+
+const getDataEvalView = async (dto, handleError) => {
+  try {
+    // obtiene datos de session
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+
+    const idx = dto.idx
+    //obtiene for de cnf evaluacion
+    qUtil.setTableInstance('u_frm_evaluacion')
+    await qUtil.findID(idx)
+    const results = qUtil.getResults()
+
+    //construye informacion para extarer datos de los formularios
+    const frm_group = results.frm_id
+    const frm_id = results.frm_id
+    //dato incial de formulario
+    qUtil.setResetVars()
+    qUtil.setTableInstance('u_frm')
+    await qUtil.findID(frm_id)
+    let result = qUtil.getResults()
+
+    //obtiene registros de primer nivel
+    qUtil.setWhere({frm:frm_group, codigo_root: result.codigo})
+    await qUtil.findTune()
+    result =  qUtil.getResults()
+    const datos = {}
+    const cabeceras = []
+    for (const key in result) {
+        //busca datos contando
+         const tmp= await getDataConteo(frm_group, idx, result[key].codigo)   
+        datos[result[key].codigo] = tmp.all
+    }
+
+    
+
+    return {
+      ok: true,
+      data: datos,      
+      message: 'Requerimiento Exitoso',
+    }
+  } catch (error) {
+    console.log(error)
+    handleError.setMessage('Error de sistema: ACREHABDATNSRV')
+    handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
   getDataFrm,
   getDataFrmView,
   getDataFrmSimplex,
   getDataFrmSimplexView,
   evalSimplexSave,
-  getDataMonitorView
+  getDataMonitorView, getDataEvalView
 }

@@ -32,6 +32,8 @@ module.exports = (sequelize, DataTypes) => {
       formulario_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
 
       tipo_enunciado_id:{type: DataTypes.INTEGER, allowNull: true},
+
+      codigo:{type: DataTypes.STRING(10), allowNull: true},
       enunciado:{type: DataTypes.TEXT, allowNull: true},
       orden:{type: DataTypes.INTEGER, allowNull: true, defaultValue: 0},
       activo:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y'},

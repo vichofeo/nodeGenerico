@@ -34,6 +34,7 @@ const getfrmsConstuct = async (dto) => {
 
 const getFrmsInfo = async (dto) => {
   try {
+    console.log("EN EL PODEROROSO")
     const idx = dto.idx
     const qUtils = new QUtils()
     qUtils.setTableInstance('f_formulario')
@@ -42,7 +43,7 @@ const getFrmsInfo = async (dto) => {
     ])
     
     //qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
-    qUtils.setOrder([qUtils.col('sections.orden'), qUtils.col('sections.questions.orden'), qUtils.col('sections.questions.answers.orden'), qUtils.col('sections.questions.questions.orden')])
+    qUtils.setOrder([qUtils.col('sections.orden'), qUtils.col('sections.questions.orden'), qUtils.col('sections.questions.answers.orden'), qUtils.col('sections.questions.questions.orden'), qUtils.col('sections.questions.questions.answers.orden')])
     let cnf = {
       as: 'grupo',
       attributes: [['nombre_grupo_formulario','grupo']],
@@ -83,7 +84,7 @@ const getFrmsInfo = async (dto) => {
       ],
     }    
     qUtils.pushInclude(cnf)
-     cnf = {      
+     /*cnf = {      
       association:'others',        
       attributes: [['tipo_opcion_id','tipo']],
       where:{activo:'Y'},            
@@ -91,8 +92,8 @@ const getFrmsInfo = async (dto) => {
         association:'frm',
         attributes: [['titulo','title'],['tipo_opcion_id','type']],
       }]
-    }
-    qUtils.pushInclude(cnf)
+    }*/
+    //qUtils.pushInclude(cnf)
     qUtils.setWhere({ formulario_id: idx })
 
     await qUtils.findTune()

@@ -21,6 +21,8 @@ router.post("/eval/save", authMiddleWare, evalController.evalSimplexSave)
 
 //servicio par adatos monitor y seguimiento
 router.get("/eval/getMon/:idx", authMiddleWare, evalController.getDataMonitorView)
+router.get("/eval/getEval/:idx", authMiddleWare, evalController.getDataEvalView)
+
 
 //accesos para proceso de evaluacion segun formulario
 

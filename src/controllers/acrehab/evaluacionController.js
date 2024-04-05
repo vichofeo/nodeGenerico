@@ -63,9 +63,19 @@ const getDataMonitorView = async (req, res)=>{
     
 }
 
+const getDataEvalView = async (req, res)=>{    
+    const idx =  req.params.idx    
+    const token = req.headers.authorization
+
+    const result = await service.getDataEvalView({idx:idx, token:token}, handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+    
+}
+
 module.exports =  {
     getDataFrm, getDataFrmView,
     getDataFrmSimplex,  getDataFrmSimplexView,
     evalSimplexSave,
-    getDataMonitorView
+    getDataMonitorView, getDataEvalView
 }

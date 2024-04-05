@@ -32,19 +32,25 @@ const PARAMETROS = {
             codigo_formulario: ['Asigne un Codigo al Formulario', true, false, 'TT',25],
             nombre_formulario: ['Nombre del Formulario', true, true, 'TT',80],            
             descripcion:['Descripcion del formulario', true, true, 'TA',512],            
-            tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, false, 'H']
+            //tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, false, 'H']
+            ordenanza:['Instrucciones', true, true, 'TA',1024],            
         },
         key: ['formulario_id'],
-        moreData:[{ ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },],
+        moreData:[
+           // { ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },
+        ],
         update: [],
-        referer: [{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
-            { ref: 'f_formulario_clase', apropiacion: 'cod_clase', campos: ['cod_clase', 'nombre_clase'], condicion: null, condicional:null },],
+        referer: [
+            //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
+            { ref: 'f_formulario_clase', apropiacion: 'cod_clase', campos: ['cod_clase', 'nombre_clase'], condicion: null, condicional:null },
+        ],
     },
     fsection:{
         table: 'f_frm_subfrm',
         alias: 'fsection',
         cardinalidad: "1",
         campos: {
+            codigo:['Codigo', true, true, 'TT',10],
             nombre_subfrm: ['Nombre de la seccion', true, true, 'TT',80],
             descripcion: ['Descripcion de la seccion', true, false, 'TA',512],            
             orden: ['Orden de Aparicion', true, true, 'TN',2],            
@@ -61,7 +67,7 @@ const PARAMETROS = {
         cardinalidad: "1",
         included: {ref:'answers',key:'opcion_id' ,campos:['opcion_id','respuesta', 'orden'], condicion:  null},
         campos: {
-            
+            codigo:['Codigo', true, true, 'TT',10],
             enunciado: ['Formule su pregunta', true, true, 'TA',512],            
             orden: ['Orden de Aparicion', true, true, 'TN',2],            
             tipo_enunciado_id: ['Tipo de Respuesta', true, false, 'C',80],

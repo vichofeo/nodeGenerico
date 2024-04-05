@@ -42,12 +42,14 @@ const PARAMETROS = {
         campos: `e.evaluacion_id as idx, 'evaluacion' as linked, 
         d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
         p.primer_apellido ||' '|| p.segundo_apellido ||' '|| p.nombres AS evaluador,
+        f.nombre_frm as frm,
         e.concluido, e.activo,
         CASE WHEN '$dni'=e.dni_evaluador THEN false ELSE true  END AS ver,
         TO_CHAR(e.create_date, 'dd/mm/yyyy') as creacion`,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },        
                     { value: "evaluador", text: "Evaluador" }, 
+                    { value: "frm", text: "FORM." }, 
                     { value: "ver", text: "Accion" },
                     { value: "concluido", text: "Concluido" },                     
                     { value: "activo", text: "Activo" }, { value: "creacion", text: "Creacion" }

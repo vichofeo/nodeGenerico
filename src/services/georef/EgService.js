@@ -541,7 +541,7 @@ console.log("////////////////////////////////////////////////////////////Paramet
                 console.log("*****************************************::::::::::::::", PARAMETROS[modelo].referer.length)
                 let campos = PARAMETROS[modelo].campos
                 let from = PARAMETROS[modelo].table
-                let where = `${PARAMETROS[modelo].key[0]} = '${idx}'`
+                let where = PARAMETROS[modelo].key[0] ? `${PARAMETROS[modelo].key[0]} = '${idx}'` : '1=1 '
                 let leftjoin = ''
                 for (let i = 0; i < PARAMETROS[modelo].referer.length; i++) {
                     console.log(i)

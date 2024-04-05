@@ -126,8 +126,17 @@ const cronogramaSave = async (dto, handleError) => {
             if (!obj.full_dia) {
                 //parcea fechas
                 const tmp = obj.rhrs.split('|')
-                for (const iterator of tmp) {
-                    const tmp2 = iterator.split('-')
+                for (let iterator of tmp) {
+                    iterator =  iterator.replaceAll(' ','')
+                    const tmp2 = iterator.split('-')                    
+                    let ax0 = tmp2[0].split(':')
+                     
+                    //ax0.replace(/\d{2}:\d{2}/,"$1:$2")
+                    tmp2[0] = ax0[0].padStart(2, "0") + ':' + (ax0[1] ? ax0[1].padStart(2, "0") : '00')
+                    
+                    ax0 = tmp2[1].split(':')
+                    tmp2[1] = ax0[0].padStart(2, "0") + ':' + (ax0[1] ? ax0[1].padStart(2, "0") : '00')
+  
                     //console.log("\n\n ***************** rango horas:", tmp2,"\n\n")
                     const aux1 = {
                         nombre_actividad: obj.titulo,
@@ -135,6 +144,7 @@ const cronogramaSave = async (dto, handleError) => {
                         finalizacion: `${obj.fecha} ${tmp2[1]}`,
                         full_dia: obj.full_dia
                     }
+                    
                     obj_cnf.create_date = new Date()
                     datos.subactividad.push({ ...aux1, ...obj_cnf })
                 }

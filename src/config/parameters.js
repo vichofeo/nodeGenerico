@@ -670,7 +670,8 @@ const PARAMETROS = {
         { value: "puntaje", text: "Puntaje" },
         { value: "activo", text: "Vigente" }
         ],
-        key: ['isap.root'], //llave de busqueda
+        //key: ['isap.root'], //llave de busqueda
+        key: [], //llave de busqueda
         precondicion: ["dpto.cod_pais = isap.cod_pais" ,"dpto.cod_dpto=isap.cod_dpto",
             "isap.institucion_id =  isa.institucion_id", "isa.ente_gestor_id =  eg.institucion_id",
             "isa.institucion_id =  r.institucion_id","tipo_registro='ACREDITACION'"],
@@ -730,7 +731,8 @@ const PARAMETROS = {
         { value: "puntaje", text: "Puntaje" },
         { value: "activo", text: "Vigente" }
         ],
-        key: ['isap.root'], //llave de busqueda
+        //key: ['isap.root'], //llave de busqueda
+        key: [],
         precondicion: ["dpto.cod_pais = isap.cod_pais" ,"dpto.cod_dpto=isap.cod_dpto",
             "isap.institucion_id =  isa.institucion_id", "isa.ente_gestor_id =  eg.institucion_id",
             "isa.institucion_id =  r.institucion_id","tipo_registro='HABILITACION'"],

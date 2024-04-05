@@ -39,10 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       nombre_formulario:{type: DataTypes.STRING(150), allowNull: false},
       descripcion:{type: DataTypes.STRING(4000), allowNull: false},
       es_xpersona:{type: DataTypes.STRING(1), allowNull: false, defaultValue: 'N'},
-      c_hh:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
-      c_hv:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
-      c_hlab:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
-      c_cnts:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'N'},
+      
       version:{type: DataTypes.INTEGER, allowNull: false, defaultValue: 1,},
       activo:{type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y'},
       dni_register:{type: DataTypes.STRING(25), allowNull: false},
