@@ -12,6 +12,15 @@ module.exports = (sequelize, DataTypes) => {
       u_frm.hasMany(models.u_frm_valores,{
         as:'valor',
         foreignKey: 'frm_id'
+      }),
+      u_frm.belongsTo(models.u_is_gr_atributo,{
+        as:'opciones',
+        foreignKey: 'parametros'
+      }), 
+      u_frm.belongsTo(models.u_frm,{
+        as:'padre',
+        foreignKey: 'codigo_root',
+        targetKey: 'codigo'
       })
     }
   }
@@ -35,6 +44,8 @@ module.exports = (sequelize, DataTypes) => {
       create_date: { type: DataTypes.DATE(), allowNull: true },
       last_modify_date_time: { type: DataTypes.DATE(), allowNull: true },
       dni_register: { type: DataTypes.STRING(25), allowNull: true },
+      parametros: { type: DataTypes.STRING(64), allowNull: true },
+      es_parametro: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
     },
     {
       sequelize,

@@ -9,9 +9,31 @@
  */
 "use strict"
 const PARAMETROS = {
+    usrs_inst:{
+        table: 'u_frm_evaluacion',
+        alias: 'usrs_inst',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                   
+            dni_evaluador:['Evaluador', false, true, 'C'],
+        },        
+        key: ['evaluacion_id'],        
+        ilogic:{dni_evaluador: `SELECT p.dni_persona AS VALUE,   p.primer_apellido || ' ' || p.segundo_apellido ||' '|| p.nombres ||' ('||apu.login||')' AS TEXT
+        FROM aep_institucion_personal ip, au_persona p, apu_credencial apu
+        WHERE ip.dni_persona = p.dni_persona
+        AND  ip.institucion_id =  apu.institucion_id AND ip.dni_persona=apu.dni_persona
+        AND ip.institucion_id = '$inst'
+        ORDER BY 2`},
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [],
+    },
+
     evaluacion:{
-        table: 'evaluacion',
-        alias: 'actividad',
+        table: 'u_frm_evaluacion',
+        alias: 'evaluacion',
         cardinalidad: "1",
         noKeyAutomatic: true,
         included: null, //para el caso de una asociacion con table
