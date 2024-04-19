@@ -23,6 +23,9 @@ router.post("/eval/save", authMiddleWare, evalController.evalSimplexSave)
 router.get("/eval/getMon/:idx", authMiddleWare, evalController.getDataMonitorView)
 router.get("/eval/getEval/:idx", authMiddleWare, evalController.getDataEvalView)
 
+//formularios de evaluacion acreditacion 
+router.get("/frm/getFrm/:idx", authMiddleWare, evalController.getFrmView)
+
 
 //accesos para proceso de evaluacion segun formulario
 

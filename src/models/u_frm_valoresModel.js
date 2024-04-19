@@ -14,14 +14,15 @@ module.exports = (sequelize, DataTypes) => {
   u_frm_valores.init(
     {
       valores_id: { type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement:true },
+      evaluacion_id: { type: DataTypes.UUID(), allowNull: false },
       frm_id: { type: DataTypes.INTEGER, allowNull: false },
       dni_evaluador: { type: DataTypes.STRING(25), allowNull: true },
       valor: { type: DataTypes.STRING(32), allowNull: true },
       observacion: { type: DataTypes.TEXT, allowNull: true },
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
-      dni_register: { type: DataTypes.STRING(25), allowNull: true },
-      evaluacion_id: { type: DataTypes.UUID(), allowNull: false }
+      dni_register: { type: DataTypes.STRING(25), allowNull: true }
+      
     },
     {
       sequelize,

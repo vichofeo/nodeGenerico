@@ -35,7 +35,7 @@ const PDEPENDENCIES = {
             WHERE f.tipo_acrehab =  a.atributo_id
             AND f.codigo_root='-1'
             ORDER BY 2`,
-            frm_id:`SELECT f.frm_id AS VALUE,  f.nombre_frm AS text
+            frm_id:`SELECT f.frm_id AS VALUE,  f.parametro AS text
             FROM u_frm f, r_is_atributo a
             WHERE f.tipo_acrehab =  a.atributo_id
             AND f.codigo_root='-1' AND a.atributo_id= '$campoForeign' 

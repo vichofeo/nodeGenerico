@@ -105,10 +105,10 @@ const saveUsr = async (dto) => {
     //obj.aplicacion_id = session.app
 
     obj.activo = 'Y'
-    obj.hash =  await tk.genPass(obj.login, obj.passs)
-    
+    obj.hash = await tk.genPass(obj.login, obj.passs)
+
     await qUtil.startTransaction()
-let r = ""
+    let r = ""
     for (const modelo of dto.modelos) {
       obj.create_date = new Date()
       //setea tabla
@@ -119,7 +119,7 @@ let r = ""
       //ejecuta orden  
       await qUtil.createwLote()
       //await qUtil.create()
-      r= qUtil.getResults()
+      r = qUtil.getResults()
     }
     await qUtil.commitTransaction()
 

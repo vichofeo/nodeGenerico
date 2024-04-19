@@ -1,3 +1,4 @@
+const { where } = require('sequelize')
 const HandleErrors = require('../../utils/handleErrors')
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
@@ -99,13 +100,14 @@ const getDataCboxLigado = async (dto, handleError) => {
 }
 
 /**
- * Salva datos de para iniciar evaluacion
+ * Salva datos de configuracion de evaluacion para su posterior registro por parametro
  * @param {*} dto 
  * @param {*} handleError 
  * @returns 
  */
 const acrehabEvalSave = async (dto, handleError) => {
-
+//inicia transaccion
+await qUtil.startTransaction()
     try {
         // obtiene datos de session
         frmUtil.setToken(dto.token)
@@ -113,25 +115,55 @@ const acrehabEvalSave = async (dto, handleError) => {
 
         //prepara datsos en formato
         const datos = dto.data
-        
-        const payload = Object.assign(obj_cnf, datos )
+
+        const payload = Object.assign(obj_cnf, datos)
 
         //instancia tabla
         qUtil.setTableInstance('u_frm_evaluacion')
-        //inicia transaccion
-        await qUtil.startTransaction()
+        
 
         //guarda datos
         qUtil.setDataset(payload)
-        
         await qUtil.create()
+        const result = qUtil.getResults()
 
+        //guarda evaluadores con las asignacin de formularios
+        const evaluadores = []
+        for (const element of datos.evaluadores){
+            const eval_register =  {evaluacion_id: result.evaluacion_id, dni_evaluador:element.usr, frm_id: element.idx, ...frmUtil.getObjSession() }
+            evaluadores.push(eval_register)
+            
+            //obtiene padre solo si el hijo es parametro 
+            qUtil.setTableInstance('u_frm')
+            qUtil.setAttributes(['frm_id'])
+            qUtil.setWhere({ frm_id: element.idx, es_parametro:true })
+            qUtil.setInclude({
+                association: 'padre', required: false,
+                attributes: ['frm_id'],
+                where:{parametros: qUtil.notNull()}
+            })
+            await qUtil.findTune()
+            const r = qUtil.getResults()
+            for (const e of r){
+                evaluadores.push({...eval_register, frm_id: e.padre.frm_id, ...frmUtil.getObjSession()})
+            }
+            
+        }
+            
+            
+        //instancia tabla DE VALUACIONES
+        //qUtil.setResetVars()
+        qUtil.setTableInstance('u_frm_evaluadores')
+        qUtil.setDataset(evaluadores)
+        await qUtil.createwLote()
+
+        console.log("\n\n\n, *****************************",evaluadores,"\n\n\n")
         //termina transaccion
         await qUtil.commitTransaction()
 
         return {
             ok: true,
-            data: payload,
+            data: result,
             message: "Requerimiento Exitoso. Parametros Guardados"
         }
 
@@ -150,6 +182,6 @@ const acrehabEvalSave = async (dto, handleError) => {
 module.exports = {
     getDataModelN,
     getDataModelNew,
-    getDataCboxLigado, 
+    getDataCboxLigado,
     acrehabEvalSave
 }

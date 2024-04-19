@@ -85,6 +85,7 @@ module.exports = class FrmsUtils {
     let campos = objModel.campos
     let from = objModel.table
     let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
+    let groupOrder =  objModel.groupOrder ? objModel.groupOrder : '' 
 
     let leftjoin = ''
     for (let i = 0; i < objModel.referer.length; i++) {
@@ -103,7 +104,7 @@ module.exports = class FrmsUtils {
         where = `${where} AND ${objModel.precondicion[i]}`
     }
 
-    let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
+    let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where} ${groupOrder}`
 
     //reemplaza query con variables de session si lo ubiera
     query =  this.#replaceStringByDataSession(query)

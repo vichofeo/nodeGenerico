@@ -28,25 +28,28 @@ const getDataTree = async (parent_id = '-1', root, resultado = []) => {
     }
     qUtil.setInclude(cnf)
     //qUtil.setWhere({ formulario_id: idx })
-    root == '-1' ? qUtil.setWhere({ institucion_root: parent_id }) : qUtil.setWhere({ parent_grp_id: parent_id })
+    root == '-1' ? qUtil.setWhere({ institucion_root: parent_id, es_unidad:false }) : qUtil.setWhere({ parent_grp_id: parent_id, es_unidad:false})
     qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
     await qUtil.findTune()
+    
     const result = qUtil.getResults()
+    console.log("\n\n ****** result:",resultado , "\n\n")
     qUtil.setResetVars()
 
 
     if (result.length > 0) {
         for (const i in result) {
-            const tmp = result[i].dpto?.dataValues
+            const tmp = result[i].dpto
             if (tmp) {
                 resultado[tmp.text] = { value: tmp.value, text: tmp.text, atributo: result[i].atributo, valor: result[i].valor, }
             }
             await getDataTree(result[i].institucion_id, root, resultado)
         }
 
-        return resultado
-    } else return resultado
+        //return resultado
+    } //else return resultado
 
+    return resultado
 }
 
 const menuGeoreferencia = async (token, handleError=HandleErrors) => {
@@ -128,9 +131,10 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
 
         let result2 = null
 
-        if (result.tipo_institucion_id == 'ASUSS')
+        if (result.tipo_institucion_id == 'ASUSS'){
             result2 = Object.values(await getDataTree(result.institucion_id, result.institucion_root))
-        else {
+            console.log("\n\n\n ---------------------------------------------------\nluego de ejecutar recursivo", result2)
+        }else {
             
             qUtil.setTableInstance('ae_institucion')
             qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
@@ -147,7 +151,7 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
             result2 = qUtil.getResults()   
             
             qUtil.setResetVars()
-            result2 = result2.map(obj => ({ ...obj.dpto.dataValues, atributo: obj.atributo, valor: obj.valor }))
+            result2 = result2.map(obj => ({ ...obj.dpto, atributo: obj.atributo, valor: obj.valor }))
         }
 
         //procesando Results

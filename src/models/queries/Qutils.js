@@ -103,7 +103,7 @@ module.exports = class Qutils {
   }
   
   getResults() {
-    return this.#results
+    return JSON.parse(JSON.stringify(this.#results))
   }
   getOpOptions() {
     return this.#opOptions
@@ -154,7 +154,7 @@ module.exports = class Qutils {
    */
   async findID(datoKey) {
     const data = await this.#table.findByPk(datoKey)
-    this.#results = data ? data.dataValues : {}
+    this.#results = data ? data : {}
 
   }
 

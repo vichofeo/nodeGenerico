@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
         as:'padre',
         foreignKey: 'codigo_root',
         targetKey: 'codigo'
+      }),
+      u_frm.hasMany(models.u_frm_evaluadores,{
+        as:'evaluadores',
+        foreignKey: 'frm_id',
+        targetKey: 'frm_id'
       })
     }
   }
@@ -31,9 +36,9 @@ module.exports = (sequelize, DataTypes) => {
       tipo_acrehab: { type: DataTypes.STRING(64), allowNull: true },
       codigo: { type: DataTypes.STRING(24), allowNull: false },
       codigo_root: { type: DataTypes.STRING(24), allowNull: false, defaultValue: '-1' },
-      nombre_frm: { type: DataTypes.STRING(1024), allowNull: false },
+      //nombre_frm: { type: DataTypes.STRING(1024), allowNull: false },
       nombre_corto: { type: DataTypes.STRING(10), allowNull: true },
-      proposito: { type: DataTypes.TEXT, allowNull: true },
+      //proposito: { type: DataTypes.TEXT, allowNull: true },
       parametro: { type: DataTypes.TEXT, allowNull: true },
       ordenanza: { type: DataTypes.TEXT, allowNull: true },
       obligatorio: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },

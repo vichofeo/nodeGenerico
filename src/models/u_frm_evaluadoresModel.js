@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class u_frm_evaluacion extends Model {
+  class u_frm_evaluadores extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,14 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  u_frm_evaluacion.init(
+  u_frm_evaluadores.init(
     {
-      evaluacion_id: { type: DataTypes.UUID, allowNull: false, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
-      institucion_id: { type: DataTypes.STRING(64), allowNull: false },
-      tipo_acrehab: { type: DataTypes.STRING(64), allowNull: false },
-      frm_id: { type: DataTypes.INTEGER, allowNull: false },
+      evaluacion_id: { type: DataTypes.UUID, allowNull: false, primaryKey: true },      
+      frm_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
+      dni_evaluador: { type: DataTypes.STRING(25), allowNull: true, primaryKey: true },
             
-      concluido: { type: DataTypes.INTEGER(), allowNull: false, defaultValue: 0 },
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },      
       activo: { type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y' },
@@ -26,12 +24,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'u_frm_evaluacion',
+      modelName: 'u_frm_evaluadores',
       timestamps: false,
       freezeTableName: true,
-      tableName: 'u_frm_evaluacion',
+      tableName: 'u_frm_evaluadores',
       classMethods: {},
     }
   )
-  return u_frm_evaluacion
+  return u_frm_evaluadores
 }
