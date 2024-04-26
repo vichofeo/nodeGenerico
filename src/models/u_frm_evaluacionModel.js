@@ -9,6 +9,37 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      u_frm_evaluacion.belongsTo(models.u_frm,{
+        as:'frm',
+        foreignKey: 'frm_id',
+        targetKey: 'frm_id'
+      }),
+      u_frm_evaluacion.belongsTo(models.ae_institucion,{
+        as:'eess',
+        foreignKey: 'institucion_id',
+        targetKey: 'institucion_id'
+      })
+      u_frm_evaluacion.belongsTo(models.r_is_atributo,{
+        as:'tipo',
+        foreignKey: 'tipo_acrehab',
+        targetKey: 'atributo_id'
+      }),
+      u_frm_evaluacion.belongsTo(models.u_is_atributo,{
+        as:'estado',
+        foreignKey: 'concluido',
+        targetKey: 'atributo_id'
+      }),
+      u_frm_evaluacion.belongsTo(models.au_persona,{
+        as:'registerby',
+        foreignKey: 'dni_register',
+        targetKey: 'dni_persona'
+      }),
+      u_frm_evaluacion.hasMany(models.u_frm_evaluadores,{
+        as:'evaluadores',
+        foreignKey: 'evaluacion_id',
+        targetKey: 'evaluacion_id'
+      })
+
     }
   }
   u_frm_evaluacion.init(
@@ -18,7 +49,8 @@ module.exports = (sequelize, DataTypes) => {
       tipo_acrehab: { type: DataTypes.STRING(64), allowNull: false },
       frm_id: { type: DataTypes.INTEGER, allowNull: false },
             
-      concluido: { type: DataTypes.INTEGER(), allowNull: false, defaultValue: 0 },
+      concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
+      excelencia: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },      
       activo: { type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y' },

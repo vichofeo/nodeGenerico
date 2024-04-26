@@ -26,6 +26,11 @@ router.get("/eval/getEval/:idx", authMiddleWare, evalController.getDataEvalView)
 //formularios de evaluacion acreditacion 
 router.get("/frm/getFrm/:idx", authMiddleWare, evalController.getFrmView)
 
+//Plan de accion
+router.post("/eval/pac/save", authMiddleWare, evalController.pacSave) 
+router.get("/eval/pac/:idx/get", authMiddleWare, evalController.pacView)
+
+
 
 //accesos para proceso de evaluacion segun formulario
 

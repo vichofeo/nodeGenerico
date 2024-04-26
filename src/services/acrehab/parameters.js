@@ -57,7 +57,7 @@ const PARAMETROS = {
     },
     
     evaluacionn:{
-        table: 'u_frm_evaluacion e, u_frm f , r_is_atributo t, ae_institucion i, al_departamento d, ae_institucion eg, u_frm_evaluadores v, au_persona p',
+        table: 'u_frm f , r_is_atributo t, ae_institucion i, al_departamento d, ae_institucion eg, u_frm_evaluadores v, au_persona p, au_persona cre, u_frm_evaluacion e',
         alias: 'evaluacionn',
         cardinalidad: "n",
         linked:"evaluacion",
@@ -66,29 +66,39 @@ const PARAMETROS = {
         string_agg(distinct p.primer_apellido, ',' ORDER BY p.primer_apellido) AS evaluadores,
         f.parametro as frm,
         e.concluido, e.activo,
+        cre.primer_apellido as creador,
         CASE WHEN strpos(string_agg(DISTINCT v.dni_evaluador, ',' ),'$dni')>0 THEN false ELSE true END AS ver,
         TO_CHAR(e.create_date, 'dd/mm/yyyy') as creacion`,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },        
                     { value: "evaluadores", text: "Evaluador(es)" }, 
                     { value: "frm", text: "FORM." }, 
-                    { value: "ver", text: "Accion" },
-                    { value: "concluido", text: "Concluido" },                     
-                    { value: "activo", text: "Activo" }, { value: "creacion", text: "Creacion" }
+                    { value: "ver", text: "Accion" },                   
+                    
+                    { value: "creacion", text: "Creacion" },
+                    {value:'creador', text:'Creado Por'},
+                    { value: "concluido", text: " " },                     
                     
         ],
         key: [],
         precondicion: ['e.frm_id =  f.frm_id', 'e.tipo_acrehab =  t.atributo_id', 'e.institucion_id =  i.institucion_id', 
         'e.evaluacion_id =  v.evaluacion_id', 'v.dni_evaluador =  p.dni_persona',
-            'i.cod_pais =  d.cod_pais', 'i.cod_dpto =  d.cod_dpto', 'i.institucion_root =  eg.institucion_id'],
+            'i.cod_pais =  d.cod_pais', 'i.cod_dpto =  d.cod_dpto', 'i.institucion_root =  eg.institucion_id',
+        'e.dni_register=cre.dni_persona'],
         groupOrder: `GROUP BY e.evaluacion_id, 
                         d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
                         f.parametro,
-                        e.concluido, e.activo,
-                        e.create_date
+                        e.concluido, 
+                        atr1.atributo, atr1.color,
+                        e.activo,
+                        e.create_date, cre.primer_apellido
                         ORDER BY  e.create_date desc `,//null string    
         update: [],
-        referer: [            
+        referer: [ 
+            { ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'e.concluido',
+
+
+}           
         ],
     },
    

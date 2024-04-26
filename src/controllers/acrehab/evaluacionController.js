@@ -83,10 +83,30 @@ const getFrmView = async (req, res)=>{
     
 }
 
+/**
+ * seccion para plan de accion 
+ */
+const pacSave = async (req, res) =>{        
+    const token =  req.headers.authorization
+
+    const result =  await service.pacSave({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+const pacView = async (req, res)=>{    
+    const idx =  req.params.idx    
+    const token = req.headers.authorization
+
+    const result = await service.pacView({idx:idx, token:token}, handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+    
+}
 module.exports =  {
     getDataFrm, getDataFrmView,
     getDataFrmSimplex,  getDataFrmSimplexView,
     evalSimplexSave,
     getDataMonitorView, getDataEvalView, 
-    getFrmView
+    getFrmView,
+    pacSave, pacView
 }

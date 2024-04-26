@@ -153,7 +153,7 @@ module.exports = class Qutils {
    * @returns 
    */
   async findID(datoKey) {
-    const data = await this.#table.findByPk(datoKey)
+    const data = await this.#table.findByPk(datoKey,{include: this.#include})
     this.#results = data ? data : {}
 
   }

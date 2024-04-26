@@ -20,14 +20,16 @@ module.exports = (sequelize, DataTypes) => {
       atributo_id: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true, },
       atributo: { type: DataTypes.STRING(128), allowNull: false, },
       color: { type: DataTypes.STRING(64), allowNull: false, },
-      condicionante: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
+      condicionante: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },      
       grupo_atributo: { type: DataTypes.STRING(64), allowNull: false, },
+      factor: { type: DataTypes.INTEGER, allowNull: false, defaultValue:1 },
+      pac: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
 
     },
     {
       sequelize,
       modelName: 'u_is_atributo',
-      timestamps: true,
+      timestamps: false,
       freezeTableName: true,
       tableName: 'u_is_atributo',
       classMethods: {},

@@ -51,6 +51,7 @@ module.exports = (sequelize, DataTypes) => {
       dni_register: { type: DataTypes.STRING(25), allowNull: true },
       parametros: { type: DataTypes.STRING(64), allowNull: true },
       es_parametro: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
+      su_peso: { type: DataTypes.DOUBLE, allowNull: false, defaultValue: -1 },
     },
     {
       sequelize,

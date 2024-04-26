@@ -9,7 +9,7 @@ const PDEPENDENCIES = {
             institucion_id: ['Establecimiento de Salud', false, true, 'C'],
             tipo_acrehab: ['Tipo Formulario a Aplicar', false, true, 'C'],
             frm_id: ['Formulario de Evaluacion', false, true, 'C'],
-            dni_evaluador:['Evaluador', false, true, 'C'],
+            
         }, 
         ilogic: {
             cod_dpto:`SELECT DISTINCT d.cod_dpto AS VALUE, d.nombre_dpto AS text
@@ -40,12 +40,7 @@ const PDEPENDENCIES = {
             WHERE f.tipo_acrehab =  a.atributo_id
             AND f.codigo_root='-1' AND a.atributo_id= '$campoForeign' 
             ORDER BY 2`,
-            dni_evaluador: `SELECT p.dni_persona AS VALUE,   p.primer_apellido || ' ' || p.segundo_apellido ||' '|| p.nombres ||' ('||apu.login||')' AS TEXT
-            FROM aep_institucion_personal ip, au_persona p, apu_credencial apu
-            WHERE ip.dni_persona = p.dni_persona
-            AND  ip.institucion_id =  apu.institucion_id AND ip.dni_persona=apu.dni_persona
-            AND ip.institucion_id = '$inst'
-            ORDER BY 2`
+       
         },
         referer: [        
         ],

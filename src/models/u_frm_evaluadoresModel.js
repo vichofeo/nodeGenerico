@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      u_frm_evaluadores.belongsTo(models.au_persona,{
+        as:'evaluador',
+        foreignKey: 'dni_evaluador',
+        targetKey: 'dni_persona'
+      })
     }
   }
   u_frm_evaluadores.init(

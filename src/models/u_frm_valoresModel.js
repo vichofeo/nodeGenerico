@@ -8,7 +8,21 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      // define association here      
+      u_frm_valores.hasOne(models.u_frm_plan_accion,{
+        as:'tpac',
+        foreignKey: 'valores_id',
+        targetKey: 'valores_id'
+      }),  
+      u_frm_valores.belongsTo(models.u_is_atributo,{
+        as:'value_labels',
+        foreignKey: 'valor',
+//        targetKey: 'valor'
+      }),
+      u_frm_valores.belongsTo(models.u_frm,{
+        as:'frm',
+        foreignKey: 'frm_id'
+      })
     }
   }
   u_frm_valores.init(
@@ -21,7 +35,9 @@ module.exports = (sequelize, DataTypes) => {
       observacion: { type: DataTypes.TEXT, allowNull: true },
       create_date: { type: DataTypes.DATE, allowNull: false },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
-      dni_register: { type: DataTypes.STRING(25), allowNull: true }
+      dni_register: { type: DataTypes.STRING(25), allowNull: true },
+      
+      concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
       
     },
     {

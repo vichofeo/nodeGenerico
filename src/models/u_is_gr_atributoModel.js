@@ -19,13 +19,13 @@ module.exports = (sequelize, DataTypes) => {
   u_is_gr_atributo.init(
     {
       grupo_atributo: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true, },
-      grupo: { type: DataTypes.STRING(128), allowNull: false },
+      grupo: { type: DataTypes.STRING(128), allowNull: false }
 
     },
     {
       sequelize,
       modelName: 'u_is_gr_atributo',
-      timestamps: true,
+      timestamps: false,
       freezeTableName: true,
       tableName: 'u_is_gr_atributo',
       classMethods: {},
