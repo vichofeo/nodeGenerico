@@ -29,6 +29,7 @@ router.get("/frm/getFrm/:idx", authMiddleWare, evalController.getFrmView)
 //Plan de accion
 router.post("/eval/pac/save", authMiddleWare, evalController.pacSave) 
 router.get("/eval/pac/:idx/get", authMiddleWare, evalController.pacView)
+router.post("/eval/tpac/save", authMiddleWare, evalController.tpacSave)
 
 
 

@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
         as:'capitulo',
         foreignKey: 'cap_id',
 //        targetKey: 'valor'
+      }),
+      u_frm_plan_accion.belongsTo(models.au_persona,{
+        as:'register',
+        foreignKey: 'dni_register',
+//        targetKey: 'valor'
       })
 
     }
@@ -35,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       seccion_id: { type: DataTypes.INTEGER, allowNull: false },
       cap_id: { type: DataTypes.INTEGER, allowNull: false },      
       parametro_id: { type: DataTypes.INTEGER, allowNull: false },
-      fecha_registro: { type: DataTypes.DATE, allowNull: true },
+      fecha_registro: { type: DataTypes.DATEONLY, allowNull: true },
       fecha_complimiento: { type: DataTypes.DATEONLY, allowNull: true },
       acciones: { type: DataTypes.TEXT, allowNull: true },
       dni_evaluador: { type: DataTypes.STRING(25), allowNull: false },

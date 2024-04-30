@@ -102,11 +102,18 @@ const pacView = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
     
 }
+const tpacSave = async (req, res) =>{        
+    const token =  req.headers.authorization
+
+    const result =  await service.tpacSave({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 module.exports =  {
     getDataFrm, getDataFrmView,
     getDataFrmSimplex,  getDataFrmSimplexView,
     evalSimplexSave,
     getDataMonitorView, getDataEvalView, 
     getFrmView,
-    pacSave, pacView
+    pacSave, pacView, tpacSave
 }

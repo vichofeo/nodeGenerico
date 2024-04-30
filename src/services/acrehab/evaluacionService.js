@@ -17,6 +17,7 @@ const frmUtil = new FrmUtils()
 
 const estado_terminado =  7
 const caracter_porcentaje = '% '
+const max_updated_tpac = 3
 const getDataTreeFrm = async (group_id, datos, evaluacion = '-1', viewAll = false) => {
   //valores de session paa verificar si es del usuario logueado
   const obj_cnf = frmUtil.getObjSession()
@@ -804,7 +805,7 @@ const pacView = async (dto, handleError) => {
     //dato incial de formulario
     qUtil.setResetVars()
     qUtil.setTableInstance('u_frm_valores')
-    qUtil.setAttributes(['valores_id'])
+    qUtil.setAttributes(['valores_id','observacion'])
     qUtil.setOrder([qUtil.col('tpac.seccion.orden'), qUtil.col('frm.orden')])
     qUtil.setInclude({
       association: 'frm', required: false,
@@ -812,7 +813,7 @@ const pacView = async (dto, handleError) => {
     })
     qUtil.pushInclude({
       association: 'tpac', required: true,
-      attributes:['fecha_registro','fecha_complimiento', 'acciones', 'dni_evaluador'],
+      attributes:['fecha_registro','fecha_complimiento', 'acciones', 'dni_evaluador','conteo'],
       include:[{
         association: 'formulario', required: true,
         attributes:['codigo', 'codigo_root', 'parametro', 'nombre_corto']
@@ -824,6 +825,9 @@ const pacView = async (dto, handleError) => {
       {
         association: 'capitulo', required: true,
         attributes:['codigo', 'codigo_root', 'parametro', 'nombre_corto']
+      },{
+        association: 'register', required: true,
+        attributes:['primer_apellido','nombres']
       }
     ]
     })
@@ -835,19 +839,27 @@ const pacView = async (dto, handleError) => {
     const datos = {}
     for (const element of result) {
       const codigo = element.tpac.seccion.codigo
-      if(!Array.isArray(datos[codigo])) datos[codigo] = []
+      if(typeof datos[codigo]=='undefined') datos[codigo] = {codigo: element.tpac.seccion.codigo, codigo_root: element.tpac.seccion.codigo_root, parametro: element.tpac.seccion.parametro}
+      if(!Array.isArray(datos[codigo][element.tpac.capitulo.codigo])) datos[codigo][element.tpac.capitulo.codigo] = []
       const evaluador = element.tpac.dni_evaluador
+      const persona = element.tpac.register 
       delete element.tpac.dni_evaluador
+      delete element.tpac.register 
+      
+      
       const obj ={
         idx: element.valores_id,
         codigo: element.frm.codigo,
         codigo_root: element.frm.codigo_root,        
         parametro: element.frm.parametro,
+        obs:element.observacion,
+        evaluador: `${persona.primer_apellido} ${persona.nombres}`,
         continue: (evaluador == obj_cnf.dni_register),
+        updated: (element.tpac.conteo<= max_updated_tpac),
         ...element.tpac
       }
-      datos[codigo].push(obj)
-      
+      //datos[codigo].push(obj)
+      datos[codigo][element.tpac.capitulo.codigo].push(obj)
     }
 
     return {
@@ -861,6 +873,73 @@ const pacView = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
+const tpacSave = async (dto, handleError) => {
+  try {
+    
+    // obtiene datos de session
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+
+    //id de  evaluacion
+    const idx = dto.idx
+    
+    //obtiene for de cnf evaluacion
+    qUtil.setTableInstance("u_frm_plan_accion")
+    await qUtil.findID(idx)
+    const dtpac = qUtil.getResults()
+
+    //verifica q sea el usuario correcto
+    if(dtpac.dni_evaluador == obj_cnf.dni_register){
+      //continua guardado      
+      if(dtpac.conteo<=max_updated_tpac){
+        if(dtpac.conteo == 0) dto.fecha_registro =  new Date()
+        else delete dto.fecha_registro
+        dto.conteo = dtpac.conteo + 1
+        //dto.valores_id =  dto.idx
+        const data =  Object.assign(dto, obj_cnf)
+        delete data.create_date
+        data.last_modify_date_time =  new Date()
+        qUtil.startTransaction()
+        qUtil.setTableInstance("u_frm_plan_accion")
+        qUtil.setDataset(data)
+        qUtil.setWhere({valores_id: dto.idx})
+        await qUtil.modify()
+
+        qUtil.commitTransaction()
+
+        return {
+          ok: true,
+         // data: parametros,
+          message: 'Requerimiento Exitoso. Parametros Guardados',
+        }
+
+      }else{
+        handleError.setCode(403)
+      return {
+        ok: false,        
+        message: 'Ya no cuenta con Numero de actualizaciones permitidas ',
+      }
+      }
+      
+
+      
+    }else{
+      handleError.setCode(401)
+      return {
+        ok: false,        
+        message: 'Usuario no Autorizado',
+      }
+    }
+
+    
+
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    console.log(error)
+    handleError.setMessage('Error de sistema: SAVETPAC')
+    handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
   getDataFrm,
   getDataFrmView,
@@ -869,5 +948,5 @@ module.exports = {
   evalSimplexSave,
   getDataMonitorView, getDataEvalView,
   getFrmView,
-  pacSave, pacView
+  pacSave, pacView, tpacSave
 }
