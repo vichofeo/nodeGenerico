@@ -526,6 +526,7 @@ const getDataMonitorView = async (dto, handleError) => {
     const frm_id = results.frm_id
     const evaluador = results.dni_register
     const excelencia =  results.excelencia
+    
     results.evaluadores = [...new Set(results.evaluadores.map(obj=>(`${obj.evaluador.apellido} ${obj.evaluador.nombres}`)))].join(', ')
     delete results.evaluacion_id
     delete results.institucion_id
