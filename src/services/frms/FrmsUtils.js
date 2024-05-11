@@ -348,7 +348,7 @@ module.exports = class FrmsUtils {
         await this.#qUtils.excuteSelect()
 
         const result = this.#qUtils.getResults()
-        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo }),
+        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo })
           console.log('************** DEFAUL SELECTED', selected)
         parametros.valores[key] = {
           selected: selected,
@@ -357,6 +357,40 @@ module.exports = class FrmsUtils {
       }
     }
 
+    //procesa si existe primal  Un solo query para combodependencia
+    if(objParamModel.primal){
+      const sattrib = '$a$'
+      const swhere =  '$w$'
+      let queryPrimal = objParamModel.primal.query
+      const equivalencia =  objParamModel.primal.equivalencia
+      let primalCondition = []
+      let pWhere=""
+      //aplica mismo query a todos los campos
+      for (const campo in objParamModel.campos) {
+        const tempo = dataIn ? dataIn[campo] : {} 
+        const attributes = `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text` 
+        let query = queryPrimal.replaceAll(sattrib, attributes)
+        query = query.replaceAll(swhere, pWhere)
+        //ejecuta query
+        this.#qUtils.setQuery(query)
+        await this.#qUtils.excuteSelect()
+        let result = this.#qUtils.getResults()
+        if(result.length>0 &&  objParamModel.withInitial) result.unshift(this.#qUtils.getInitialOpCbox())
+        
+        selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
+        //construye condicion para la siguiente iteracion solo si es distinto de -1
+        if(selected.value != '-1'){
+          primalCondition.push(`${equivalencia[campo][0]}='${selected.value}'`)
+          pWhere = 'AND ' + primalCondition.join(' AND ') 
+        }
+        //vacias datos
+        parametros.valores[campo] = {
+          selected: selected,
+          items: result
+        }
+
+      }
+    }
     this.#results = parametros // {[objParamModel.alias]:parametros}
   }
 
@@ -384,6 +418,9 @@ module.exports = class FrmsUtils {
     obj.dni_register = this.#dataSession.dni
     obj.aplicacion_id = this.#dataSession.app
     obj.create_date = new Date()
+
+    obj.login =  this.#dataSession.usr
+    
     return obj
   }
 
@@ -391,6 +428,13 @@ module.exports = class FrmsUtils {
     //this.setToken(token)
     this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
     return this.#seteaObjWithDataSession()
+  }
+
+  getObjSessionForModify(){
+    const obj = this.getObjSession()
+    delete obj.create_date
+    obj.last_modify_date_time = new Date()
+    return obj
   }
 
   #getCondicionalTransform(condicional = Array) {
@@ -550,4 +594,23 @@ module.exports = class FrmsUtils {
       this.#results = false
     }
   }
+
+  //obtiene flag de rol
+ async getRoleSession(){
+  const obj_cnf = this.getObjSession()
+  this.#qUtils.setTableInstance('apu_credencial_rol')
+  this.#qUtils.setAttributes(['role'])
+  this.#qUtils.setWhere({login:obj_cnf.login})
+  this.#qUtils.setInclude({
+    association:'app_rolex', required: false,
+    attributes:['role', 'name_role', 'primal']
+  })
+  await this.#qUtils.findTune()
+  const result = this.#qUtils.getResults()
+  return {
+    rol: result[0].app_rolex.role,
+    name_rol: result[0].app_rolex.name_role,
+    primal: result[0].app_rolex.primal,
+  }
+ } 
 }

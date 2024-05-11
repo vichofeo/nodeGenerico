@@ -88,8 +88,12 @@ const baseDataForCbx = async (dto) => {
         //obtiene los identificadores de eess validos para los comboBox segun logueo
         const datos = tk.getCnfApp(dto.token)
         const inst = new QueriesUtils(eessModel)        
-        const eess = await inst.findID(datos.inst)
+        let eess = await inst.findID(datos.inst)
+        //busca padre de institucion es es_unidad
+        console.log("\n\n aki en medio ENTRO ESTO \n\n", eess)
+        eess =  await srveg._buscaPadreUnidad(eess)
 
+        console.log("\n\n SALIDA ES \n\n", eess)
 
         const combox =  COMBOS[model]
 //obtiene indentificadores de las instituciones segun session

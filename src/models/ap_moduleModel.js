@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       
       create_date: { type: DataTypes.DATE, allowNull: false },
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' }, 
+      
+      full_image: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }, 
     },
     {
       sequelize,

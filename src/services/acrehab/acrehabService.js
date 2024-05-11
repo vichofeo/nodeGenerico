@@ -28,14 +28,22 @@ const cronograma = async (dto, handleError) => {
 
 const getDataModelN = async (dto, handleError) => {
     try {
+
+        //o´regunta si rol es primal
+        frmUtil.setToken(dto.token)
+        const obj_rol = await frmUtil.getRoleSession()
+
         dto.modelos = [dto.modelo]
         frmUtil.setParametros(PARAMETROS)
         await frmUtil.getDataParams(dto)
         const result = frmUtil.getResults()
+        
+
 
         return {
             ok: true,
             data: result,
+            role: obj_rol,
             message: "Requerimiento Exitoso"
         }
     } catch (error) {

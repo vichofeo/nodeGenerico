@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      apu_credencial_rol.belongsTo(models.ap_aplicacion_role, {
+        as: 'app_rolex',
+        foreignKey: 'role',
+        targetKey: 'role'
+      })
     }
   }
   apu_credencial_rol.init(

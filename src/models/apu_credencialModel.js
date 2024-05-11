@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
          // define association here
          apu_credencial.hasMany(models.apu_credencial_rol, {
             as: 'rol',
-            foreignKey:'login'
+            foreignKey:'login',
+            target: 'login'
           })
       }
    }

@@ -14,7 +14,15 @@ const menuGeoreferencia = async (req, res) => {
   }
   
 }
+const menuOpsRole = async (req, res)=>{
+  
+    const token = req.headers.authorization
 
+    const result = await menuGeoRef.getMenuOpsRole({token:token}, handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 module.exports = {
   menuGeoreferencia,
+  menuOpsRole
 }

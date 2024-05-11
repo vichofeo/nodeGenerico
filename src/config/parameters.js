@@ -560,13 +560,13 @@ const PARAMETROS = {
         alias: 'Personal',
         cardinalidad: "1",
         campos: {
-            tipo_dni: ['Tido de identificacion', false, true, 'C'],
-            dni: ['Numero Documento', false, true, 'TN',24],
-            dni_complemento: ['Complemento', false, true, 'TT',2],
-            fecha_nacimiento: ['Fecha Nacimiento', true, true, 'F'],
-            primer_apellido: ['Primer Apellido', true, true, 'TT',24],
-            segundo_apellido: ['Segundo Apellido', true, false, 'TT',24],
-            nombres: ['Nombres', true, true, 'TT',64],
+            tipo_dni: ['Tido de identificacion', false, true, 'TP'],
+            dni: ['Numero Documento', false, true, 'TP',24],
+            dni_complemento: ['Complemento', false, true, 'TP',2],
+            fecha_nacimiento: ['Fecha Nacimiento', true, true, 'TP'],
+            primer_apellido: ['Primer Apellido', true, true, 'TP',24],
+            segundo_apellido: ['Segundo Apellido', true, false, 'TP',24],
+            nombres: ['Nombres', true, true, 'TP',64],
             estado_civil: ['Estado Civil', true, true, 'C'],
             genero: ['Genero', true, true, 'C'],
             nacionalidad: ['Nacionalidad', true, true, 'C'],
@@ -748,6 +748,9 @@ const PARAMETROS = {
     },
     evaluacionn:{
         alias: 'Evaluaciones',
+    },
+    repo_pac:{
+        alias: 'Reportes PAC'
     },
 
     //modulos segun estructura RUES 3

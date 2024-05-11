@@ -5,26 +5,24 @@ const { REPORTS } = require('../../config/reports')
 const QueriesUtils = require('../../models/queries/QueriesUtils')
 
 
-
-
-
-
 const handleToken = require("./../../utils/handleToken")
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil =  new QUtils()
 
+const FrmUtils = require('./../frms/FrmsUtils')
+const frmUtil = new FrmUtils()
 
+const srveg = require("../georef/EgService")
+const { version } = require('uuid')
 
-
-
-const getDataTree = async (parent_id = '-1', root, resultado = []) => {
+const getDataTree = async (parent_id = '-1', root, resultado = [], module="ssepi", component="sssscp") => {
 
     qUtil.setTableInstance('ae_institucion')
     qUtil.setAttributes(['institucion_id', [qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
     let cnf = {
         //required: false,
         association: 'dpto',
-        attributes: qUtil.transAttribByComboBox([qUtil.literal("'/ssepi/sssscp/'||dpto.cod_dpto"), 'nombre_dpto'])
+        attributes: qUtil.transAttribByComboBox([qUtil.literal("'/"+module+"/"+component+"/'||dpto.cod_dpto"), 'nombre_dpto'])
     }
     qUtil.setInclude(cnf)
     //qUtil.setWhere({ formulario_id: idx })
@@ -43,7 +41,7 @@ const getDataTree = async (parent_id = '-1', root, resultado = []) => {
             if (tmp) {
                 resultado[tmp.text] = { value: tmp.value, text: tmp.text, atributo: result[i].atributo, valor: result[i].valor, }
             }
-            await getDataTree(result[i].institucion_id, root, resultado)
+            await getDataTree(result[i].institucion_id, root, resultado, module, component)
         }
 
         //return resultado
@@ -68,6 +66,7 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
         await qUtil.findTune()//findID(datos.inst)
         
         let result = qUtil.getResults()[0]
+        result = await srveg._buscaPadreUnidad(result)
         qUtil.setResetVars()
 
         
@@ -203,7 +202,199 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
 
 }
 
+/**
+ * Metodo para obteneer las opciones de acceso segun el rol: extrae modulo-componente
+ * @param {*} dto 
+ * @param {*} handleError 
+ */
+const getMenuOpsRole = async (dto, handleError) => {
+    try {
+        // obtiene datos de session
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+    
+    //obtiene nombre de aplicacion
+    qUtil.setTableInstance('ap_aplicacion')
+    qUtil.setAttributes(['nombre_aplicacion', 'version', 'descripcion'])
+    await qUtil.findID(obj_cnf.aplicacion_id)
+    const dAplicacion =  qUtil.getResults()
+
+    //obtiene datos de la institucion
+    qUtil.setTableInstance('ae_institucion')
+    await qUtil.findID(obj_cnf.institucion_id)
+    const dInstitucion =  qUtil.getResults()
+
+    //obtiene datos del usuario
+    qUtil.setTableInstance('au_persona')
+    await qUtil.findID(obj_cnf.dni_register)
+    const dPersona =  qUtil.getResults()
+
+    const moreData =  {
+        persona: dPersona.primer_apellido+' '+dPersona.nombres,
+        aplicacion: dAplicacion.nombre_aplicacion,
+        version: dAplicacion.version,
+        adesc: dAplicacion.descripcion,
+        institucion: dInstitucion.nombre_institucion,
+        tipo: dInstitucion.tipo_institucion_id,
+        mail: dInstitucion.correo_electronico
+    }
+    //busca institucion root si es unidad
+
+    //obtiene rol y modulos
+    qUtil.setTableInstance('apu_credencial')    
+    qUtil.setInclude({
+        association: 'rol', required: true,
+        attributes: ['role'],
+        where: {activo:'Y'},
+        include:[{
+            association: 'app_rolex', required: true,
+            //where: {aplicacion_id: obj_cnf.aplicacion_id},
+            attributes:['name_role','description'],
+            where: {activo:'Y'},
+            include:[{
+                association: 'routes', required: true,
+                attributes:['module','component', 'variable'],
+                where: {activo:'Y'},
+                include:[{
+                    association: 'modulo', required: true,
+                    attributes:['name_module', 'icon','layout', 'description', 'orden','full_image']
+                },{
+                    association: 'componente', required: true,
+                    attributes:['route_access', 'name_component', 'base_folder', 'prop', 'description']
+                }]
+            }]            
+        }]
+    })
+    qUtil.setOrder([qUtil.col('rol.app_rolex.routes.modulo.orden')])
+    
+
+    await qUtil.findID(obj_cnf.login)
+    result =  qUtil.getResults()
+
+    const icons = {}
+    const rutas = {}
+    const modulos = {}
+    
+
+    for (const element of result.rol) {
+        for(const e of element.app_rolex.routes){
+            console.log("\n\n\n ............", e)
+            if(!rutas[e.module]) rutas[e.module] = []
+
+            console.log("\n\n\n ............", e.module)
+            
+            icons[e.module] =  e.modulo.icon
+            modulos[e.module] =  {name: e.modulo.name_module, description: e.modulo.description, rol: element.app_rolex.name_role, rol_desc: element.app_rolex.description, full_image: e.modulo.full_image }
+
+            //verifica si se trata de enlaces dinamiccos del tipo var/:idx
+            if(e.componente.prop){
+                //llama a equivalencia en agrupado de parametros
+                if(AGRUPADO[e.component]){
+                    const variable_control =  e.variable ? e.variable.split('') : "111111111111111111111111111111111111111".split('')
+
+                   for (const index in AGRUPADO[e.component]) {
+                    const opcion = AGRUPADO[e.component][index]
+                    const icon = AGRUPADO[e.component+'_icons'][index]
+
+                    //empareja con opciones de BD para su disposicion
+                    if(variable_control[index]>0){
+                        rutas[e.module].push({
+                            value:`/${e.module}/${e.component}/${opcion}`,
+                            text: PARAMETROS[opcion]?.alias ? PARAMETROS[opcion].alias: REPORTS[opcion].alias,
+                            icon: icon
+                        })
+                    }
+                    
+                   }//fin for de sub accesos por agrupado
+                }else{
+                    //busca por query solo valido para mapas y snis
+                    rutas[e.module] = await __menuGeoOpsRoles(e.module, e.component, dInstitucion)
+                }
+            }else{
+                rutas[e.module].push({
+                    value: `/${e.module}/${e.component}`,
+                    text: e.componente.name_component,
+                    desc: e.componente.description                    
+                })
+            }
+            
+        }
+    }
+
+    return {
+        ok: true,
+        //data2: result,
+        more_data: moreData,
+        rutas: {rutas: rutas, icons: icons, modules: modulos},
+        
+        message: "Requerimiento Exitoso"
+    }
+    } catch (error) {
+        console.log(error)
+    handleError.setMessage('Error de sistema: MENUGEOOPS__SRV')
+    handleError.setHttpError(error.message)
+    }
+}
+/**
+ * Metodo Interno para obtener submenu para mapas
+ * @param {*} dIntitucion 
+ * @returns 
+ */
+const __menuGeoOpsRoles = async (module, component, dIntitucion) => {
+        
+        let result = await srveg._buscaPadreUnidad(dIntitucion)        
+        
+        let whereAux = null
+        
+        switch (result.tipo_institucion_id) {
+            case 'EG':                
+                whereAux = {institucion_root: result.institucion_id}
+                break;
+            case 'EESS':                
+                whereAux = {institucion_id: result.institucion_id}                
+                break;
+        
+            default:
+              whereAux =  -1
+                break;
+        }
+        let result2 = null
+
+        if (result.tipo_institucion_id == 'ASUSS'){
+            console.log("\n\n sonnnnnnnnnnnnnnnnnnnnnnn ", module)
+            result2 = Object.values(await getDataTree(result.institucion_id, result.institucion_root, [], module, component))
+            
+        }else {
+            
+            qUtil.setTableInstance('ae_institucion')
+            qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
+            cnf = {
+                association: 'dpto',
+                attributes: qUtil.transAttribByComboBox([qUtil.literal("'/"+module+"/"+component+"/'||dpto.cod_dpto"), 'nombre_dpto'])
+            }
+            qUtil.setInclude(cnf)
+            
+            qUtil.setWhere(whereAux)
+            qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
+                        
+            await qUtil.findTune()
+            result2 = qUtil.getResults()   
+            
+            qUtil.setResetVars()
+            result2 = result2.map(obj => ({ ...obj.dpto, atributo: obj.atributo, valor: obj.valor }))
+        }
+
+        //procesando Results
+        if (result2.length > 1) {
+            result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo: 'ssepi', valor: 'all' })            
+        } 
+        
+        return result2
+
+    
+
+}
 
 module.exports = {
-    menuGeoreferencia
+    menuGeoreferencia, getMenuOpsRole
 }

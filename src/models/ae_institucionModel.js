@@ -70,6 +70,7 @@ module.exports = (sequelize, DataTypes) => {
       parent_grp_id: { type: DataTypes.STRING(64), allowNull: true },
       root: { type: DataTypes.STRING(64), allowNull: true },
       tipo_institucion_id: { type: DataTypes.STRING(64), allowNull: false },
+      es_unidad:{type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false}
     },
     {
       sequelize,

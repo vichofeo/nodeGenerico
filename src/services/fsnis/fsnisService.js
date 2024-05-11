@@ -77,7 +77,8 @@ const fsnisReportParams = async (dto) => {
         //obtiene los identificadores de eess validos para los comboBox segun logueo
         const datos = tk.getCnfApp(dto.token)
         const inst = new QueriesUtils(eessModel)
-        const eess = await inst.findID(datos.inst)
+        let eess = await inst.findID(datos.inst)
+        eess =  await srveg._buscaPadreUnidad(eess)
 
 
         const result = await srveg.getDataTreeEntidades(idx, eess.tipo_institucion_id, eess.institucion_root, eess.institucion_id)

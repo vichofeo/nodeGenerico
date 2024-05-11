@@ -18,7 +18,13 @@ module.exports = (sequelize, DataTypes) => {
         as: 'componente',
         foreignKey: 'component',
         targetKey: 'component'
+      }), 
+      ap_routes_cnf.belongsTo(models.ap_aplicacion_role, {
+        as: 'app_role',
+        foreignKey: 'role',
+        targetKey: 'role'
       })
+
     }
   }
   ap_routes_cnf.init(

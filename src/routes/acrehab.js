@@ -30,6 +30,7 @@ router.get("/frm/getFrm/:idx", authMiddleWare, evalController.getFrmView)
 router.post("/eval/pac/save", authMiddleWare, evalController.pacSave) 
 router.get("/eval/pac/:idx/get", authMiddleWare, evalController.pacView)
 router.post("/eval/tpac/save", authMiddleWare, evalController.tpacSave)
+router.post("/eval/tpac/report", authMiddleWare, evalController.tpacReport)
 
 
 

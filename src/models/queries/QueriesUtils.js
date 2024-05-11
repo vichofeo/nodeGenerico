@@ -1,4 +1,5 @@
 const { where } = require("sequelize")
+const { Op } = require('sequelize');
 
 module.exports = class QueriesUtils {
   #table
@@ -214,5 +215,9 @@ module.exports = class QueriesUtils {
 
   modifyResultToArray(result) {
     return this.#transformResultArray(result)
+  }
+
+  OpOr(){
+    return Op.or
   }
 }

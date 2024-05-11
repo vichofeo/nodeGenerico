@@ -941,6 +941,42 @@ const tpacSave = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
+
+const tpacReport = async (dto, handleError) => {
+  try {
+    
+    // obtiene datos de session
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+    const aa = '$a$'
+    const ww =  '$w$'
+    const model =  dto.model
+    const parametros =  dto.parameters
+    let query = PCBOXS[model]?.primal?.query
+    const attrib =  PCBOXS[model]?.primal?.attributes 
+    const where = []
+    for (const key in parametros) {
+      if(parametros[key]!='-1'){
+        where.push(`${PCBOXS[model]?.primal?.equivalencia[key]}=''`)
+      }
+    }
+
+
+
+
+    return {
+      ok: true,
+      data: dto,
+      message: 'Requerimiento Exitoso. Parametros Guardados',
+    }
+
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    console.log(error)
+    handleError.setMessage('Error de sistema: SAVETPAC')
+    handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
   getDataFrm,
   getDataFrmView,
@@ -949,5 +985,5 @@ module.exports = {
   evalSimplexSave,
   getDataMonitorView, getDataEvalView,
   getFrmView,
-  pacSave, pacView, tpacSave
+  pacSave, pacView, tpacSave, tpacReport
 }

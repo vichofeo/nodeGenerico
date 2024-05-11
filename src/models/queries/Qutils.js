@@ -153,7 +153,7 @@ module.exports = class Qutils {
    * @returns 
    */
   async findID(datoKey) {
-    const data = await this.#table.findByPk(datoKey,{include: this.#include})
+    const data = await this.#table.findByPk(datoKey,{include: this.#include, order: this.#order})
     this.#results = data ? data : {}
 
   }
@@ -299,6 +299,10 @@ module.exports = class Qutils {
       console.log(error);
       return this.#sinDatoByCombo
     };
+  }
+
+  getInitialOpCbox(){
+    return this.#initialByCombo
   }
 
   // ----------------- metodos adicionales a queries

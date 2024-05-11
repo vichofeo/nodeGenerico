@@ -4,6 +4,7 @@ const router =  express.Router()
 const  authMiddleWare = require('./../middlewares/authMiddleware')
 const adminController = require('../controllers/admin/adminController')
 
+const menuController =  require('../controllers/admin/menuController')
 //admin
 router.get("/:modelo", authMiddleWare, adminController.getDataForParam)
 router.get("/:idx/:modelo", authMiddleWare, adminController.getDataModelByIdxModel)
@@ -15,6 +16,10 @@ router.post("/saveUsr", authMiddleWare, adminController.saveUsr)
 
 router.post("/eess", authMiddleWare, adminController.getTreeEess)
 
+//informacion de role
+router.post("/rolex", authMiddleWare, menuController.menuOpsRole)
+
+ 
 /*router.post("/module", authMiddleWare, moduloController.guardar)
 //controller
 router.get("/submodule", authMiddleWare, moduloController.sblistar)

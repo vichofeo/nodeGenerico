@@ -6,6 +6,7 @@ const sequelize = db.sequelize;
 
 const { REPORTS } = require('../../config/reports')
 const tk = require('./../utilService')
+const srveg =  require('./EgService')
 
 //modelos
 const eessModel = db.ae_institucion
@@ -56,10 +57,15 @@ async function RecorreTree(obj, parent_id = '-1', resultado = []) {
 const reports = async (dto) => {
     try {
 
-        const institucion = await getDataCnf(dto.token)
+        let institucion = await getDataCnf(dto.token)
         const modelo = dto.modelo
+        
+        const inst = new QueriesUtils(eessModel)                
+        //busca padre de institucion es es_unidad        
+        institucion =  await srveg._buscaPadreUnidad(institucion)
+        
         //obtiene instituciones relacionadas con la institucion de la session
-        const instResults = await RecorreTree(new QueriesUtils(eessModel), institucion.institucion_id)
+        const instResults = await RecorreTree(inst, institucion.institucion_id)
         const datosResult = {}
 
         //verifica q tipo de institucion pertenece usuario de la session

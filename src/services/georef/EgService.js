@@ -8,10 +8,17 @@
 const { v4: uuidv4 } = require('uuid');
 
 const QueriesUtils = require('../../models/queries/QueriesUtils')
-const { QueryTypes, UUIDV4 } = require("sequelize")
+const { QueryTypes, UUIDV4, Association, where } = require("sequelize")
 
 const db = require('../../models/index')
 const tk = require('./../utilService')
+
+const QUtils = require('./../../models/queries/Qutils')
+const qUtil = new QUtils()
+
+const FrmUtils = require('./../frms/FrmsUtils')
+const frmUtil = new FrmUtils()
+
 
 //para realizar consultas textuales
 const sequelize = db.sequelize;
@@ -277,6 +284,24 @@ const getDataTreeEntidades = async (dpto = 'all', tipo = 'ASUSS', root, parent_i
     } else return resultado
 
 }
+/**
+ * Busca al padre si la institucion se trata del tipo unidad
+ * @param {*} eess : ALL Obj Institucion 
+ * @returns 
+ */
+const _buscaPadreUnidad =  async (eess) =>{
+    console.log("\n\n\n ENTRANDO:::",eess.es_unidad)
+    if(!eess.es_unidad){        
+        return eess
+    }else{
+        const inst = new QueriesUtils(eessModel)
+        const eess1 = await inst.findID(eess.institucion_root)
+        console.log("\n\n\n valor",eess1)
+        const salida = await _buscaPadreUnidad(eess1)
+        return salida
+    }
+    
+}
 
 /**
  * servicio que obtiene datos de establecimientos de salud para el dibjado del mapa
@@ -289,7 +314,8 @@ const dataEESS = async (data) => {
         const datos = tk.getCnfApp(data.token)
         const inst = new QueriesUtils(eessModel)
         const idx = data.idx
-        const eess = await inst.findID(datos.inst)
+        let eess = await inst.findID(datos.inst)
+        eess =  await _buscaPadreUnidad(eess)
 
         let zoom = 6
         let center = [-16.290154, -63.588653]
@@ -853,20 +879,25 @@ const weUsersget = async (dto) => {
         if (dto.swAll) {
             //obtiene los usuarios del establecimiento
             let query = `SELECT ai.nombre_institucion, p.dni_persona ,p.primer_apellido, p.nombres, 
-                        cre.login
-                        FROM ae_institucion ai, ape_aplicacion_institucion app, 
-                        aep_institucion_personal ape, au_persona p, apu_credencial cre
-                        WHERE 
-                        ai.institucion_id =app.institucion_id
-                        and ai.institucion_id = ape.institucion_id
-                        AND ape.dni_persona = p.dni_persona
-                        AND cre.institucion_id = app.institucion_id AND cre.aplicacion_id = app.aplicacion_id
-                        AND cre.institucion_id = ape.institucion_id AND cre.dni_persona = ape.dni_persona
+            cre.login, arol.role||': '||approl.name_role as rol
+            FROM ae_institucion ai, ape_aplicacion_institucion app, 
+            aep_institucion_personal ape, au_persona p, apu_credencial cre, 
+                    apu_credencial_rol arol, ap_aplicacion_role approl
+            WHERE 
+            ai.institucion_id =app.institucion_id
+            and ai.institucion_id = ape.institucion_id
+            AND ape.dni_persona = p.dni_persona
+            AND cre.institucion_id = app.institucion_id AND cre.aplicacion_id = app.aplicacion_id
+            AND cre.institucion_id = ape.institucion_id AND cre.dni_persona = ape.dni_persona
+            AND cre.login = arol.login
+            AND arol.aplicacion_id = approl.aplicacion_id AND arol.role=approl.role
  `
             let queryAux = ''
             switch (institucionLogeada.tipo_institucion_id) {
                 case 'ASUSS':
                     queryAux = `  and ai.parent_grp_id='${institucionLogeada.institucion_id}'`
+                    if(institucionLogeada.es_unidad)
+                        queryAux = `  and (ai.institucion_id='${institucionLogeada.institucion_id}' or ai.institucion_root='${institucionLogeada.institucion_id}')`
                     break;
                 case 'EG':
                     queryAux = `  and ai.institucion_root='${institucionLogeada.institucion_id}'`
@@ -917,6 +948,10 @@ const weUsersget = async (dto) => {
                     switch (institucionLogeada.tipo_institucion_id) {
                         case 'ASUSS':
                             cnf.where = { parent_grp_id: institucionLogeada.institucion_id }
+                            if(institucionLogeada.es_unidad)
+                                cnf.where = {[eess.OpOr()]: [{institucion_id: institucionLogeada.institucion_id}, {institucion_root:institucionLogeada.institucion_id}]
+                            }
+                             
                             break;
                         case 'EG':
                             cnf.where = { institucion_root: institucionLogeada.institucion_id }
@@ -943,6 +978,40 @@ const weUsersget = async (dto) => {
                         selected: instituciones,
                         items: datos
                     }
+                    //busca informacion de rol
+                    // obtiene datos de session
+                    frmUtil.setToken(dto.token)
+                    const obj_cnf = frmUtil.getObjSession()
+                    qUtil.setTableInstance('apu_credencial')
+                    qUtil.setAttributes(['login'])
+                    qUtil.setInclude({
+                        association: 'rol', required: false,
+                        attributes:['role'],
+                        include:[{
+                            association: 'app_rolex', required: false,
+                            attributes:qUtil.transAttribByComboBox(['role','name_role']),
+                            where:{activo:'Y'},
+                            include:[{
+                                association: 'role_sons', required: false,
+                                attributes:qUtil.transAttribByComboBox(['role','name_role']),
+                                where:{activo:'Y'},
+                            }]
+                        }]
+                    })
+                    qUtil.setOrder([qUtil.col('rol.app_rolex.name_role')])
+                    await qUtil.findID(obj_cnf.login)
+                    const rroles =  qUtil.getResults()
+                    let roles =  []
+                    for (const element of rroles.rol) {
+                        const tmp =  element.app_rolex.role_sons
+                        delete element.app_rolex.role_sons
+                        roles.push(element.app_rolex)
+                        roles = roles.concat(tmp)
+                    }
+
+
+                    result.data[modeloAlias].role =  {selected: qUtil.searchSelectedInDataComboBox(roles,{value:'-1'}), items: roles}
+
                 }
 
             } else {
@@ -979,66 +1048,90 @@ const weUsersget = async (dto) => {
 const weUserSave = async (dto) => {
     try {
 
-        //obtiene app_id de la session
-        const inst = tk.getCnfApp(dto.token)
-        const app = new QueriesUtils(app_instModel)
-        const appData = await app.findTune({
-            attributes: ['aplicacion_id'],
-            where: { institucion_id: inst.inst },
-        })
+        frmUtil.setToken(dto.token)
+        const obj_cnf = frmUtil.getObjSession()
+                
 
         //PERSONA
-        const tmp = dto.data.data
+        const persona = dto.data.data
+        //inicia la transaccion            
+        qUtil.startTransaction()
+        let memo="Usuario Creado Exitosamente"
         if (dto.data.insert) {
-            //inserta
-            //await dbmodel.personal.create(tmp)
-            await dbmodel.personal.update(tmp, {
-                where: {
-                    dni_persona: tmp.dni_persona,
-                },
-            });
-            //institucion aplicacion
+            
+            qUtil.setTableInstance('au_persona')
+            qUtil.setDataset(Object.assign(frmUtil.getObjSessionForModify(), persona))
+            qUtil.setWhere({dni_persona: persona.dni_persona})
+            await qUtil.modify()
 
-            //verifica si existe aplicacion institucion
-            const app_institucion = await app_instModel.findOne({ where: { institucion_id: dto.data.institucion.value, aplicacion_id: appData[0].aplicacion_id } })
-            if (!(app_institucion && app_institucion.institucion_id))
-                await app_instModel.create({ institucion_id: dto.data.institucion.value, aplicacion_id: appData[0].aplicacion_id, create_date: new Date(), dni_register: inst.dni })
-            console.log("*************** apliacon_institucion exito")
-
-
-            //institucion persona
-            await ins_perModel.create({ dni_persona: tmp.dni_persona, institucion_id: dto.data.institucion.value, create_date: new Date(), dni_register: inst.dni })
-            console.log("================= intitucion persona exito")
-            //credencial            
-            const hash = await tk.genPass(tmp.login, tmp.passs)
-            await credencialModel.create({
-                dni_persona: tmp.dni_persona, institucion_id:
-                    dto.data.institucion.value,
-                aplicacion_id: appData[0].aplicacion_id,
-                login: tmp.login,
+            //inserta por bullCreate si existe el dato o no
+            qUtil.setTableInstance('ape_aplicacion_institucion')            
+            const institucion = { institucion_id: dto.data.institucion.value, aplicacion_id: obj_cnf.aplicacion_id }
+            qUtil.setDataset([Object.assign(frmUtil.getObjSession(), institucion)])
+            await qUtil.createwLote()
+            
+            //inserta institucion persona
+            qUtil.setTableInstance('aep_institucion_personal')
+            const inst_per = { dni_persona: persona.dni_persona, institucion_id: dto.data.institucion.value}
+            qUtil.setDataset([Object.assign(frmUtil.getObjSession(), inst_per)])
+            await qUtil.createwLote()
+            
+            //inserta credencial
+            const hash = await tk.genPass(persona.login, persona.passs)
+            qUtil.setTableInstance('apu_credencial')
+            const credencial = {
+                login: persona.login,
+                institucion_id: dto.data.institucion.value,
+                aplicacion_id: obj_cnf.aplicacion_id,
+                dni_persona: persona.dni_persona,                 
                 password: 'hiloss',
                 hash: hash,
-                create_date: new Date(),
-                dni_register: inst.dni
-            })
-            console.log("================= LOGIN")
-
+                dni_register: obj_cnf.dni_register,
+                create_date: new Date()
+            }
+            
+            qUtil.setDataset(credencial)
+            await qUtil.create()
+            console.log("\n\n....", qUtil.getResults())
+            //inserta credencial - Rol
+            qUtil.setTableInstance('apu_credencial_rol')
+            qUtil.setDataset([Object.assign(frmUtil.getObjSession(), credencial, {role: dto.data.role.value})])
+            await qUtil.createwLote()
+            console.log("\n\n....", qUtil.getResults())
+            
+           
         } else {
-            //actualiza       datos de la persona     
-            await dbmodel.personal.update(tmp, {
-                where: {
-                    dni_persona: tmp.dni_persona,
-                },
-            });
-            //actualiza login... pass *****
-        }
+            //actualiza       datos de la persona                 
+            qUtil.setTableInstance('au_persona')
+            qUtil.setDataset(Object.assign(frmUtil.getObjSessionForModify(), persona))
+            qUtil.setWhere({dni_persona: persona.dni_persona})
+            await qUtil.modify()
 
+            //actualiza login... pass *****
+            //modifica credencial
+            if(persona.passs != "*****"){
+                const hash = await tk.genPass(persona.login, persona.passs)
+                qUtil.setTableInstance('apu_credencial')
+                const credencial = {                
+                    password: 'mod',
+                    hash: hash,
+                    dni_register: obj_cnf.dni_register,
+                    last_modify_date_time: new Date()
+                }            
+                qUtil.setDataset(credencial)
+                qUtil.where({login: persona.login})
+                await qUtil.modify()            
+            }
+            memo="Usuario Modificado Exitosamente"
+        }
+        qUtil.commitTransaction()
         return {
-            ok: true,
-            message: "Usuario creado exitosamente"
+            ok: true,            
+            message: memo
         }
     } catch (error) {
         console.log("*********************************************************\n\n\n", error)
+        qUtil.rollbackTransaction()
         return {
             ok: false,
             message: "Error de sistema: GEOWEUSRSAVESRV",
@@ -1099,6 +1192,7 @@ module.exports = {
     getDataModelParam, saveDataModelByIdxParam, saveDataModifyInsertByModel,
     misEess,
 
-    getDataTreeEntidades
+    getDataTreeEntidades,
+    _buscaPadreUnidad
 
 }
