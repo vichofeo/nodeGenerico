@@ -80,7 +80,7 @@ const PARAMETROS = {
         campos: `component as idx, 'acomponente' as linked, 
         route_access, name_component, base_folder,activo`,
 
-        camposView: [{ value: "component", text: "Cod." }, { value: "name_component", text: "Nombre componente" }, { value: "route_access", text: "Ruta" },        
+        camposView: [{ value: "idx", text: "Cod." }, { value: "name_component", text: "Nombre componente" }, { value: "route_access", text: "Ruta" },        
                     { value: "base_folder", text: "Folder" }, { value: "activo", text: "Activo" }
         ],
         key: [],

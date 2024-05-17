@@ -307,6 +307,14 @@ module.exports = class Qutils {
 
   // ----------------- metodos adicionales a queries
   /**
+   * sentencia para contar 
+   * @param {*} campo : campo de tabla
+   * @returns 
+   */
+  countData(campo){
+    return this.#sequelize.fn('COUNT',this.col(campo))
+  }
+  /**
    * convierte el campos select con operaciones a campo de sequelize ej campa||campb
    * @param {*} cadenaCampoSelect 
    * @returns 

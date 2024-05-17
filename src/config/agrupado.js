@@ -5,10 +5,17 @@ const AGRUPADO = {
     acre_hab: ['evaluacionn','acreditacionn','habilitacionn','repo_acrehab'],
 
     //componentes equivalente a db
-    acrehab: ['evaluacionn','repo_pac','acreditacionn','habilitacionn','repo_acrehab'],
-    acrehab_icons: ['mdi-altimeter','mdi-file-check','mdi-grease-pencil','mdi-key-change','mdi-clipboard-text'],
-    report:['eess', 'servbas', 'tipoatcn', 'equipamiento', 'personal', 'acrehab'],
-    report_icons:['mdi-hospital-building','mdi-ambulance', 'mdi-snowman', 'mdi-cart-plus', 'mdi-human-male-female', 'mdi-certificate']
+    acrehab: ['dashboard','evaluacionn','repo_pac','acreditacionn','habilitacionn','repo_acrehab'],
+    acrehab_icons: ['mdi-view-dashboard','mdi-altimeter','mdi-file-check','mdi-grease-pencil','mdi-key-change','mdi-clipboard-text'],
+
+    //report:['eess', 'servbas', 'tipoatcn', 'equipamiento', 'personal', 'acrehab'],
+    //report_icons:['mdi-hospital-building','mdi-ambulance', 'mdi-snowman', 'mdi-cart-plus', 'mdi-human-male-female', 'mdi-certificate'],
+
+    report:['eess','servbas','tipoatcn','r3area','estructura','infraestructura','mobiliario','equipamiento','r3mobiliario','r3equipamiento','personal','snis310','acrehab'],
+    report_icons:['mdi-hospital-building','mdi-ambulance', 'mdi-snowman','mdi-chemical-weapon', 'mdi-highway', 'mdi-help-network', 'mdi-home-assistant', 'mdi-home-assistant', 'mdi-home-assistant', 'mdi-theater', 'mdi-human-male-female', 'mdi-cart-plus', 'mdi-certificate'],
+
+    eess : ['institucion','eess','propietario','responsablen','servicios_basicos','estructura','r3areasn','superficie','r3estucturan','infraestructuran','mobiliarion','r3mobiliarion','r3equipamienton', 'personaln'],
+    eess_icons : ['mdi-hospital-building','mdi-ambulance','mdi-snowman','mdi-highway','mdi-help-network','mdi-home-assistant','mdi-home-assistant','mdi-theater','mdi-home-assistant','mdi-sitemap','mdi-cart-plus','mdi-cart-plus','mdi-certificate','mdi-human-male-female'],
 }
 
 module.exports = {

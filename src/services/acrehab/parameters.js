@@ -102,6 +102,23 @@ const PARAMETROS = {
         ],
     },
    
+    mydash:{
+        table: 'u_frm_evaluacion',
+        alias: 'dashboardUcass',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                   
+            nro_evals:['Evaluaciones', false, true, 'TT'],
+        },        
+        key: ['evaluacion_id'],        
+        ilogic:{nro_evals: `SELECT COUNT(*)  as evaluaciones
+        FROM u_frm_evaluacion`},
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [],
+    },
  
 }
 

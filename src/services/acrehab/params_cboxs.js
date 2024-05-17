@@ -83,7 +83,7 @@ const PDEPENDENCIES = {
             $w$
             ORDER BY 2`,
             headers:[{value: 'nombre_dpto', text: 'Dpto'}, {value: 'eg', text: 'Ente Gestos'}, {value: 'eess', text: 'Establecimiento'},
-            {value: 'gestion', text: 'Gestion'}, {value: 'frm', text: 'Formulario'}, {value: 'Seccion', text: 'Seccion'}, 
+            {value: 'gestion', text: 'Gestion'}, {value: 'frm', text: 'Formulario'}, {value: 'seccion', text: 'Seccion'}, 
             {value: 'capitulo', text: 'Acapite'}, {value: 'standar', text: 'Standar'}, {value: 'fecha_vencimiento', text: 'Vencimiento'}, 
             {value: 'vigencia', text: 'Dias Vigencia'}, {value: 'alertax23', text: 'Estado'}
             ],      
@@ -108,6 +108,73 @@ const PDEPENDENCIES = {
         },
         withInitial:true,
         
+    },
+
+    mydash:{        
+        alias: 'MyDasboard',        
+        campos: {
+            gestion: ['Gestion', false, true, 'C'],
+            evaluaciones:['Evaluaciones', false, true, 'TT'],
+            dptos:['Evaluaciones por Departamento', false, true, 'TT'],
+            estados:['Estado Evaluacion por Formulario', false, true, 'TT'],
+            pac_fin:['PAC x Fecha Cumplimiento', false, true, 'TT'],
+            pac_ini:['PAC x Fecha Inicio', false, true, 'TT'],
+            
+        }, 
+        ilogic: {
+            gestion:`SELECT DISTINCT extract(year from create_date) as value, extract(year from create_date) as text            
+            FROM u_frm_evaluacion
+            ORDER BY 2 desc`,
+            evaluaciones:`SELECT a.atributo_id, a.atributo AS estado, a.color, COUNT(e.*) AS VALUE,
+            SUM(COUNT(e.*)) OVER (ORDER BY a.atributo_id )
+              AS evaluaciones, 
+              SUM(Sum(case when e.excelencia = true THEN 1 ELSE 0 END)) OVER (ORDER BY a.atributo_id ) AS excelencia
+            FROM u_is_atributo a
+            LEFT JOIN u_frm_evaluacion e ON (e.concluido =  a.atributo_id AND extract(year FROM e.create_date)='$campoForeign')
+            WHERE a.grupo_atributo='ESTADO_CONCLUSION'
+             AND a.atributo_id>'0' 
+            GROUP BY a.atributo_id, a.atributo, a.color
+            ORDER BY a.atributo_id`,
+             dptos: `SELECT dpto.cod_dpto,dpto.nombre_dpto AS dpto, f.orden, f.nombre_corto AS frm, COUNT(e.*) AS value
+             FROM u_frm f
+             LEFT JOIN u_frm_evaluacion e   ON ( f.frm_id=e.frm_id AND extract(year from e.create_date)= '$gestion')
+             left JOIN ae_institucion i ON (e.institucion_id =  i.institucion_id)
+             left JOIN al_departamento dpto ON (i.cod_pais =  dpto.cod_pais AND i.cod_dpto=dpto.cod_dpto)
+             WHERE
+             f.codigo_root='-1'
+             GROUP BY dpto.cod_dpto,dpto.nombre_dpto, f.orden, f.nombre_corto
+             ORDER BY dpto.cod_dpto, f.orden `,
+            estados: ` SELECT 
+                f.orden, f.nombre_corto as frm, a.atributo_id, a.atributo as estado, a.color, COUNT(*) AS value,
+                SUM(COUNT(*)) OVER (PARTITION BY f.nombre_corto ORDER BY a.atributo_id ) as acumulado
+                FROM u_is_atributo a,
+                u_frm_evaluacion e, u_frm f
+                WHERE 
+                a.atributo_id =  e.concluido AND e.frm_id= f.frm_id
+                and extract(year from e.create_date)= '$gestion'
+                GROUP BY f.orden, f.nombre_corto, a.atributo_id, a.atributo, a.color
+                ORDER BY f.orden, a.atributo_id `,
+            pac_fin: `SELECT 
+            CASE WHEN p.fecha_complimiento IS null THEN 's/Iniciar' ELSE to_char(p.fecha_complimiento,'YYYY-MM')END AS mes,
+            COUNT(*) AS value
+            FROM u_frm_evaluacion e, u_frm_valores v, u_frm_plan_accion p
+            WHERE 
+            e.evaluacion_id = v.evaluacion_id AND v.valores_id=p.valores_id and extract(year from e.create_date)= '$gestion'
+            GROUP BY 1 ORDER BY 1`,
+            pac_ini: `SELECT 
+            CASE WHEN p.fecha_registro IS null THEN 's/Iniciar' ELSE to_char(p.fecha_registro,'YYYY-MM')END AS mes,
+            COUNT(*) AS value
+            FROM u_frm_evaluacion e, u_frm_valores v, u_frm_plan_accion p
+            WHERE 
+            e.evaluacion_id = v.evaluacion_id AND v.valores_id=p.valores_id and extract(year from e.create_date)= '$gestion'
+            GROUP BY 1 ORDER BY 1`
+
+            
+            
+       
+        },
+        referer: [        
+        ],
     },
     
 }

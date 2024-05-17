@@ -274,6 +274,7 @@ const getMenuOpsRole = async (dto, handleError) => {
     const icons = {}
     const rutas = {}
     const modulos = {}
+    let tcmQueryDat = null
     
 
     for (const element of result.rol) {
@@ -307,8 +308,32 @@ const getMenuOpsRole = async (dto, handleError) => {
                     
                    }//fin for de sub accesos por agrupado
                 }else{
+                    /*********************
+                     * ************* HAY Q OPTIMIZAR ESTA SECCION DE CODIGO OJO NABITO *******************
+                     * ********************
+                     */
                     //busca por query solo valido para mapas y snis
-                    rutas[e.module] = await __menuGeoOpsRoles(e.module, e.component, dInstitucion)
+                    const tmod='!*!'
+                    const tcom='|&|'
+                    //e.module, e.component
+                    if(e.module == 'ssepi' || e.module == 'ssnipi'){
+                        if(!tcmQueryDat) tcmQueryDat = await __menuGeoOpsRoles(tmod, tcom, dInstitucion)
+                    
+                            rutas[e.module] =JSON.parse(JSON.stringify(tcmQueryDat)).map(obj=>{
+                                obj.value = obj.value.replaceAll(tmod, e.module)
+                                obj.value = obj.value.replaceAll(tcom, e.component)
+                                return obj
+                            })
+                    }else if(e.module == 'frm'){
+                        qUtil.setTableInstance('f_formulario_institucion_cnf')
+                        qUtil.setWhere({ institucion_id: obj_cnf.institucion_id })
+                        await qUtil.findTune()
+                        const rfrms = qUtil.getResults()
+                        qUtil.setResetVars()
+
+                        rutas[e.module] = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: 'FoRMuLario_' + i }))
+                    }
+                    
                 }
             }else{
                 rutas[e.module].push({
@@ -326,6 +351,7 @@ const getMenuOpsRole = async (dto, handleError) => {
         //data2: result,
         more_data: moreData,
         rutas: {rutas: rutas, icons: icons, modules: modulos},
+        xx: tcmQueryDat,
         
         message: "Requerimiento Exitoso"
     }
@@ -367,7 +393,7 @@ const __menuGeoOpsRoles = async (module, component, dIntitucion) => {
         }else {
             
             qUtil.setTableInstance('ae_institucion')
-            qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
+            qUtil.setAttributes([[qUtil.literal("'"+ module +"'"), 'atributo'], ['cod_dpto', 'valor']])
             cnf = {
                 association: 'dpto',
                 attributes: qUtil.transAttribByComboBox([qUtil.literal("'/"+module+"/"+component+"/'||dpto.cod_dpto"), 'nombre_dpto'])
@@ -379,6 +405,9 @@ const __menuGeoOpsRoles = async (module, component, dIntitucion) => {
                         
             await qUtil.findTune()
             result2 = qUtil.getResults()   
+            let set = new Set( result2.map( JSON.stringify ) )
+            result2 = Array.from( set ).map( JSON.parse );
+            
             
             qUtil.setResetVars()
             result2 = result2.map(obj => ({ ...obj.dpto, atributo: obj.atributo, valor: obj.valor }))
@@ -386,7 +415,7 @@ const __menuGeoOpsRoles = async (module, component, dIntitucion) => {
 
         //procesando Results
         if (result2.length > 1) {
-            result2.unshift({ value: '/ssepi/sssscp/all', text: 'Todos', atributo: 'ssepi', valor: 'all' })            
+            result2.unshift({ value: '/'+ module+'/'+ component +'/all', text: 'Todos', atributo: 'ssepi', valor: 'all' })            
         } 
         
         return result2

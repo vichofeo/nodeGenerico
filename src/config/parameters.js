@@ -752,6 +752,7 @@ const PARAMETROS = {
     repo_pac:{
         alias: 'Reportes PAC'
     },
+    dashboard:{alias: 'Dashboard Evaluaciones'},
 
     //modulos segun estructura RUES 3
     r3estucturan: {

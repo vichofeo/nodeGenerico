@@ -573,6 +573,7 @@ const getDataMonitorView = async (dto, handleError) => {
       else if(excelencia) data.promedio = Number((data.puntaje / tmp.conteo.length).toFixed(2))*100
       else data.promedio = (Number((data.obligado / data.obligatorio).toFixed(2)) * 100).toLocaleString()
       
+      
       //datos[`${key}`] = {
       datos.push({
         idx: result[key].frm_id,
@@ -605,20 +606,21 @@ const getDataMonitorView = async (dto, handleError) => {
     for (const element of cabecerasAux) {
       cabeceras[element] = labels[element].label//  element[0].toUpperCase() + element.slice(1) //labels[element].label// 
     }
-
-
+//titulos para el grafico
+graphData.title = 'CUMPLIMIENTO DE REQUISITOS PARA LA '+ results.tipo_acrehab.toUpperCase()
+graphData.subtitle = '"'+ results.eess.nombre_institucion +'"'
     return {
       ok: true,
       data: datos,
       evaluacion_data:results,
       header: { formulario: 'Formulario Inspeccion', codigo: 'Codigo', 
-      total: 'Nro. Parametros', evaluado: 'Evaluados', 
-      obligatorio: 'Obligatorios',
-      obligado:labels.obligado.label ,
-      ...cabeceras, 
-      obs: 'Con Observacion', nulo: 'Nulo/Vacio', 
-      promedio: labels.promedio.label,
-      finalizar: "Accion" }, //cabeceras.filter(function (v, i, self) {return i == self.indexOf(v)}).sort(),
+            total: 'Nro. Parametros', evaluado: 'Evaluados', 
+            obligatorio: 'Obligatorios',
+            obligado:labels.obligado.label ,
+            ...cabeceras, 
+            obs: 'Con Observacion', nulo: 'Nulo/Vacio', 
+            promedio: labels.promedio.label,
+            finalizar: "Accion" }, //cabeceras.filter(function (v, i, self) {return i == self.indexOf(v)}).sort(),
       message: 'Requerimiento Exitoso',
       graphData: graphData,
       
@@ -720,7 +722,11 @@ const getFrmView = async (dto, handleError) => {
  */
 const pacSave = async (dto, handleError) => {
   try {
-    estado_conclusion = 7
+    //inicia transaccion
+    console.log("\n\n\n.... inicia transaccion ")
+    await qUtil.startTransaction()
+
+    estado_conclusion = '7'
     // obtiene datos de session
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
@@ -753,9 +759,7 @@ const pacSave = async (dto, handleError) => {
       ...frmUtil.getObjSession()
     }))
 
-    //inicia transaccion
-    console.log("\n\n\n.... inicia transaccion ")
-    await qUtil.startTransaction()
+    
 
     //actualiza estado de conclusion en valores
     delete obj_cnf.create_date
@@ -770,6 +774,31 @@ const pacSave = async (dto, handleError) => {
     qUtil.setDataset(payload)
     await qUtil.createwLote()
 
+    //verifica si todos los parametros estan con estado de conclusion 7
+    qUtil.setTableInstance('u_frm')
+    qUtil.setAttributes([[qUtil.countData('*'),'frm_total']])
+    qUtil.setWhere({frm:dEvaluacion.frm_id, es_parametro:true})
+    await qUtil.findTune()
+    const dCountFrm =  qUtil.getResults()
+
+    qUtil.setTableInstance('u_frm_valores')
+    qUtil.setAttributes([[qUtil.countData('*'),'vals_total']])
+    qUtil.setWhere({evaluacion_id:dEvaluacion.evaluacion_id, concluido: estado_conclusion})
+    await qUtil.findTune()
+    const dCountValores =  qUtil.getResults()
+
+    //pregunta si ambos valores son iguales para actualizar rgistro de evaluacion
+    if(dCountFrm[0].frm_total == dCountValores[0].vals_total){
+      //actualiza estado
+      qUtil.setTableInstance('u_frm_evaluacion')
+      qUtil.setDataset({
+        concluido: estado_conclusion,
+        dni_register: obj_cnf.dni_register,
+        last_modify_date_time: new Date()
+      })
+      qUtil.setWhere({evaluacion_id: dEvaluacion.evaluacion_id})
+      await qUtil.modify()
+    }
 
     await qUtil.commitTransaction()
 
@@ -780,8 +809,9 @@ const pacSave = async (dto, handleError) => {
     }
 
   } catch (error) {
-    await qUtil.rollbackTransaction()
     console.log(error)
+    await qUtil.rollbackTransaction()
+    
     handleError.setMessage('Error de sistema: SAVEPAC')
     handleError.setHttpError(error.message)
   }
@@ -957,21 +987,34 @@ const tpacReport = async (dto, handleError) => {
     const where = []
     for (const key in parametros) {
       if(parametros[key]!='-1'){
-        where.push(`${PCBOXS[model]?.primal?.equivalencia[key]}=''`)
+        where.push(`${PCBOXS[model]?.primal?.equivalencia[key][0]} = '${parametros[key]}'`) 
       }
     }
+    //reemplazo de variables
+    query = query.replaceAll(aa, attrib)
+    let condicion =  ""
+    if(where.length>0){
+      condicion =  " AND "+ where.join(" and ")
+    }
+
+    query =  query.replaceAll(ww, condicion)
+    //ejecuta query
+    qUtil.setQuery(query)
+    await qUtil.excuteSelect()
+    const result =  qUtil.getResults()
+    const headers = PCBOXS[model]?.primal?.headers
 
 
 
 
     return {
       ok: true,
-      data: dto,
+      data: {items: result, headers: headers},
       message: 'Requerimiento Exitoso. Parametros Guardados',
     }
 
   } catch (error) {
-    await qUtil.rollbackTransaction()
+    
     console.log(error)
     handleError.setMessage('Error de sistema: SAVETPAC')
     handleError.setHttpError(error.message)

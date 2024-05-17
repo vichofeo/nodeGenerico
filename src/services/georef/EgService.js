@@ -1150,7 +1150,9 @@ const misEess = async (dto) => {
     try {
         const datos = tk.getCnfApp(dto.token)
         const inst = new QueriesUtils(eessModel)
-        const eess = await inst.findID(datos.inst)
+        let eess = await inst.findID(datos.inst)
+
+         eess =  await _buscaPadreUnidad(eess)
 
         const conf = {
             attributes: []
@@ -1173,6 +1175,7 @@ const misEess = async (dto) => {
             ok: true,
             data: result,
             inst: eess,
+            //iii: eessPadre,
             message: "Datos entregados"
         }
     } catch (error) {
