@@ -39,11 +39,17 @@ const getFrmsInfo = async (dto) => {
     const qUtils = new QUtils()
     qUtils.setTableInstance('f_formulario')
     qUtils.setAttributes([
-      ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name']
+      ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name'], 'ordenanza', 'descripcion'
     ])
     
     //qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
-    qUtils.setOrder([qUtils.col('sections.orden'), qUtils.col('sections.questions.orden'), qUtils.col('sections.questions.answers.orden'), qUtils.col('sections.questions.questions.orden'), qUtils.col('sections.questions.questions.answers.orden')])
+    qUtils.setOrder([qUtils.col('sections.orden'), qUtils.col('sections.questions.orden'), 
+                  qUtils.col('sections.questions.answers.orden'), qUtils.col('sections.questions.questions.orden'), 
+                  qUtils.col('sections.questions.questions.answers.orden'),
+                  //qUtils.col('sections.questions.mrow.fatributos.orden'), qUtils.col('sections.questions.mcol.fatributos.orden'), 
+                  //qUtils.col('sections.questions.mscol.fatributos.orden'), 
+                ],
+                )
     let cnf = {
       as: 'grupo',
       attributes: [['nombre_grupo_formulario','grupo']],
@@ -62,7 +68,10 @@ const getFrmsInfo = async (dto) => {
       include: [
         {
           association: 'questions',
-          attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root']],          
+          attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
+                        'repeat', 'repeat_row', 'row_title', 'col_title',
+                        ['row_code', 'mrow'], ['col_code', 'mcol'], ['scol_code', 'mscol']
+                      ],          
           where: {enunciado_root:'-1'},
           required: false,
           include: [
@@ -78,7 +87,25 @@ const getFrmsInfo = async (dto) => {
                 association: 'answers',
                 attributes:[['respuesta','answer'],['tipo_enunciado_id', 'type'], ['orden','ord'], ['opcion_id','ofrm']],
               }]
-            }
+            },
+            //nueva cols row, col, scol
+            /*{
+              association: 'mrow', required: false, attributes:[['grupo_atributo','grupo']],
+              include:[{
+                association: 'fatributos', required: false, attributes:qUtils.transAttribByComboBox(['atributo_id','atributo']),
+              }]
+            },{
+              association: 'mcol', required: false, attributes:[['grupo_atributo','grupo']],
+              include:[{
+                association: 'fatributos', required: false, attributes:qUtils.transAttribByComboBox(['atributo_id','atributo']),
+              }]
+            },{
+              association: 'mscol', required: false, attributes:[['grupo_atributo','grupo']],
+              include:[{
+                association: 'fatributos', required: false, attributes:qUtils.transAttribByComboBox(['atributo_id','atributo']),
+              }]
+            },*/
+
           ],
         },
       ],
@@ -98,6 +125,31 @@ const getFrmsInfo = async (dto) => {
 
     await qUtils.findTune()
     const r = qUtils.getResults()
+
+    //recorre resultados para encontrar datos de mrow, mcol y mscol
+    const auxRcols = ['mrow', 'mcol', 'mscol']    
+    for (const key in r[0].sections) {
+      for(const k in r[0].sections[key].questions){
+        //busca informacion solo si hay mrow, mcol y mscol
+        qUtils.setTableInstance('f_is_atributo')
+        qUtils.setAttributes(qUtils.transAttribByComboBox(['atributo_id','atributo'])) 
+        qUtils.setOrder(['orden'])       
+        for (const element of auxRcols) {
+          if(r[0].sections[key].questions[k][element]){
+            qUtils.setWhere({grupo_atributo: r[0].sections[key].questions[k][element]})
+            const tmp = r[0].sections[key].questions[k][element]
+            //delete r[0].sections[key].questions[k][element]
+            r[0].sections[key].questions[k][element] = {}
+            await qUtils.findTune()
+            r[0].sections[key].questions[k][element].fatributos = qUtils.getResults()
+            r[0].sections[key].questions[k][element].grupo = tmp
+          }
+          
+        }
+        
+      }
+    }
+
     return {
       ok: true,
       data: r,

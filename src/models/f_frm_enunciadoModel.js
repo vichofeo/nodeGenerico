@@ -16,20 +16,37 @@ module.exports = (sequelize, DataTypes) => {
       }),
       f_frm_enunciado.hasMany(models.f_frm_enun_opciones, {
         as:'answers',
-        foreignKey: 'enunciado_id'
+        foreignKey: 'enunciado_id',
+        targetKey: 'enunciado_id'
       }),
       f_frm_enunciado.hasMany(models.f_frm_enunciado, {
         as:'questions',
         foreignKey: 'enunciado_root'
+      }),
+
+      f_frm_enunciado.belongsTo(models.r_is_gr_atributo, {
+        as: 'mrow',
+        foreignKey: 'row_code',
+        targetKey:'grupo_atributo'
+      }),
+      f_frm_enunciado.belongsTo(models.r_is_gr_atributo, {
+        as: 'mcol',
+        foreignKey: 'col_code',
+        targetKey:'grupo_atributo'
+      }),
+      f_frm_enunciado.belongsTo(models.r_is_gr_atributo, {
+        as: 'mscol',
+        foreignKey: 'scol_code',
+        targetKey:'grupo_atributo'
       })
     }
   }
   f_frm_enunciado.init(
     {
-      
       enunciado_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true},
-      subfrm_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
       formulario_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},
+      subfrm_id:{type: DataTypes.STRING(64), allowNull: false, primaryKey: true},      
+      
 
       tipo_enunciado_id:{type: DataTypes.INTEGER, allowNull: true},
 
@@ -37,10 +54,22 @@ module.exports = (sequelize, DataTypes) => {
       enunciado:{type: DataTypes.TEXT, allowNull: true},
       orden:{type: DataTypes.INTEGER, allowNull: true, defaultValue: 0},
       activo:{type: DataTypes.CHAR(1), allowNull: true, defaultValue: 'Y'},
-      dni_register:{type: DataTypes.STRING(25), allowNull: false},
+
       create_date:{type: DataTypes.DATE, allowNull: false},
       last_modify_date_time:{type: DataTypes.DATE, allowNull: true},
+      dni_register:{type: DataTypes.STRING(25), allowNull: false},
+      
       enunciado_root:{type: DataTypes.STRING(64), allowNull: true},
+
+      row_code:{type: DataTypes.STRING(64), allowNull: true},
+      col_code:{type: DataTypes.STRING(64), allowNull: true},
+      scol_code:{type: DataTypes.STRING(64), allowNull: true},
+
+      row_title:{type: DataTypes.STRING(512), allowNull: true},
+      col_title:{type: DataTypes.STRING(512), allowNull: true},
+
+      repeat_row:{type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false} ,
+      repeat:{type: DataTypes.STRING(64), allowNull: true, defaultValue:0},
       
         
     },

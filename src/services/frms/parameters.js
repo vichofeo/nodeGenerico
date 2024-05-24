@@ -30,7 +30,7 @@ const PARAMETROS = {
         campos: {
             cod_clase:['CLase de Formulario', true, true, 'C'],
             codigo_formulario: ['Asigne un Codigo al Formulario', true, false, 'TT',25],
-            nombre_formulario: ['Nombre del Formulario', true, true, 'TT',80],            
+            nombre_formulario: ['Nombre del Formulario', true, true, 'TT',120],            
             descripcion:['Descripcion del formulario', true, true, 'TA',512],            
             //tipo_opcion_id: ['Incluya formas predetermidad haciendo clic', true, false, 'H']
             ordenanza:['Instrucciones', true, true, 'TA',1024],            
@@ -51,7 +51,7 @@ const PARAMETROS = {
         cardinalidad: "1",
         campos: {
             codigo:['Codigo', true, true, 'TT',10],
-            nombre_subfrm: ['Nombre de la seccion', true, true, 'TT',80],
+            nombre_subfrm: ['Nombre de la seccion', true, true, 'TT',120],
             descripcion: ['Descripcion de la seccion', true, false, 'TA',512],            
             orden: ['Orden de Aparicion', true, true, 'TN',2],            
 

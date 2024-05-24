@@ -326,12 +326,16 @@ const getMenuOpsRole = async (dto, handleError) => {
                             })
                     }else if(e.module == 'frm'){
                         qUtil.setTableInstance('f_formulario_institucion_cnf')
+                        qUtil.setInclude({
+                            association: 'frms', required: false,
+                            attributes:['nombre_formulario']
+                        })
                         qUtil.setWhere({ institucion_id: obj_cnf.institucion_id })
                         await qUtil.findTune()
                         const rfrms = qUtil.getResults()
                         qUtil.setResetVars()
 
-                        rutas[e.module] = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: 'FoRMuLario_' + i }))
+                        rutas[e.module] = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: obj.frms.nombre_formulario}))
                     }
                     
                 }

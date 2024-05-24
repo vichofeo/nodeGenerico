@@ -148,7 +148,7 @@ await qUtil.startTransaction()
             qUtil.setInclude({
                 association: 'padre', required: false,
                 attributes: ['frm_id'],
-                where:{parametros: qUtil.notNull()}
+                where:{parametros: qUtil.notNull(), frm:datos.frm_id}
             })
             await qUtil.findTune()
             const r = qUtil.getResults()

@@ -14,10 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'sections',
         foreignKey: 'formulario_id',
       }),
-      f_formulario.hasMany(models.f_frm_opcionales, {
+      /*f_formulario.hasMany(models.f_frm_opcionales, {
         as: 'others',
         foreignKey: 'formulario_id',
-      }),
+      }),*/
       f_formulario.belongsTo(models.f_formulario_clase,{
         as: 'clase',
         foreignKey: 'cod_clase',
@@ -38,6 +38,8 @@ module.exports = (sequelize, DataTypes) => {
       codigo_formulario:{type: DataTypes.STRING(25), allowNull: true},
       nombre_formulario:{type: DataTypes.STRING(150), allowNull: false},
       descripcion:{type: DataTypes.STRING(4000), allowNull: false},
+      ordenanza:{type: DataTypes.TEXT, allowNull: false},
+
       es_xpersona:{type: DataTypes.STRING(1), allowNull: false, defaultValue: 'N'},
       
       version:{type: DataTypes.INTEGER, allowNull: false, defaultValue: 1,},

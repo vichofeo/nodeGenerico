@@ -12,6 +12,7 @@ router.get("/:idx/:modelo", authMiddleWare, controller.getDataModel1)
 
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
 
+//prametros y guardado del arbol de evaluacion
 router.post("/save", authMiddleWare, controller.acrehabEvalSave) 
 router.get("/eval/get/:idx", authMiddleWare, evalController.getDataFrm)
 router.get("/eval/getView/:idx", authMiddleWare, evalController.getDataFrmView)

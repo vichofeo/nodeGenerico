@@ -1,21 +1,21 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class r_is_gr_atributo extends Model {
+  class f_is_gr_atributo extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
-      r_is_gr_atributo.hasMany(models.r_is_atributo, {
-        as: 'ratributos',
-        foreignKey: 'grupo_atributo'
-      })
+      // define association here      
+       f_is_gr_atributo.hasMany(models.f_is_atributo, {
+          as: 'fatributos',
+          foreignKey: 'grupo_atributo'
+        })
     }
   }
-  r_is_gr_atributo.init(
+  f_is_gr_atributo.init(
     {
       grupo_atributo: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true, },
       grupo: { type: DataTypes.STRING(128), allowNull: false },
@@ -23,12 +23,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'r_is_gr_atributo',
+      modelName: 'f_is_gr_atributo',
       timestamps: false,
       freezeTableName: true,
-      tableName: 'r_is_gr_atributo',
+      tableName: 'f_is_gr_atributo',
       classMethods: {},
     }
   )
-  return r_is_gr_atributo
+  return f_is_gr_atributo
 }

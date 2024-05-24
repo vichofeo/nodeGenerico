@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       f_frm_subfrm.hasMany(models.f_frm_enunciado,{
         as:'questions',
-        foreignKey: 'subfrm_id'
+        foreignKey: 'subfrm_id',
+        targetKey:'subfrm_id'
       }),
       f_frm_subfrm.belongsTo(models.f_formulario,{
         as: 'formulario',
@@ -26,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       subfrm_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: true, primaryKey: true},
       formulario_id:{type: DataTypes.STRING(64), allowNull: true, primaryKey: true},
       codigo:{type: DataTypes.STRING(10), allowNull: true},
-      nombre_subfrm:{type: DataTypes.STRING(200), allowNull: false},
+      nombre_subfrm:{type: DataTypes.STRING(512), allowNull: false},
       descripcion:{type: DataTypes.STRING(4000), allowNull: true},
       orden:{type: DataTypes.INTEGER, allowNull: true, defaultValue: 0},
       version:{type: DataTypes.INTEGER, allowNull: true, defaultValue: 1},

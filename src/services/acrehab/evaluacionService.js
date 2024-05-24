@@ -383,6 +383,7 @@ const getDataConteo = async (group_id, eval_id, codigo, vector = { conteo: [], a
     }]
   })
 
+
   await qUtil.findTune()
   const result = qUtil.getResults()
 
@@ -391,7 +392,7 @@ const getDataConteo = async (group_id, eval_id, codigo, vector = { conteo: [], a
     const auxiliar = JSON.parse(JSON.stringify(element))
     const temporal = auxiliar?.padre?.opciones?.valores
 
-    console.log("\n\n\n TEMPROAL:", auxiliar.es_parametro)
+    console.log("\n\n\n TEMPORAL EN CONTEO:", auxiliar.es_parametro)
 
     //si es parametro vectoriza etiquetas de campo parametros de tabla atributos ej: cumple, no cumple, no aplica
     auxiliar.es_parametro && temporal ? auxiliar.labels = temporal.map(obj => obj.label).sort() : ''
@@ -788,6 +789,8 @@ const pacSave = async (dto, handleError) => {
     const dCountValores =  qUtil.getResults()
 
     //pregunta si ambos valores son iguales para actualizar rgistro de evaluacion
+    console.log("\n\n\n ++++++++++FINALIZACION ++++++++++TOTAL::",dCountFrm[0].frm_total,"-->EVALUADOS::",dCountValores[0].vals_total ," \n\n\n")
+    console.log("\n\n\n ++++++++++FINALIZACION ++++++++++CONDICION::",(dCountFrm[0].frm_total == dCountValores[0].vals_total)," \n\n\n")
     if(dCountFrm[0].frm_total == dCountValores[0].vals_total){
       //actualiza estado
       qUtil.setTableInstance('u_frm_evaluacion')

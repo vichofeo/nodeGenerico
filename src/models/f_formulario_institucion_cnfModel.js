@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_formulario_institucion_cnf.belongsTo(models.f_formulario,{
+        as: 'frms',
+        foreignKey: 'formulario_id',
+        targetKey: 'formulario_id'
+      })
     }
   }
   f_formulario_institucion_cnf.init(
