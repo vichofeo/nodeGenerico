@@ -3,6 +3,7 @@
  * objeto de configuracion para diversas pantallas
  * campos:[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio, Reservado]
  * T?->TT: texto, TN: texto numero entero, TM: TextMail, TD: Texto decimal, TA: Text Area
+ * SW
  * use-se la opcion dual cuando la interaccion y la insercion es con tablas de bd
  * referer.condicional:['aplicacion_id,$app'] 
  * referer.condicion: {a:1,b:5}
@@ -98,6 +99,31 @@ const PARAMETROS = {
         update: [],
         referer: [
             { ref: 'f_frm_enun_tipo', apropiacion: 'tipo_enunciado_id', campos: ['tipo_enunciado_id', 'nombre_tipo_pregunta'], condicion: null, condicional:null, multiple:false}
+        ],
+    },
+    fquestion100: {
+        table:'f_frm_enunciado',
+        alias: 'fquestion100',
+        cardinalidad: "1",
+        campos: {
+            row_code:['Filas', true, true, 'C'],
+            col_code: ['Columnas', true, false, 'C'],
+            scol_code: ['SubColumnas', true, true, 'C'],            
+            row_title:['Titulo Filas', true, true, 'TA',512],            
+            col_title:['Titulo Columnas', true, true, 'TA',512],                        
+            repeat_row:['Repetir la misma Fila', true, true, 'SW'],            
+            repeat: ['Cuantas veces repetira fila', true, false, 'TN',2],
+        },
+        key: ['formulario_id'],
+        moreData:[
+           // { ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },
+        ],
+        update: [],
+        referer: [
+            //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
+            { ref: 'f_is_gr_atributo', apropiacion: 'row_code', campos: ['grupo_atributo', 'grupo'], condicion: null, condicional:null },
+            { ref: 'f_is_gr_atributo', apropiacion: 'col_code', campos: ['grupo_atributo', 'grupo'], condicion: null, condicional:null },
+            { ref: 'f_is_gr_atributo', apropiacion: 'scol_code', campos: ['grupo_atributo', 'grupo'], condicion: null, condicional:null },
         ],
     }
 }
