@@ -63,17 +63,16 @@ const getFrmsInfo = async (dto) => {
     }
     qUtils.pushInclude(cnf)
     cnf = {
-      association: 'sections',
+      association: 'sections', required: false,
       attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm']],      
       include: [
         {
-          association: 'questions',
+          association: 'questions', required: false,
           attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
                         'repeat', 'repeat_row', 'row_title', 'col_title',
                         ['row_code', 'mrow'], ['col_code', 'mcol'], ['scol_code', 'mscol']
                       ],          
-          where: {enunciado_root:'-1'},
-          required: false,
+          where: {enunciado_root:'-1'},          
           include: [
             {
               as: 'answers',
@@ -128,8 +127,8 @@ const getFrmsInfo = async (dto) => {
 
     //recorre resultados para encontrar datos de mrow, mcol y mscol
     const auxRcols = ['mrow', 'mcol', 'mscol']    
-    for (const key in r[0].sections) {
-      for(const k in r[0].sections[key].questions){
+    for (const key in r[0]?.sections) {
+      for(const k in r[0]?.sections[key]?.questions){
         //busca informacion solo si hay mrow, mcol y mscol
         qUtils.setTableInstance('f_is_atributo')
         qUtils.setAttributes(qUtils.transAttribByComboBox(['atributo_id','atributo'])) 
