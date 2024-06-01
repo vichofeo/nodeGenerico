@@ -1,19 +1,25 @@
+const handleJwt = require('./../../utils/handleJwt')
+
 const cnf_cboxs = JSON.stringify(require('./params_cboxs'))
 const PCBOXS = JSON.parse(cnf_cboxs)
 
 const parametros =  JSON.stringify(require('./parameters'))
 const PARAMETROS = JSON.parse(parametros)
 
-const services = require('./FrmsUtils')
-const objService = new services()
+const FrmUtils = require('./FrmsUtils')
+const frmUtil = new FrmUtils()
 
 const QUtils = require('../../models/queries/Qutils')
+const qUtil = new QUtils()
+
+const { v4: uuidv4 } = require('uuid')
+
 const getfrmsConstuct = async (dto) => {
   try {
     dto.modelos = [dto.modelo]
-    objService.setParametros(PCBOXS)
-    await objService.makerDataComboDependency(dto)
-    const CboxResult = objService.getResults()
+    frmUtil.setParametros(PCBOXS)
+    await frmUtil.makerDataComboDependency(dto)
+    const CboxResult = frmUtil.getResults()
 
     return {
       ok: true,
@@ -167,9 +173,9 @@ const getFrmsInfo = async (dto) => {
 const getCnfForms = async (dto)=>{
   try {
     dto.modelos = [dto.modelo]
-    objService.setParametros(PARAMETROS)
-    await objService.getDataParams(dto)
-    const result = objService.getResults()
+    frmUtil.setParametros(PARAMETROS)
+    await frmUtil.getDataParams(dto)
+    const result = frmUtil.getResults()
 
     return {
       ok: true,
@@ -190,9 +196,9 @@ const saveCnfForms = async (dto)=>{
   try {
     dto.modelos = [dto.modelo]
     console.log("\n\n\n---------------------------GUARDANDO... MODELO:", dto.modelo,"\n\n\n")
-    objService.setParametros(PARAMETROS)
-    await objService.saveDataParams(dto)
-    const result = objService.getResults()
+    frmUtil.setParametros(PARAMETROS)
+    await frmUtil.saveDataParams(dto)
+    const result = frmUtil.getResults()
 
     if(result)
     return {
@@ -214,8 +220,90 @@ const saveCnfForms = async (dto)=>{
     }
   }
 }
+
+const saveFormsRes = async (dto)=>{
+  await  qUtil.startTransaction()
+  try {
+    // obtiene datos de session
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+
+    const idx = dto.frm
+    const respuestas = []
+    qUtil.setTableInstance("f_formulario_llenado")
+    for (const seccion_id in dto.respuestas) {
+      if(seccion_id!= '-1'){
+        for (const pregunta_id in dto.respuestas[seccion_id]) {
+          const tmp = {formulario_id:idx, subfrm_id:seccion_id, enunciado_id: pregunta_id, ...obj_cnf}
+          let datos = {}
+          switch (dto.respuestas[seccion_id][pregunta_id].tipo) {
+            case 0:
+               datos = {...tmp, res_frm_id: uuidv4(), opcion_id:Object.keys(dto.respuestas[seccion_id][pregunta_id].answers)[0]}          
+              respuestas.push(datos)            
+              break;
+            case 1:
+              const ress = Object.keys(dto.respuestas[seccion_id][pregunta_id].answers)
+              datos = ress.map((o,i)=>({...tmp, res_frm_id: uuidv4(), opcion_id: o}))
+              respuestas.push(...datos)
+            break;
+            case 2:
+                 datos = {...tmp, res_frm_id: uuidv4(), opcion_id:Object.keys(dto.respuestas[seccion_id][pregunta_id].answers)[0], texto:Object.values(dto.respuestas[seccion_id][pregunta_id].answers)[0]}          
+                respuestas.push(datos)            
+            break;
+            case 3:
+              for(const row in dto.respuestas[seccion_id][pregunta_id].answers){
+                for(const col in dto.respuestas[seccion_id][pregunta_id].answers[row]){
+                  datos = {...tmp, res_frm_id: uuidv4(), enunciado_id:row, opcion_id:col, texto:dto.respuestas[seccion_id][pregunta_id].answers[row][col]}
+                  respuestas.push(datos)
+                }
+              }
+              break;
+              case 100:
+                for(const row in dto.respuestas[seccion_id][pregunta_id].answers.tabla){
+                  for(const col in dto.respuestas[seccion_id][pregunta_id].answers.tabla[row]){
+                    const auxx= dto.respuestas[seccion_id][pregunta_id].answers.tabla[row][col]
+                    datos = {...tmp, res_frm_id: uuidv4(), 
+                      row_ll: auxx.row.value,
+                      col_ll: auxx.col,
+                      scoll: auxx.scol,
+                      texto:auxx.valor}
+                    respuestas.push(datos)
+                  }
+                }
+                break;          
+            default:
+              break;
+          }
+          
+        }
+      }
+      
+      
+    }
+
+    qUtil.setDataset(respuestas)
+    await qUtil.createwLote()
+
+    await qUtil.commitTransaction()
+    return {
+      ok: true,
+      data: respuestas,
+      message: 'Datos Guardados',
+      
+    }
+    
+  } catch (error) {
+    console.log(error)
+    await  qUtil.rollbackTransaction()
+    return {
+      ok: false,
+      message: 'Error de sistema: OBJSAVERES',
+      error: error.message,
+    }
+  }
+}
 module.exports = {
   getfrmsConstuct,
   getFrmsInfo, getCnfForms, 
-  saveCnfForms
+  saveCnfForms, saveFormsRes
 }

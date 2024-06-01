@@ -1055,7 +1055,7 @@ const weUserSave = async (dto) => {
         //PERSONA
         const persona = dto.data.data
         //inicia la transaccion            
-        qUtil.startTransaction()
+        await qUtil.startTransaction()
         let memo="Usuario Creado Exitosamente"
         if (dto.data.insert) {
             
@@ -1124,14 +1124,14 @@ const weUserSave = async (dto) => {
             }
             memo="Usuario Modificado Exitosamente"
         }
-        qUtil.commitTransaction()
+        await qUtil.commitTransaction()
         return {
             ok: true,            
             message: memo
         }
     } catch (error) {
         console.log("*********************************************************\n\n\n", error)
-        qUtil.rollbackTransaction()
+        await qUtil.rollbackTransaction()
         return {
             ok: false,
             message: "Error de sistema: GEOWEUSRSAVESRV",

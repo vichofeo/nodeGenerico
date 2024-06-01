@@ -933,13 +933,13 @@ const tpacSave = async (dto, handleError) => {
         const data =  Object.assign(dto, obj_cnf)
         delete data.create_date
         data.last_modify_date_time =  new Date()
-        qUtil.startTransaction()
+        await qUtil.startTransaction()
         qUtil.setTableInstance("u_frm_plan_accion")
         qUtil.setDataset(data)
         qUtil.setWhere({valores_id: dto.idx})
         await qUtil.modify()
 
-        qUtil.commitTransaction()
+        await qUtil.commitTransaction()
 
         return {
           ok: true,

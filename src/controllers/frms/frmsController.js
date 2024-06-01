@@ -42,7 +42,14 @@ const saveCnfForms = async(req, res)=>{
   res.json(result)
 }
 
+const saveFormsRes = async(req, res)=>{  
+  //const modelo = req.params.modelo
+  const token =  req.headers.authorization  
+  
+  const result = await frmService.saveFormsRes({token: token, ...req.body})
+  res.json(result)
+}
 module.exports = {
   getfrmsConstuct, getFrmsInfo,
-  getCnfForms, getCnfFormswIdx, saveCnfForms
+  getCnfForms, getCnfFormswIdx, saveCnfForms, saveFormsRes
 }

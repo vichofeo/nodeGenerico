@@ -10,4 +10,6 @@ router.post("/:modelo", authMiddleWare, frmsController.getfrmsConstuct)
   router.get("/cnf/:idx/:modelo", authMiddleWare, frmsController.getCnfFormswIdx)
   router.post("", authMiddleWare, frmsController.saveCnfForms)
 
+  router.post("/fres/save", authMiddleWare, frmsController.saveFormsRes)
+
 module.exports = router
