@@ -1,92 +1,96 @@
 //extraCondicion:[[campo, valor], [campo2, valor]...]
 "use strict"
 const PDEPENDENCIES = {    
-    eval_box:{        
-        alias: 'evalcboxs',        
-        campos: {
-            cod_dpto:['Departamento', false, true, 'C'],
-            eg: ['Ente Gestor', false, true, 'C'],
-            institucion_id: ['Establecimiento de Salud', false, true, 'C'],
-            tipo_acrehab: ['Tipo Formulario a Aplicar', false, true, 'C'],
-            frm_id: ['Formulario de Evaluacion', false, true, 'C'],
+    dash_ames:{        
+        alias: 'ames',        
+        campos: {            
+            departamento:['DEPARTAMENTO', false, true, 'C'], 
+            eg:['ENTE GESTOR', false, true, 'C'],
+            establecimiento:['ESTABLECIMIENTO', false, true, 'C'],
+            tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
+            servicio:['SERVICIO', false, true, 'C'],                        
+            gestion:['GESTION', false, true, 'C'],
+            genero:['GENERO', false, true, 'C'],
+            notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
+            notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
+            apelacion:['APELACIÓN', false, true, 'C'],
+            art63:['ART.    63', false, true, 'C'],
+            art642:['ART. 64,2', false, true, 'C'],
+            art644:['ART. 64,4', false, true, 'C']
             
         }, 
-        ilogic: {
-            cod_dpto:`SELECT DISTINCT d.cod_dpto AS VALUE, d.nombre_dpto AS text
-            FROM  ae_institucion i, al_departamento d, ae_institucion eg
-            WHERE i.tipo_institucion_id='EESS'
-            AND i.cod_dpto =  d.cod_dpto
-            AND i.institucion_root =  eg.institucion_id
-            ORDER BY 2`,
-            eg:`SELECT DISTINCT eg.institucion_id AS value, eg.nombre_institucion AS text
-            FROM  ae_institucion i, al_departamento d, ae_institucion eg
-            WHERE i.tipo_institucion_id='EESS'
-            AND i.cod_dpto =  d.cod_dpto
-            AND i.institucion_root =  eg.institucion_id AND i.cod_dpto = '$campoForeign'
-            ORDER BY 2`,
-            institucion_id: `SELECT DISTINCT i.institucion_id AS value, d.nombre_dpto ||' - '||  i.nombre_institucion||' - '||e.nivel_atencion text
-            FROM  r_institucion_salud e, ae_institucion i, al_departamento d, ae_institucion eg
-            WHERE i.tipo_institucion_id='EESS' AND e.institucion_id =  i.institucion_id
-            AND i.cod_dpto =  d.cod_dpto
-            AND i.institucion_root =  eg.institucion_id AND eg.institucion_id= '$campoForeign' AND i.cod_dpto='$cod_dpto'
-            ORDER BY 2`,
-            tipo_acrehab:`SELECT distinct a.atributo_id AS VALUE,  a.atributo AS text
-            FROM u_frm f, r_is_atributo a
-            WHERE f.tipo_acrehab =  a.atributo_id
-            AND f.codigo_root='-1'
-            ORDER BY 2`,
-            frm_id:`SELECT f.frm_id AS VALUE,  f.parametro AS text
-            FROM u_frm f, r_is_atributo a
-            WHERE f.tipo_acrehab =  a.atributo_id
-            AND f.codigo_root='-1' AND a.atributo_id= '$campoForeign' 
-            ORDER BY 2`,
-       
-        },
-        referer: [        
-        ],
-    },
+        ilogic: {            
+                ames_ejecutadas:`SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM ames
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,
+                ames_eg_gestion: `SELECT 
+                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                FROM ames 
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor, gestion
+                ORDER BY 1, 2`,
+                ames_dpto_eg_gestion:`SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value
+                FROM ames 
+                WHERE 1=1 $w$
+                GROUP BY departamento, gestion 
+                ORDER BY 1, 2` ,
+                ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+                FROM ames
+                WHERE 1=1 $w$
+                GROUP BY gestion, genero
+                ORDER BY 1,2
+                `,
+                ames_tipo_sol:`SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
+                SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
+                FROM ames
+                WHERE 1=1 $w$
+                GROUP BY departamento, tipo_solicitud
+                ORDER BY 1,2`,
+                ames_emision_ini:`SELECT 
+                CASE WHEN fecha_emision IS null 
+				THEN 'unknown' ELSE to_char(fecha_emision,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM ames
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`,
+                ames_emision_fin:`SELECT 
+                CASE WHEN cronograma IS null 
+				THEN 'unknown' 
+				ELSE to_char(cronograma,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM ames
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`
 
-    repo_pal_box:{        
-        alias: 'evalcboxs',        
-        campos: {
-            cod_dpto:['Departamento', false, true, 'C'],
-            eg: ['Ente Gestor', false, true, 'C'],
-            institucion_id: ['Establecimiento de Salud', false, true, 'C'],            
-            frm_id: ['Formulario de Evaluacion', false, true, 'C'],
-            gestion: ['Gestion', false, true, 'C'],
-            
-        }, 
-        ilogic: {
         },
         referer: [        
         ],
         primal:{
-            equivalencia:{cod_dpto:['dpto.cod_dpto','dpto.nombre_dpto'], 
-                        eg:['eg.institucion_id', 'eg.nombre_institucion'],
-                        institucion_id:['eess.institucion_id','eess.nombre_institucion'],
-                        frm_id:['frm.frm_id','frm.parametro'],
-                        gestion:['extract(year from pac.create_date)','extract(year from pac.create_date)']
+            equivalencia:{departamento:['departamento','departamento'], 
+                        eg:['ente_gestor', 'ente_gestor'],
+                        establecimiento:['establecimiento','establecimiento'],
+                        tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
+                        servicio:['servicio','servicio'],                        
+                        gestion:['gestion','gestion'],
+                        genero:['genero', 'genero'],
+                        notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
+                        notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
+                        apelacion:['apelacion','apelacion'],
+                        art63:['art_63','art_63'],
+                        art642:['art_642','art_642'],
+                        art644:['art_644','art_644']
+
+
                         },
             query:`SELECT DISTINCT 
             $a$
-            FROM u_frm_plan_accion pac, u_frm seccion, u_frm cap, u_frm parametro,
-				u_frm_valores val, u_frm_evaluacion eva, u_frm frm,
-            ae_institucion eess, ae_institucion eg, al_departamento dpto
-            WHERE pac.seccion_id=seccion.frm_id
-            AND pac.cap_id=cap.frm_id
-            AND pac.parametro_id = parametro.frm_id            
-            AND pac.valores_id =  val.valores_id
-            and val.evaluacion_id =  eva.evaluacion_id
-            and eva.frm_id =  frm.frm_id AND eva.institucion_id=eess.institucion_id
-            AND eess.institucion_root =  eg.institucion_id
-            AND eess.cod_pais= dpto.cod_pais AND eess.cod_dpto=dpto.cod_dpto
+            FROM ames
+            WHERE 1=1
             $w$
             ORDER BY 2`,
-            headers:[{value: 'nombre_dpto', text: 'Dpto'}, {value: 'eg', text: 'Ente Gestos'}, {value: 'eess', text: 'Establecimiento'},
-            {value: 'gestion', text: 'Gestion'}, {value: 'frm', text: 'Formulario'}, {value: 'seccion', text: 'Seccion'}, 
-            {value: 'capitulo', text: 'Acapite'}, {value: 'standar', text: 'Standar'}, {value: 'fecha_vencimiento', text: 'Vencimiento'}, 
-            {value: 'vigencia', text: 'Dias Vigencia'}, {value: 'alertax23', text: 'Estado'}
-            ],      
+            headers:[{}],      
             attributes:`dpto.nombre_dpto, eg.nombre_institucion AS eg, eess.nombre_institucion AS eess,  
             extract(year from pac.create_date) AS gestion, frm.parametro AS frm,
             seccion.codigo||' - '|| seccion.parametro AS seccion, 

@@ -753,6 +753,7 @@ const PARAMETROS = {
         alias: 'Reportes PAC'
     },
     dashboard:{alias: 'Dashboard Evaluaciones'},
+    udashboard:{alias: 'Dashboard UFAM'},
 
     //modulos segun estructura RUES 3
     r3estucturan: {

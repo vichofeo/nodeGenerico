@@ -37,8 +37,8 @@ module.exports = (sequelize, DataTypes) => {
       cod_clase:{type: DataTypes.STRING(64), allowNull: false},
       codigo_formulario:{type: DataTypes.STRING(25), allowNull: true},
       nombre_formulario:{type: DataTypes.STRING(150), allowNull: false},
-      descripcion:{type: DataTypes.STRING(4000), allowNull: false},
-      ordenanza:{type: DataTypes.TEXT, allowNull: false},
+      descripcion:{type: DataTypes.STRING(4000), allowNull: true},
+      ordenanza:{type: DataTypes.TEXT, allowNull: true},
 
       es_xpersona:{type: DataTypes.STRING(1), allowNull: false, defaultValue: 'N'},
       

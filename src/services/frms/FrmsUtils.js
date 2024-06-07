@@ -331,36 +331,16 @@ module.exports = class FrmsUtils {
       this.#qUtils.setResetVars()
     } //fin for referer
 
-    if (objParamModel.ilogic) {
-      for (const key in objParamModel.ilogic) {
-        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY!!!!!!! llave:', key)
-        let queryIlogic = objParamModel.ilogic[key] 
-
-        const tempo = dataIn ? dataIn[key] : {} 
-
-        console.log('************** almacen ilogic si existe seleccionado', tempo)
-        queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
-        queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
-        queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
-                
-
-        this.#qUtils.setQuery(queryIlogic)
-        await this.#qUtils.excuteSelect()
-
-        const result = this.#qUtils.getResults()
-        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo })
-          console.log('************** DEFAUL SELECTED', selected)
-        parametros.valores[key] = {
-          selected: selected,
-          items: result
-        }
-      }
-    }
-
     //procesa si existe primal  Un solo query para combodependencia
+    /**
+     * ===================== SECCION DE QUERYS PRIMO, UN SOLO QUERY PAARA TODOS LOS COMBOS =====================
+     *                        **********************************************************
+     */
+    let CONDITION_PRIMAL = ""
+    const swhere =  '$w$'
     if(objParamModel.primal){
       const sattrib = '$a$'
-      const swhere =  '$w$'
+      
       let queryPrimal = objParamModel.primal.query
       const equivalencia =  objParamModel.primal.equivalencia
       let primalCondition = []
@@ -390,7 +370,42 @@ module.exports = class FrmsUtils {
         }
 
       }
+      CONDITION_PRIMAL = pWhere
     }
+    // ------------------------- 0 FIN PRIMAL 0------------------
+    /**
+     * -------------------- SECCION DE QUERIS ILOGICOS Q NO SIGUEN UN PATRON -------------------------
+     *                      ***********************************************
+     */
+    if (objParamModel.ilogic) {
+      for (const key in objParamModel.ilogic) {
+        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY!!!!!!! llave:', key)
+        let queryIlogic = objParamModel.ilogic[key] 
+
+        const tempo = dataIn ? dataIn[key] : {} 
+
+        console.log('************** almacen ilogic si existe seleccionado', tempo)
+        queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
+        queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
+        queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
+                
+        //complementa condicion en caso q haya existido condicion PRIMAL
+        queryIlogic = queryIlogic.replaceAll(swhere, CONDITION_PRIMAL)
+
+        this.#qUtils.setQuery(queryIlogic)
+        await this.#qUtils.excuteSelect()
+
+        const result = this.#qUtils.getResults()
+        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo })
+          console.log('************** DEFAUL SELECTED', selected)
+        parametros.valores[key] = {
+          selected: selected,
+          items: result
+        }
+      }
+    }
+
+    
     this.#results = parametros // {[objParamModel.alias]:parametros}
   }
 

@@ -16,6 +16,9 @@ const AGRUPADO = {
 
     eess : ['institucion','eess','propietario','responsablen','servicios_basicos','estructura','r3areasn','superficie','r3estucturan','infraestructuran','mobiliarion','r3mobiliarion','r3equipamienton', 'personaln'],
     eess_icons : ['mdi-hospital-building','mdi-ambulance','mdi-snowman','mdi-highway','mdi-help-network','mdi-home-assistant','mdi-home-assistant','mdi-theater','mdi-home-assistant','mdi-sitemap','mdi-cart-plus','mdi-cart-plus','mdi-certificate','mdi-human-male-female'],
+
+    ufamreport: ['udashboard'],
+    ufamreport_icons:['mdi-chart-bar-stacked']
 }
 
 module.exports = {

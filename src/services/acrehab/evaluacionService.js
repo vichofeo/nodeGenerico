@@ -1019,7 +1019,7 @@ const tpacReport = async (dto, handleError) => {
   } catch (error) {
     
     console.log(error)
-    handleError.setMessage('Error de sistema: SAVETPAC')
+    handleError.setMessage('Error de sistema: REPORTTPAC')
     handleError.setHttpError(error.message)
   }
 }
