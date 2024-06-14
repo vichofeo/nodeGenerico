@@ -97,7 +97,7 @@ const PARAMETROS = {
         included: null, //para el caso de una asociacion con table
         campos: {       
             aplicacion_id: ['Elija la Aplicacion', false, true, 'C'],   
-            role: ['Rol cod.', false, true, 'TT',24],   
+            role: ['Rol cod.', false, true, 'TT',32],   
             name_role: ['Nombre del rol', true, true, 'TT',50],   
             description: ['Descripcion', true, true, 'TA',250],            
             activo: ['Activo', true, true, 'C', 2],            

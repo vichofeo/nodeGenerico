@@ -753,7 +753,12 @@ const PARAMETROS = {
         alias: 'Reportes PAC'
     },
     dashboard:{alias: 'Dashboard Evaluaciones'},
-    udashboard:{alias: 'Dashboard UFAM'},
+    dash_ames:{alias: 'Dash. UFAM - AMES'},
+    dash_inas:{alias: 'Dash. UFAM - INAS'},
+    dash_rrame:{alias: 'Dash. UFAM - RRAME'},
+    dash_hemofilia:{alias: 'Dash. AEB - HEMOFILIA'},
+    dash_carmelo:{alias: 'Dash. AEB - CARMELO'},
+    dash_pai:{alias: 'Dash. AEB - PAI'},
 
     //modulos segun estructura RUES 3
     r3estucturan: {

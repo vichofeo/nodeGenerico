@@ -1,97 +1,123 @@
 //extraCondicion:[[campo, valor], [campo2, valor]...]
-"use strict"
-const PDEPENDENCIES = {    
-    dash_ames:{        
-        alias: 'ames',        
-        campos: {            
-            departamento:['DEPARTAMENTO', false, true, 'C'], 
-            eg:['ENTE GESTOR', false, true, 'C'],
-            establecimiento:['ESTABLECIMIENTO', false, true, 'C'],
-            tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
-            servicio:['SERVICIO', false, true, 'C'],                        
-            gestion:['GESTION', false, true, 'C'],
-            genero:['GENERO', false, true, 'C'],
-            notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
-            notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
-            apelacion:['APELACIÓN', false, true, 'C'],
-            art63:['ART.    63', false, true, 'C'],
-            art642:['ART. 64,2', false, true, 'C'],
-            art644:['ART. 64,4', false, true, 'C']
-            
-        }, 
-        ilogic: {            
-                ames_ejecutadas:`SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
-                FROM ames
+'use strict'
+const PDEPENDENCIES = {
+  dash_ames: {
+    alias: 'ames',
+    campos: {
+      departamento: ['DEPARTAMENTO', false, true, 'C'],
+      eg: ['ENTE GESTOR', false, true, 'C'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+      tipo_solicitud: ['TIPO DE SOLICITUD', false, true, 'C'],
+      servicio: ['SERVICIO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+      genero: ['GENERO', false, true, 'C'],
+      notificacion_legitimador: [
+        'NOTIFICACION INFORME A LEGITIMADORES',
+        false,
+        true,
+        'C',
+      ],
+      notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
+      apelacion: ['APELACIÓN', false, true, 'C'],
+      art63: ['ART.    63', false, true, 'C'],
+      art642: ['ART. 64,2', false, true, 'C'],
+      art644: ['ART. 64,4', false, true, 'C'],
+    },
+    ilogic: {
+      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM tmp_ames
                 WHERE 1=1 $w$
                 GROUP BY gestion
                 ORDER BY 1`,
-                ames_eg_gestion: `SELECT 
+      ames_eg_gestion: `SELECT 
                 ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
-                FROM ames 
+                FROM tmp_ames 
                 WHERE 1=1 $w$
                 GROUP BY ente_gestor, gestion
                 ORDER BY 1, 2`,
-                ames_dpto_eg_gestion:`SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value
-                FROM ames 
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value
+                FROM tmp_ames 
                 WHERE 1=1 $w$
                 GROUP BY departamento, gestion 
-                ORDER BY 1, 2` ,
-                ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
-                FROM ames
+                ORDER BY 1, 2`,
+      ames_genero: `SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+                FROM tmp_ames
                 WHERE 1=1 $w$
                 GROUP BY gestion, genero
                 ORDER BY 1,2
                 `,
-                ames_tipo_sol:`SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
+      ames_tipo_sol: `SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
                 SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
-                FROM ames
+                FROM tmp_ames
                 WHERE 1=1 $w$
                 GROUP BY departamento, tipo_solicitud
                 ORDER BY 1,2`,
-                ames_emision_ini:`SELECT 
+      ames_emision_ini: `SELECT 
                 CASE WHEN fecha_emision IS null 
 				THEN 'unknown' ELSE to_char(fecha_emision,'YYYY-MM')END AS periodo,
                 COUNT(*) AS value
-                FROM ames
+                FROM tmp_ames
                 WHERE 1=1 $w$
                 GROUP BY 1 ORDER BY 1`,
-                ames_emision_fin:`SELECT 
+      ames_emision_fin: `SELECT 
                 CASE WHEN cronograma IS null 
 				THEN 'unknown' 
 				ELSE to_char(cronograma,'YYYY-MM')END AS periodo,
                 COUNT(*) AS value
-                FROM ames
+                FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY 1 ORDER BY 1`
-
-        },
-        referer: [        
+                GROUP BY 1 ORDER BY 1`,
+      ames_eg_arts: `SELECT
+                ente_gestor, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor
+                ORDER BY 1`,
+      ames_gestion_arts: `SELECT
+                gestion, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,
+      ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
+                FROM tmp_ames WHERE 1=1 $w$
+                GROUP BY 1
+                ORDER BY 1`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['departamento', 'departamento'],
+        eg: ['ente_gestor', 'ente_gestor'],
+        establecimiento: ['establecimiento', 'establecimiento'],
+        tipo_solicitud: ['tipo_solicitud', 'tipo_solicitud'],
+        servicio: ['servicio', 'servicio'],
+        gestion: ['gestion', 'gestion'],
+        genero: ['genero', 'genero'],
+        notificacion_legitimador: [
+          'notificacion_legitimador',
+          'notificacion_legitimador',
         ],
-        primal:{
-            equivalencia:{departamento:['departamento','departamento'], 
-                        eg:['ente_gestor', 'ente_gestor'],
-                        establecimiento:['establecimiento','establecimiento'],
-                        tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
-                        servicio:['servicio','servicio'],                        
-                        gestion:['gestion','gestion'],
-                        genero:['genero', 'genero'],
-                        notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
-                        notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
-                        apelacion:['apelacion','apelacion'],
-                        art63:['art_63','art_63'],
-                        art642:['art_642','art_642'],
-                        art644:['art_644','art_644']
-
-
-                        },
-            query:`SELECT DISTINCT 
+        notificacion_msyd: ['notificacion_msyd', 'notificacion_msyd'],
+        apelacion: ['apelacion', 'apelacion'],
+        art63: ['art_63', 'art_63'],
+        art642: ['art_642', 'art_642'],
+        art644: ['art_644', 'art_644'],
+      },
+      query: `SELECT DISTINCT 
             $a$
-            FROM ames
+            FROM tmp_ames
             WHERE 1=1
             $w$
             ORDER BY 2`,
-            headers:[{}],      
-            attributes:`dpto.nombre_dpto, eg.nombre_institucion AS eg, eess.nombre_institucion AS eess,  
+      headers: [{}],
+      attributes: `dpto.nombre_dpto, eg.nombre_institucion AS eg, eess.nombre_institucion AS eess,  
             extract(year from pac.create_date) AS gestion, frm.parametro AS frm,
             seccion.codigo||' - '|| seccion.parametro AS seccion, 
             cap.codigo||' '||cap.parametro AS capitulo, 
@@ -109,27 +135,251 @@ const PDEPENDENCIES = {
                     WHEN (( pac.fecha_complimiento )::DATE - NOW()::DATE)<0
                     THEN 'Vencido' 
                     ELSE 'N/A' END  AS alertax23`,
-        },
-        withInitial:true,
-        
     },
+    withInitial: true,
+  },
 
-    mydash:{        
-        alias: 'MyDasboard',        
-        campos: {
-            gestion: ['Gestion', false, true, 'C'],
-            evaluaciones:['Evaluaciones', false, true, 'TT'],
-            dptos:['Evaluaciones por Departamento', false, true, 'TT'],
-            estados:['Estado Evaluacion por Formulario', false, true, 'TT'],
-            pac_fin:['PAC x Fecha Cumplimiento', false, true, 'TT'],
-            pac_ini:['PAC x Fecha Inicio', false, true, 'TT'],
-            
-        }, 
-        ilogic: {
-            gestion:`SELECT DISTINCT extract(year from create_date) as value, extract(year from create_date) as text            
+  dash_inas: {
+    alias: 'inas',
+    campos: {
+      //departamento:['DEPARTAMENTO', false, true, 'C'],
+      departamento: ['CIUDAD', false, true, 'C'],
+      eg: ['ENTE GESTOR', false, true, 'C'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+      //tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
+      servicio: ['SERVICIO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+
+      //genero:['GENERO', false, true, 'C'],
+      //notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
+      //notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
+      //apelacion:['APELACIÓN', false, true, 'C'],
+      //art63:['ART.    63', false, true, 'C'],
+      //art642:['ART. 64,2', false, true, 'C'],
+      //art644:['ART. 64,4', false, true, 'C']
+    },
+    ilogic: {
+      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM tmp_inas
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,
+      ames_eg_gestion: `SELECT 
+                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                FROM tmp_inas 
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor, gestion
+                ORDER BY 1, 2`,
+      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value
+                FROM tmp_inas 
+                WHERE 1=1 $w$
+                GROUP BY ciudad, gestion 
+                ORDER BY 1, 2`,
+      /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY gestion, genero
+                ORDER BY 1,2`,
+                ames_tipo_sol:`SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
+                SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY departamento, tipo_solicitud
+                ORDER BY 1,2`,*/
+      ames_emision_ini: `SELECT 
+                CASE WHEN fecha_emision IS null 
+				THEN 'unknown' ELSE to_char(fecha_emision,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM tmp_inas
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`,
+      ames_emision_fin: `SELECT 
+                CASE WHEN cronograma IS null 
+				THEN 'unknown' 
+				ELSE to_char(cronograma,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM tmp_inas
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`,
+      /*ames_eg_arts:`SELECT
+                ente_gestor, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor
+                ORDER BY 1`,
+                ames_gestion_arts:`SELECT
+                gestion, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,*/
+      ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
+                FROM tmp_inas WHERE 1=1 $w$
+                GROUP BY 1
+                ORDER BY 1`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['ciudad', 'ciudad'],
+        eg: ['ente_gestor', 'ente_gestor'],
+        establecimiento: ['establecimiento', 'establecimiento'],
+        //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
+        servicio: ['servicio', 'servicio'],
+        gestion: ['gestion', 'gestion'],
+        //genero:['genero', 'genero'],
+        //notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
+        //notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
+        //apelacion:['apelacion','apelacion'],
+        //art63:['art_63','art_63'],
+        //art642:['art_642','art_642'],
+        //art644:['art_644','art_644']
+      },
+      query: `SELECT DISTINCT 
+            $a$
+            FROM tmp_inas
+            WHERE 1=1
+            $w$
+            ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  dash_rrame: {
+    alias: 'rrame',
+    campos: {
+      //departamento:['DEPARTAMENTO', false, true, 'C'],
+      departamento: ['CIUDAD', false, true, 'C'],
+      eg: ['ENTE GESTOR', false, true, 'C'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+      //tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
+      servicio: ['SERVICIO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+
+      //genero:['GENERO', false, true, 'C'],
+      //notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
+      //notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
+      //apelacion:['APELACIÓN', false, true, 'C'],
+      //art63:['ART.    63', false, true, 'C'],
+      //art642:['ART. 64,2', false, true, 'C'],
+      //art644:['ART. 64,4', false, true, 'C']
+    },
+    ilogic: {
+      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM tmp_rrame
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,
+      ames_eg_gestion: `SELECT 
+                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                FROM tmp_rrame 
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor, gestion
+                ORDER BY 1, 2`,
+      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value
+                FROM tmp_rrame 
+                WHERE 1=1 $w$
+                GROUP BY ciudad, gestion 
+                ORDER BY 1, 2`,
+      /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY gestion, genero
+                ORDER BY 1,2`,
+                ames_tipo_sol:`SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
+                SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY departamento, tipo_solicitud
+                ORDER BY 1,2`,*/
+      ames_emision_ini: `SELECT 
+                CASE WHEN fecha_emision IS null 
+				THEN 'unknown' ELSE to_char(fecha_emision,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM tmp_rrame
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`,
+      /*ames_emision_fin:`SELECT 
+                CASE WHEN cronograma IS null 
+				THEN 'unknown' 
+				ELSE to_char(cronograma,'YYYY-MM')END AS periodo,
+                COUNT(*) AS value
+                FROM tmp_rrame
+                WHERE 1=1 $w$
+                GROUP BY 1 ORDER BY 1`,*/
+      /*ames_eg_arts:`SELECT
+                ente_gestor, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY ente_gestor
+                ORDER BY 1`,
+                ames_gestion_arts:`SELECT
+                gestion, 
+                SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
+                SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
+                SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
+                FROM tmp_ames
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,*/
+      ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
+                FROM tmp_rrame WHERE 1=1 $w$
+                GROUP BY 1
+                ORDER BY 1`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['ciudad', 'ciudad'],
+        eg: ['ente_gestor', 'ente_gestor'],
+        establecimiento: ['establecimiento', 'establecimiento'],
+        //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
+        servicio: ['servicio', 'servicio'],
+        gestion: ['gestion', 'gestion'],
+        //genero:['genero', 'genero'],
+        //notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
+        //notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
+        //apelacion:['apelacion','apelacion'],
+        //art63:['art_63','art_63'],
+        //art642:['art_642','art_642'],
+        //art644:['art_644','art_644']
+      },
+      query: `SELECT DISTINCT 
+            $a$
+            FROM tmp_rrame
+            WHERE 1=1
+            $w$
+            ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  mydash: {
+    alias: 'MyDasboard',
+    campos: {
+      gestion: ['Gestion', false, true, 'C'],
+      evaluaciones: ['Evaluaciones', false, true, 'TT'],
+      dptos: ['Evaluaciones por Departamento', false, true, 'TT'],
+      estados: ['Estado Evaluacion por Formulario', false, true, 'TT'],
+      pac_fin: ['PAC x Fecha Cumplimiento', false, true, 'TT'],
+      pac_ini: ['PAC x Fecha Inicio', false, true, 'TT'],
+    },
+    ilogic: {
+      gestion: `SELECT DISTINCT extract(year from create_date) as value, extract(year from create_date) as text            
             FROM u_frm_evaluacion
             ORDER BY 2 desc`,
-            evaluaciones:`SELECT a.atributo_id, a.atributo AS estado, a.color, COUNT(e.*) AS VALUE,
+      evaluaciones: `SELECT a.atributo_id, a.atributo AS estado, a.color, COUNT(e.*) AS VALUE,
             SUM(COUNT(e.*)) OVER (ORDER BY a.atributo_id )
               AS evaluaciones, 
               SUM(Sum(case when e.excelencia = true THEN 1 ELSE 0 END)) OVER (ORDER BY a.atributo_id ) AS excelencia
@@ -139,7 +389,7 @@ const PDEPENDENCIES = {
              AND a.atributo_id>'0' 
             GROUP BY a.atributo_id, a.atributo, a.color
             ORDER BY a.atributo_id`,
-             dptos: `SELECT dpto.cod_dpto,dpto.nombre_dpto AS dpto, f.orden, f.nombre_corto AS frm, COUNT(e.*) AS value
+      dptos: `SELECT dpto.cod_dpto,dpto.nombre_dpto AS dpto, f.orden, f.nombre_corto AS frm, COUNT(e.*) AS value
              FROM u_frm f
              LEFT JOIN u_frm_evaluacion e   ON ( f.frm_id=e.frm_id AND extract(year from e.create_date)= '$gestion')
              left JOIN ae_institucion i ON (e.institucion_id =  i.institucion_id)
@@ -148,7 +398,7 @@ const PDEPENDENCIES = {
              f.codigo_root='-1'
              GROUP BY dpto.cod_dpto,dpto.nombre_dpto, f.orden, f.nombre_corto
              ORDER BY dpto.cod_dpto, f.orden `,
-            estados: ` SELECT 
+      estados: ` SELECT 
                 f.orden, f.nombre_corto as frm, a.atributo_id, a.atributo as estado, a.color, COUNT(*) AS value,
                 SUM(COUNT(*)) OVER (PARTITION BY f.nombre_corto ORDER BY a.atributo_id ) as acumulado
                 FROM u_is_atributo a,
@@ -158,29 +408,22 @@ const PDEPENDENCIES = {
                 and extract(year from e.create_date)= '$gestion'
                 GROUP BY f.orden, f.nombre_corto, a.atributo_id, a.atributo, a.color
                 ORDER BY f.orden, a.atributo_id `,
-            pac_fin: `SELECT 
+      pac_fin: `SELECT 
             CASE WHEN p.fecha_complimiento IS null THEN 's/Iniciar' ELSE to_char(p.fecha_complimiento,'YYYY-MM')END AS mes,
             COUNT(*) AS value
             FROM u_frm_evaluacion e, u_frm_valores v, u_frm_plan_accion p
             WHERE 
             e.evaluacion_id = v.evaluacion_id AND v.valores_id=p.valores_id and extract(year from e.create_date)= '$gestion'
             GROUP BY 1 ORDER BY 1`,
-            pac_ini: `SELECT 
+      pac_ini: `SELECT 
             CASE WHEN p.fecha_registro IS null THEN 's/Iniciar' ELSE to_char(p.fecha_registro,'YYYY-MM')END AS mes,
             COUNT(*) AS value
             FROM u_frm_evaluacion e, u_frm_valores v, u_frm_plan_accion p
             WHERE 
             e.evaluacion_id = v.evaluacion_id AND v.valores_id=p.valores_id and extract(year from e.create_date)= '$gestion'
-            GROUP BY 1 ORDER BY 1`
-
-            
-            
-       
-        },
-        referer: [        
-        ],
-        
+            GROUP BY 1 ORDER BY 1`,
     },
-    
+    referer: [],
+  },
 }
 module.exports = PDEPENDENCIES
