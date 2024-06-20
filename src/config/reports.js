@@ -106,7 +106,7 @@ const REPORTS = {
   tipoatcn: {
     table:
       'ae_institucion aei, al_departamento dpto , ae_institucion ges,  r_institucion_salud ins',
-    alias: 'xxxTipo Atencion',
+    alias: 'xxxTipo Atencion clasical',
     tipo: 'Sum',
     campos: `dpto.nombre_dpto as "Departamento",   ges.nombre_corto AS "Ente Gestor", aei.nombre_institucion AS "Establecimiento", ins.snis AS "Con RUES",  ins.camas_obs_emergencia AS "Camillas Emergencia", ins.camas_obs_preparto AS "Camas Obs. Preparto", ins.camas_internacion AS "Camas Internacion", ins.camas_uti AS "Camas UTI", ins.camas_uti_neonatal AS "Camas UTI Neonatal", ins.camas_uci  AS "Camas UCI", ins.camas_uci_neonatal  AS "Camas UCI Neonatal"`,
     camposOcultos: [

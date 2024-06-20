@@ -175,6 +175,12 @@ module.exports = class Qutils {
   async modify() {
     this.#results = await this.#table.update(this.#set, { where: this.#where }, { transaction: this.#transac })
   }
+  /**
+   * Elimina
+   */
+  async deleting() {
+    this.#results = await this.#table.destroy({ where: this.#where }, { transaction: this.#transac })
+  }
   async createwLote() {
     this.#results = await this.#table.bulkCreate(this.#set, { transaction: this.#transac, ignoreDuplicates: true, include: this.#include })
   }
@@ -344,5 +350,21 @@ module.exports = class Qutils {
    */
   notNull(){
     return {[Op.not]: null}
+  }
+/**
+ * Sentenci OR para where recibe on obj o un ArrayOb
+ * @param {*} ObjOrArrayObj 
+ * @returns 
+ */
+  orWhere(ObjOrArrayObj){
+    return {[Op.or]:ObjOrArrayObj}
+  }
+/**
+ * Sentencia ILike, no distingue mayus or Minus, value estring %value%
+ * @param {String} value 
+ * @returns 
+ */
+  ilikeWhere(value){
+    return {[Op.iLike]: value}
   }
 }

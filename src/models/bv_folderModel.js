@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       folder_id:{ type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
       name_folder: { type: DataTypes.STRING(128), allowNull: true },
       folder_root: { type: DataTypes.INTEGER, allowNull: false, default:-1 },
-      hashchild: { type: DataTypes.BOOLEAN, allowNull: false, default: false },
+      hashchild: { type: DataTypes.BOOLEAN, allowNull: true, default: false },
       group_folder: { type: DataTypes.STRING(128), allowNull: true, default: 'unknown' },
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
       create_date: { type: DataTypes.DATE, allowNull: true },

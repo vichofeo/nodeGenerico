@@ -5,18 +5,6 @@ const router = express.Router()
 
 const PATH_LOCAL = __dirname
 
-const multer = require('multer')
-var storage = multer.diskStorage({
-    destination: (req, file, cb)=>{
-        cb(null, "./public/images")
-    },
-    filename:(req, file, cb)=>{
-        cb(null, Date.now() + '-' + file.originalname)
-    }
-})
-const upload = multer({
-    storage
-}).single('imagen')
 
 const eraseExtension = (filename)=>{
     return filename.split('.').shift()
