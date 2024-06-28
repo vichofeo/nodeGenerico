@@ -313,6 +313,15 @@ module.exports = class Qutils {
 
   // ----------------- metodos adicionales a queries
   /**
+   * sentencia DISTINCT
+   * @param {*} campo : CAMPPO DE TABLA
+   * @returns 
+   */
+  distinctData(campo){
+    return this.#sequelize.fn('DISTINCT',this.col(campo))
+  }
+
+  /**
    * sentencia para contar 
    * @param {*} campo : campo de tabla
    * @returns 
@@ -358,6 +367,14 @@ module.exports = class Qutils {
  */
   orWhere(ObjOrArrayObj){
     return {[Op.or]:ObjOrArrayObj}
+  }
+  /**
+ * Sentencia AND para where recibe on obj o un ArrayOb
+ * @param {*} ObjOrArrayObj 
+ * @returns 
+ */
+  andWhere(ObjOrArrayObj){
+    return {[Op.and]:ObjOrArrayObj}
   }
 /**
  * Sentencia ILike, no distingue mayus or Minus, value estring %value%

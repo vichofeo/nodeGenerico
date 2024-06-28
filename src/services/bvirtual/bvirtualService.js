@@ -64,6 +64,7 @@ const getDataFolders = async (dto, handleError) => {
     return {
       ok: true,
       data: valores,
+      role:obj_rol,
       message: 'Requerimiento Exitoso',
     }
   } catch (error) {
@@ -192,6 +193,7 @@ const searchFiles = async (dto, handleError) => {
       ['file_md5', 'name__'],
       ['file_original_name', 'name'],
       ['file_description', 'description'],
+      'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
       'activo',
       'words',
     ])
@@ -199,6 +201,12 @@ const searchFiles = async (dto, handleError) => {
       ...qUtil.orWhere({file_original_name: qUtil.ilikeWhere(value),
         file_description:qUtil.ilikeWhere(value),
         words: qUtil.ilikeWhere(value),
+        title: qUtil.ilikeWhere(value),
+        author: qUtil.ilikeWhere(value),
+        year: qUtil.ilikeWhere(value),
+        city: qUtil.ilikeWhere(value),
+        editorial: qUtil.ilikeWhere(value),
+        collection: qUtil.ilikeWhere(value),
       })
      })
     qUtil.setOrder(['file_type', 'file_original_name'])
@@ -218,6 +226,35 @@ const searchFiles = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
+
+const suggestFiles = async (dto, handleError) => {
+  try {
+    
+    qUtil.setTableInstance('bv_files')
+    qUtil.setAttributes([[qUtil.distinctData('city'),'value'], ['city','text']])  
+    qUtil.setWhere({...qUtil.andWhere([{city:qUtil.notNull()},{city:qUtil.distinto('')}])})  
+    qUtil.setOrder(['city'])
+    await qUtil.findTune()
+    const resultCity = qUtil.getResults()
+
+    qUtil.setTableInstance('bv_files')
+    qUtil.setAttributes([[qUtil.distinctData('collection'),'value'], ['collection','text']])  
+    qUtil.setWhere({...qUtil.andWhere([{collection:qUtil.notNull()},{collection:qUtil.distinto('')}])})  
+    qUtil.setOrder(['collection'])
+    await qUtil.findTune()
+    const resultCollection = qUtil.getResults()
+    return {
+      ok: true,
+      data: {city:resultCity, collection:resultCollection},
+      message: 'Solicitud ejecutada correctamente',
+    }
+  } catch (error) {
+    console.log('\n\nerror::: EN SERVICES get suggest\n', error)
+    handleError.setMessage('Error de sistema: BVIRTGETSUGGESTSRV')
+    handleError.setHttpError(error.message)
+  }
+}
+
 const getDataFiles = async (dto, handleError) => {
   try {
     console.log('\n 9☻ entrando al get', dto)
@@ -228,7 +265,9 @@ const getDataFiles = async (dto, handleError) => {
       ['file_type', 'type'],
       ['file_md5', 'name__'],
       ['file_original_name', 'name'],
-      ['file_description', 'description'],
+      //['file_description', 'description'],
+      'file_description',
+      'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
       'activo',
       'words',
     ])
@@ -396,7 +435,7 @@ const editFile = async (dto, handleError) => {
   }
 }
 module.exports = {
-  searchFiles,
+  searchFiles, suggestFiles,
   getDataFolders,
   saveDataFolders,
   editDataFolders,

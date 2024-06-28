@@ -50,6 +50,14 @@ const searchFiles = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const suggestFiles = async (req, res)=>{
+        
+    const token = req.headers.authorization
+
+    const result = await service.suggestFiles({token:token, ...req.body},handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 const getDataFiles = async (req, res)=>{
         
     const token = req.headers.authorization
@@ -98,7 +106,7 @@ const editFile = async (req, res)=>{
 }
 
 module.exports = {
-    searchFiles,
+    searchFiles, suggestFiles,
     getDataFolders, saveDataFolders, editDataFolders, deleteDataFolders,
 
     getDataFiles, uploadFile, deleteFile,

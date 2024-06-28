@@ -759,6 +759,7 @@ const PARAMETROS = {
     dash_hemofilia:{alias: 'Dash. AEB - HEMOFILIA'},
     dash_carmelo:{alias: 'Dash. AEB - CARMELO'},
     dash_pai:{alias: 'Dash. AEB - PAI'},
+    dash_cancer:{alias: 'Dash. AEB - CANCER'},
 
     //modulos segun estructura RUES 3
     r3estucturan: {

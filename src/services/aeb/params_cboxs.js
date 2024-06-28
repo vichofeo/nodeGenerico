@@ -359,5 +359,97 @@ const PDEPENDENCIES = {
     },
     withInitial: true,
   },
+  dash_cancer: {
+    alias: 'cancer',
+    campos: {
+      departamento: ['DEPARTAMENTO', false, true, 'C'],      
+      eg: ['ENTE GESTOR', false, true, 'C'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+
+      genero: ['GENERO', false, true, 'C'],
+      tecnica: ['TECNICA RECOLECCION', false, true, 'C'],
+      gestion: ['GESTION REGISTRO', false, true, 'C'],
+      diagnostico: ['DIAGNOSTICO HISTOPATOLOGICO', false, true, 'C'],
+      cie10: ['CIE10 - GRUPO', false, true, 'C'],
+    },
+    ilogic: {
+      cancer_dpto: `SELECT  departamento as pila ,COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY 1
+      ORDER BY 2 `,
+      cancer_eg: `SELECT  ente_gestor  AS pila ,COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY 1
+      ORDER BY 2 `,      
+      cancer_dpto_eg: `SELECT  departamento as pila, ente_gestor as ejex, COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY 1,2
+      ORDER BY 1,2`,      
+      cancer_genero_eg: `SELECT departamento as pila, genero as ejex,  COUNT (*) AS value
+                FROM tmp_cancer
+                WHERE 1=1 $w$
+                GROUP BY 1,2
+                ORDER BY 3 desc,1,2
+                `,
+      cancer_genero_dpto: `SELECT ente_gestor as pila, genero as ejex,  COUNT (*) AS value
+                FROM tmp_cancer
+                WHERE 1=1 $w$
+                GROUP BY 1,2
+                ORDER BY 3 desc, 1,2
+                `,
+      cancer_hetario: `SELECT edad_recodificada as pila,
+                genero as ejex, COUNT (*) AS value
+                FROM tmp_cancer
+                WHERE 1=1 $w$
+                GROUP BY 1,2 order by 1`,
+      cancer_recoleccion: `SELECT tecnica_recoleccion as pila,  COUNT(*) AS value,
+                SUM(COUNT(*)) OVER (ORDER BY tecnica_recoleccion ) AS total_acumulado					 
+                        FROM tmp_cancer
+                        WHERE 1=1 $w$
+                        GROUP BY 1
+                        ORDER BY 1`,          
+      cancer_cie10: `SELECT  cie_grupo as pila ,COUNT(*) AS value
+                FROM tmp_cancer WHERE 1=1 $w$
+                GROUP BY 1
+                ORDER BY 2 `,
+      cancer_fallecidos_g: `SELECT  TO_CHAR(fecha_defuncion, 'YYYY') as ejex,  COUNT (*) AS value
+                FROM tmp_cancer WHERE fecha_defuncion is not null $w$
+                GROUP BY 1
+                ORDER BY 1 `,
+      cancer_fallecidos: `SELECT  TO_CHAR(fecha_defuncion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value
+                FROM tmp_cancer WHERE fecha_defuncion is not null $w$
+                GROUP BY 1
+                ORDER BY 1 `,  
+      cancer_diagnostico:`SELECT diagnostico_histopatologico as ejex,  COUNT(*) AS value,
+        SUM(COUNT(*)) OVER (PARTITION BY diagnostico_histopatologico ORDER BY diagnostico_histopatologico ) AS total_acumulado					 
+                FROM tmp_cancer
+                WHERE 1=1 $w$
+                GROUP BY 1
+                ORDER BY 2 desc`          
+
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['departamento', 'departamento'],       
+        eg: ['ente_gestor', 'ente_gestor'],
+        establecimiento: ['establecimiento', 'establecimiento'],
+        genero: ['genero', 'genero'],
+        tecnica: ['tecnica_recoleccion', 'tecnica_recoleccion'],
+        gestion: ['gestion','gestion'],
+        diagnostico: ["diagnostico_histopatologico", "diagnostico_histopatologico"],
+        cie10: ['cie_grupo', 'cie_grupo'],
+        
+      },
+      query: `SELECT DISTINCT $a$
+                FROM tmp_cancer
+                WHERE 1=1
+                $w$
+                ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 }
 module.exports = PDEPENDENCIES

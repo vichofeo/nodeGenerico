@@ -35,6 +35,7 @@ router.delete("/folders/:idx/del", authMiddleWare, controller.deleteDataFolders)
 
 router.get("/files/:idx/get", authMiddleWare, controller.getDataFiles)
 router.post("/files/search", authMiddleWare, controller.searchFiles)
+router.post("/files/suggest", authMiddleWare, controller.suggestFiles)
 
 router.post("/file/upload", authMiddleWare, upload, controller.uploadFile)
 router.delete("/file/:idx/:idy/delete", authMiddleWare, controller.deleteFile)

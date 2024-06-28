@@ -20,8 +20,8 @@ const AGRUPADO = {
     ufamreport: ['dash_ames', 'dash_inas','dash_rrame'],
     ufamreport_icons:['mdi-chart-bar-stacked', 'mdi-chart-line','mdi-chart-pie'],
 
-    aebreport: ['dash_hemofilia', 'dash_carmelo', 'dash_pai'],
-    aebreport_icons:['mdi-chart-bubble', 'mdi-nature-people','mdi-chart-donut-variant'],
+    aebreport: ['dash_cancer','dash_hemofilia', 'dash_carmelo', 'dash_pai'],
+    aebreport_icons:['mdi-medical-bag','mdi-chart-bubble', 'mdi-nature-people','mdi-chart-donut-variant'],
 }
 
 module.exports = {
