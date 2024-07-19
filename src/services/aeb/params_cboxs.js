@@ -107,7 +107,7 @@ const PDEPENDENCIES = {
       hemo_tipo_registro: `SELECT tipo_registro AS pila, COUNT(*) AS value,
       SUM(COUNT(*)) OVER (PARTITION BY tipo_registro ORDER BY tipo_registro ) AS total_acumulado
                 FROM tmp_hemofilia
-                WHERE 1=1 
+                WHERE 1=1 $w$
                 GROUP BY 1
 					 ORDER BY 1`,
     },
@@ -293,7 +293,12 @@ const PDEPENDENCIES = {
                 `,
       pai_hetario: `SELECT 
                 genero as ejex,
-                SUM(CASE WHEN cast(edad as decimal) >=0 and cast(edad as decimal)<=5 THEN 1 ELSE 0 END)as "0-5",
+                SUM(CASE WHEN cast(edad as DECIMAL) >=0 and cast(edad as DECIMAL)<=0.25 THEN 1 ELSE 0 END)as "0m-3m",
+                SUM(CASE WHEN cast(edad as DECIMAL) >0.25 and cast(edad as DECIMAL)<=0.50 THEN 1 ELSE 0 END)AS "4m-6m",
+                SUM(CASE WHEN cast(edad as DECIMAL) >0.50 and cast(edad as DECIMAL)<=0.75 THEN 1 ELSE 0 END)AS "7m-9m",
+                SUM(CASE WHEN cast(edad as DECIMAL) >0.75 and cast(edad as DECIMAL)<=1 THEN 1 ELSE 0 END)AS "10m-12m",
+
+                SUM(CASE WHEN cast(edad as decimal) >1 and cast(edad as decimal)<=5 THEN 1 ELSE 0 END)as "1-5",
                 SUM(CASE WHEN cast(edad as decimal) >5 and cast(edad as decimal)<=10 THEN 1 ELSE 0 END) as "5-10",
                 SUM(CASE WHEN cast(edad as decimal) >10 and cast(edad as decimal)<=15 THEN 1 ELSE 0 END) as "10-15",
                 SUM(CASE WHEN cast(edad as decimal) >15 and cast(edad as decimal)<=20 THEN 1 ELSE 0 END) as "15-20",
@@ -362,7 +367,7 @@ const PDEPENDENCIES = {
   dash_cancer: {
     alias: 'cancer',
     campos: {
-      departamento: ['DEPARTAMENTO', false, true, 'C'],      
+      departamento: ['DEPARTAMENTO', false, true, 'C'],
       eg: ['ENTE GESTOR', false, true, 'C'],
       establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
 
@@ -373,6 +378,48 @@ const PDEPENDENCIES = {
       cie10: ['CIE10 - GRUPO', false, true, 'C'],
     },
     ilogic: {
+      cancer_1000: `SELECT '' as pila,tt.ente_gestor AS ejex, CASE WHEN p.ente_gestor IS null THEN 0 
+                  ELSE  ROUND((1000*tt.pacientes::numeric/p.poblacion_afiliada::NUMERIC),1)
+                  END  AS value
+                  FROM (
+                  SELECT t.ente_gestor , 
+                  COUNT(*) AS pacientes
+                  FROM tmp_cancer t
+                  WHERE 1=1 $w$
+                  GROUP BY 1) AS tt
+                  LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor = p.ente_gestor)
+                  order by 3 
+`,
+      cancer_casos: `SELECT 'Registrados' as pivot ,gestion as ejex ,COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY  1,2
+      union all
+      (SELECT
+      case when tecnica_recoleccion='DF' then 'Defuncion'
+      when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
+      when tecnica_recoleccion='LAB' then 'Laboratorio'
+      else tecnica_recoleccion end as pivot ,
+      gestion as periodo ,COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY  1,2
+      ORDER BY 1,2)
+      `,
+      /*cancer_casos:`SELECT 'Registros' as grupo, 
+gestion as pila, 'Registrados' AS ejex,  COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 
+      GROUP BY  1,2
+      union all
+      (SELECT 'Varios' AS grupo,
+      gestion as pila, 
+      case when tecnica_recoleccion='DF' then 'Defuncion'
+      when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
+      when tecnica_recoleccion='LAB' then 'Laboratorio'
+      else tecnica_recoleccion end as ejex,
+    COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 
+      GROUP BY  1,2,3
+      ORDER BY 1,2,3)`,*/
+
       cancer_dpto: `SELECT  departamento as pila ,COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1
@@ -380,11 +427,11 @@ const PDEPENDENCIES = {
       cancer_eg: `SELECT  ente_gestor  AS pila ,COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1
-      ORDER BY 2 `,      
+      ORDER BY 2 `,
       cancer_dpto_eg: `SELECT  departamento as pila, ente_gestor as ejex, COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1,2
-      ORDER BY 1,2`,      
+      ORDER BY 1,2`,
       cancer_genero_eg: `SELECT departamento as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_cancer
                 WHERE 1=1 $w$
@@ -402,50 +449,321 @@ const PDEPENDENCIES = {
                 FROM tmp_cancer
                 WHERE 1=1 $w$
                 GROUP BY 1,2 order by 1`,
-      cancer_recoleccion: `SELECT tecnica_recoleccion as pila,  COUNT(*) AS value,
+      /*cancer_recoleccion: `SELECT tecnica_recoleccion as pila,  COUNT(*) AS value,
                 SUM(COUNT(*)) OVER (ORDER BY tecnica_recoleccion ) AS total_acumulado					 
                         FROM tmp_cancer
                         WHERE 1=1 $w$
                         GROUP BY 1
-                        ORDER BY 1`,          
-      cancer_cie10: `SELECT  cie_grupo as pila ,COUNT(*) AS value
+                        ORDER BY 1`,*/
+      cancer_cie10: `SELECT  cie_grupo as pila , 
+CASE WHEN genero='F' THEN 'Femenino' WHEN genero='M' THEN 'Masculino' ELSE genero END  as ejex, COUNT(*) AS VALUE,
+SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero='F' THEN 'Femenino' WHEN genero='M' THEN 'Masculino' ELSE genero END  ) AS total
                 FROM tmp_cancer WHERE 1=1 $w$
-                GROUP BY 1
-                ORDER BY 2 `,
-      cancer_fallecidos_g: `SELECT  TO_CHAR(fecha_defuncion, 'YYYY') as ejex,  COUNT (*) AS value
-                FROM tmp_cancer WHERE fecha_defuncion is not null $w$
-                GROUP BY 1
-                ORDER BY 1 `,
-      cancer_fallecidos: `SELECT  TO_CHAR(fecha_defuncion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value
-                FROM tmp_cancer WHERE fecha_defuncion is not null $w$
-                GROUP BY 1
-                ORDER BY 1 `,  
-      cancer_diagnostico:`SELECT diagnostico_histopatologico as ejex,  COUNT(*) AS value,
+                GROUP BY 1,2
+                ORDER BY 4 desc `,
+      cancer_cie10_tipo: `SELECT
+      case when tecnica_recoleccion='DF' then 'Defuncion'
+      when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
+      when tecnica_recoleccion='LAB' then 'Laboratorio'
+      else tecnica_recoleccion end as pila ,
+      case when tecnica_recoleccion='DF' then 'Defuncion'
+      when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
+      when tecnica_recoleccion='LAB' then 'Laboratorio'
+      else tecnica_recoleccion end as pivot ,
+      cie_grupo as ejex ,COUNT(*) AS value
+      FROM tmp_cancer WHERE 1=1 $w$
+      GROUP BY  1,2,3
+      ORDER BY 4 desc,3`,
+      cancer_cie10_hetario: `SELECT   edad_recodificada  as pila , 
+        cie_grupo as ejex, COUNT(*) AS VALUE
+                FROM tmp_cancer WHERE 1=1 $w$
+                GROUP BY 1,2
+                ORDER BY 1,2 `,
+
+      /*cancer_diagnostico: `SELECT diagnostico_histopatologico as ejex,  COUNT(*) AS value,
         SUM(COUNT(*)) OVER (PARTITION BY diagnostico_histopatologico ORDER BY diagnostico_histopatologico ) AS total_acumulado					 
                 FROM tmp_cancer
                 WHERE 1=1 $w$
                 GROUP BY 1
-                ORDER BY 2 desc`          
-
+                ORDER BY 2 desc`,*/
     },
     referer: [],
     primal: {
       equivalencia: {
-        departamento: ['departamento', 'departamento'],       
+        departamento: ['departamento', 'departamento'],
         eg: ['ente_gestor', 'ente_gestor'],
         establecimiento: ['establecimiento', 'establecimiento'],
         genero: ['genero', 'genero'],
         tecnica: ['tecnica_recoleccion', 'tecnica_recoleccion'],
-        gestion: ['gestion','gestion'],
-        diagnostico: ["diagnostico_histopatologico", "diagnostico_histopatologico"],
+        gestion: ['gestion', 'gestion'],
+        diagnostico: [
+          'diagnostico_histopatologico',
+          'diagnostico_histopatologico',
+        ],
         cie10: ['cie_grupo', 'cie_grupo'],
-        
       },
       query: `SELECT DISTINCT $a$
                 FROM tmp_cancer
                 WHERE 1=1
                 $w$
                 ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  dash_neumonia: {
+    alias: 'Neumonia',
+    campos: {
+      departamento: ['DEPARTAMENTO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+      semana: ['SEMANA EPIDEMIOLOGICA', false, true, 'C'],
+    },
+    ilogic: {
+      infec_casos: `SELECT gestion, SUM(valor) AS VALUE, 
+      'Semana ' || max(CASE WHEN  habilitado=FALSE  AND (valor IS NULL OR valor=0) THEN 0 ELSE semana END) ||'/'||gestion AS obs,
+      SUM(SUM(valor)) OVER (ORDER BY  gestion ) AS total_acumulado
+      
+                FROM tmp_infecciones
+                WHERE infeccion ='NEUMONIA' $w$ 
+                GROUP BY gestion
+                ORDER BY 1`,
+      infec_dpto: `SELECT 
+                departamento as pila, 
+                gestion AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value,
+           SUM(sum(CASE WHEN valor IS null THEN 0 ELSE valor END )) OVER (PARTITION BY departamento ORDER BY  departamento,gestion ) AS total
+                FROM tmp_infecciones
+                WHERE infeccion ='NEUMONIA' $w$ 
+                GROUP BY 1,2
+                ORDER BY 4 desc, 1, 2`,
+      infec_gestion: `SELECT 
+                gestion as pila, 
+                departamento AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value,
+           SUM(sum(CASE WHEN valor IS null THEN 0 ELSE valor END )) OVER (PARTITION BY gestion ORDER BY  gestion, departamento ) AS total
+                FROM tmp_infecciones
+                WHERE infeccion ='NEUMONIA' $w$ 
+                GROUP BY 1,2
+                ORDER BY 4 desc, 1 , 2`,
+      infec_frecuencia: `SELECT 
+                to_char(TO_DATE(gestion||'-'||semana, 'YYYY-WW'), 'YYYY-MM-DD') as ejex,  
+                semana||'/'||gestion AS semana,
+                sum(case when valor is null then 0 else  valor end ) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' $w$
+                GROUP BY 1,2
+                ORDER BY 1`,
+      infec_quartil: `SELECT 
+                gestion AS pila,
+                semana AS ejex,
+                habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' 
+                $w$
+                GROUP BY 1,2,3
+                ORDER BY 1,2,3`,
+      infec_dpto_q: `SELECT 
+                departamento AS pivot,
+                gestion AS pila,
+                semana AS ejex, habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' 
+                $w$
+                GROUP BY 1,2,3,4
+                ORDER BY 1,2,3,4`,
+      infec_torta: `SELECT departamento AS pila, SUM(case when valor is null then 0 else valor end ) AS value,
+                    SUM(SUM(case when valor is null then 0 else valor end )) OVER (PARTITION BY departamento ORDER BY departamento ) AS total_acumulado
+                    FROM tmp_infecciones
+                    WHERE infeccion='NEUMONIA' $w$
+                    GROUP BY 1
+                    ORDER BY 2`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['departamento', 'departamento'],
+        gestion: ['gestion', 'gestion'],
+        semana: ["gestion || '-' || semana", "gestion || '-' || semana"],
+      },
+      query: `SELECT DISTINCT $a$
+            FROM tmp_infecciones
+            WHERE infeccion ='NEUMONIA' 
+            $w$
+            ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  dash_iras: {
+    alias: 'Iras',
+    campos: {
+      departamento: ['DEPARTAMENTO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+      semana: ['SEMANA EPIDEMIOLOGICA', false, true, 'C'],
+    },
+    ilogic: {
+      infec_casos: `SELECT gestion, SUM(valor) AS VALUE, 
+      'Semana ' || max(CASE WHEN  habilitado=FALSE  AND (valor IS NULL OR valor=0) THEN 0 ELSE semana END) ||'/'||gestion AS obs,
+      SUM(SUM(valor)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM tmp_infecciones
+                WHERE infeccion ='IRAS' $w$ 
+                GROUP BY gestion
+                ORDER BY 1`,
+      infec_dpto: `SELECT 
+                departamento as pila, 
+                gestion AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value,
+           SUM(sum(CASE WHEN valor IS null THEN 0 ELSE valor END )) OVER (PARTITION BY departamento ORDER BY  departamento,gestion ) AS total					 
+                FROM tmp_infecciones
+                WHERE infeccion ='IRAS' $w$ 
+                GROUP BY 1,2
+                ORDER BY 4 desc, 1, 2`,
+      infec_gestion: `SELECT 
+                gestion as pila, 
+                departamento AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value,
+           SUM(sum(CASE WHEN valor IS null THEN 0 ELSE valor END )) OVER (PARTITION BY gestion ORDER BY  gestion, departamento ) AS total					 
+                FROM tmp_infecciones
+                WHERE infeccion ='IRAS' $w$ 
+                GROUP BY 1,2
+                ORDER BY 4 desc, 1, 2`,
+      infec_frecuencia: `SELECT 
+                to_char(TO_DATE(gestion||'-'||semana, 'YYYY-WW'), 'YYYY-MM-DD') as ejex,  
+                semana||'/'||gestion AS semana,
+                sum(case when valor is null then 0 else  valor end ) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='IRAS' $w$
+                GROUP BY 1,2
+                ORDER BY 1`,
+      infec_quartil: `SELECT 
+                gestion AS pila,
+                semana AS ejex,
+                habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='IRAS' 
+                $w$
+                GROUP BY 1,2,3
+                ORDER BY 1,2,3`,
+      infec_dpto_q: `SELECT 
+                departamento AS pivot,
+                gestion AS pila,
+                semana AS ejex,
+                habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='IRAS' 
+                $w$
+                GROUP BY 1,2,3,4
+                ORDER BY 1,2,3,4`,
+      infec_torta: `SELECT departamento AS pila, SUM(case when valor is null then 0 else valor end ) AS value,
+                SUM(SUM(case when valor is null then 0 else valor end )) OVER (PARTITION BY departamento ORDER BY departamento ) AS total_acumulado
+                FROM tmp_infecciones
+                WHERE infeccion='IRAS' $w$
+                GROUP BY 1
+                ORDER BY 2`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['departamento', 'departamento'],
+        gestion: ['gestion', 'gestion'],
+        semana: ["gestion || '-' || semana", "gestion || '-' || semana"],
+      },
+      query: `SELECT DISTINCT $a$
+            FROM tmp_infecciones
+            WHERE infeccion ='IRAS'
+            $w$
+            ORDER BY 2`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  dash_edas: {
+    alias: 'EDAS',
+    campos: {
+      departamento: ['DEPARTAMENTO', false, true, 'C'],
+      gestion: ['GESTION', false, true, 'C'],
+      semana: ['SEMANA EPIDEMIOLOGICA', false, true, 'C'],
+    },
+    ilogic: {
+      infec_casos: `SELECT gestion, SUM(valor) AS VALUE, 
+      'Semana ' || max(CASE WHEN  habilitado=FALSE  AND (valor IS NULL OR valor=0) THEN 0 ELSE semana END) ||'/'||gestion AS obs,
+      SUM(SUM(valor)) OVER (ORDER BY  gestion ) AS total_acumulado
+                FROM tmp_infecciones
+                WHERE infeccion ='EDAS' $w$ 
+                GROUP BY gestion
+                ORDER BY 1`,
+      infec_dpto: `SELECT 
+                departamento as pila, 
+                gestion AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value,
+           SUM(sum(CASE WHEN valor IS null THEN 0 ELSE valor END )) OVER (PARTITION BY departamento ORDER BY  departamento,gestion ) AS total					 
+                FROM tmp_infecciones
+                WHERE infeccion ='EDAS' $w$ 
+                GROUP BY 1,2
+                ORDER BY 4 desc, 1, 2`,
+      infec_gestion: `SELECT 
+                gestion as pila, 
+                departamento AS  ejex, 
+					 sum(CASE WHEN valor IS null THEN 0 ELSE valor END ) AS value					 
+                FROM tmp_infecciones
+                WHERE infeccion ='EDAS' $w$ 
+                GROUP BY 1,2
+                ORDER BY 1 DESC, 2`,
+      infec_frecuencia: `SELECT 
+                to_char(TO_DATE(gestion||'-'||semana, 'YYYY-WW'), 'YYYY-MM-DD') as ejex,  
+                semana||'/'||gestion AS semana,
+                sum(case when valor is null then 0 else  valor end ) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='EDAS' $w$
+                GROUP BY 1,2
+                ORDER BY 1`,
+      infec_quartil: `SELECT 
+                gestion AS pila,
+                semana AS ejex,
+                habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='EDAS' 
+                $w$
+                GROUP BY 1,2,3
+                ORDER BY 1,2,3`,
+      infec_dpto_q: `SELECT 
+                departamento AS pivot,
+                gestion AS pila,
+                semana AS ejex,
+                habilitado as sw,
+                sum(valor) AS value
+                FROM tmp_infecciones 
+                WHERE infeccion='EDAS' 
+                $w$
+                GROUP BY 1,2,3,4
+                ORDER BY 1,2,3,4`,
+      infec_torta: `SELECT departamento AS pila, SUM(case when valor is null then 0 else valor end ) AS value,
+                SUM(SUM(case when valor is null then 0 else valor end )) OVER (PARTITION BY departamento ORDER BY departamento ) AS total_acumulado
+                FROM tmp_infecciones
+                WHERE infeccion='EDAS' $w$
+                GROUP BY 1
+                ORDER BY 2`,
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        departamento: ['departamento', 'departamento'],
+        gestion: ['gestion', 'gestion'],
+        semana: ["gestion || '-' || semana", "gestion || '-' || semana"],
+      },
+      query: `SELECT DISTINCT $a$
+            FROM tmp_infecciones
+            WHERE infeccion ='EDAS'
+            $w$
+            ORDER BY 2`,
       headers: [{}],
       attributes: null,
     },

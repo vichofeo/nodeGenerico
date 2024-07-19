@@ -22,6 +22,12 @@ const AGRUPADO = {
 
     aebreport: ['dash_cancer','dash_hemofilia', 'dash_carmelo', 'dash_pai'],
     aebreport_icons:['mdi-medical-bag','mdi-chart-bubble', 'mdi-nature-people','mdi-chart-donut-variant'],
+
+    aebcereport:['dash_neumonia','dash_iras','dash_edas'],
+    aebcereport_icons:['mdi-format-wrap-inline','mdi-format-wrap-square','mdi-format-wrap-tight'],
+
+    medtrabreport: ['dash_mt_control', 'dash_mt_frms', 'dash_mt_frmdpto','dash_mt_egdpto', 'dash_mt_dptoeg', 'dash_mt_frmnr'],
+    medtrabreport_icons:['mdi-move-resize','mdi-flask','mdi-flask-outline','mdi-flask-empty','mdi-flask-empty-outline','mdi-blur-off'],
 }
 
 module.exports = {

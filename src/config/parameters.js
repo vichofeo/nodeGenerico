@@ -760,6 +760,15 @@ const PARAMETROS = {
     dash_carmelo:{alias: 'Dash. AEB - CARMELO'},
     dash_pai:{alias: 'Dash. AEB - PAI'},
     dash_cancer:{alias: 'Dash. AEB - CANCER'},
+    dash_mt_control:{alias: 'Dash. MEDTRAB - CONTROL FORMULARIOS'},
+    dash_mt_frms:{alias: 'Dash. MEDTRAB - FORMULARIOS E.G.'},
+    dash_mt_frmdpto: {alias: 'Dash. MEDTRAB - FORMULARIOS DPTO.'},
+    dash_mt_egdpto: {alias: 'Dash. MEDTRAB - FORMULARIOS E.G. - DPTO.'},
+    dash_mt_dptoeg: {alias: 'Dash. MEDTRAB - FORMULARIOS DPTO. - E.G.'},
+    dash_mt_frmnr: {alias: 'Dash. MEDTRAB - FORMULARIOS N/R'},
+    dash_neumonia:{alias: 'Canal Endemico - Neumonia'},
+    dash_iras:{alias: "Canal Endemico - IRA´s"},
+    dash_edas:{alias: 'Canal Endemico - EDA´s'},
 
     //modulos segun estructura RUES 3
     r3estucturan: {

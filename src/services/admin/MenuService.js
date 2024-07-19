@@ -265,7 +265,7 @@ const getMenuOpsRole = async (dto, handleError) => {
             }]            
         }]
     })
-    qUtil.setOrder([qUtil.col('rol.app_rolex.routes.modulo.orden')])
+    qUtil.setOrder([qUtil.col('rol.app_rolex.routes.modulo.orden'), qUtil.col('rol.app_rolex.routes.modulo.name_module')])
     
 
     await qUtil.findID(obj_cnf.login)
