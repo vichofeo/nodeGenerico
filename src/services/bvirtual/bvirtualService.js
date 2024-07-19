@@ -231,16 +231,16 @@ const suggestFiles = async (dto, handleError) => {
   try {
     
     qUtil.setTableInstance('bv_files')
-    qUtil.setAttributes([[qUtil.distinctData('city'),'value'], ['city','text']])  
-    qUtil.setWhere({...qUtil.andWhere([{city:qUtil.notNull()},{city:qUtil.distinto('')}])})  
-    qUtil.setOrder(['city'])
+    qUtil.setAttributes([[qUtil.distinctData('ciudad_publicacion'),'value'], ['ciudad_publicacion','text']])  
+    qUtil.setWhere({...qUtil.andWhere([{ciudad_publicacion:qUtil.notNull()},{ciudad_publicacion:qUtil.distinto('')}])})  
+    qUtil.setOrder(['ciudad_publicacion'])
     await qUtil.findTune()
     const resultCity = qUtil.getResults()
 
     qUtil.setTableInstance('bv_files')
-    qUtil.setAttributes([[qUtil.distinctData('collection'),'value'], ['collection','text']])  
-    qUtil.setWhere({...qUtil.andWhere([{collection:qUtil.notNull()},{collection:qUtil.distinto('')}])})  
-    qUtil.setOrder(['collection'])
+    qUtil.setAttributes([[qUtil.distinctData('organismo_emisor'),'value'], ['organismo_emisor','text']])  
+    qUtil.setWhere({...qUtil.andWhere([{organismo_emisor:qUtil.notNull()},{organismo_emisor:qUtil.distinto('')}])})  
+    qUtil.setOrder(['organismo_emisor'])
     await qUtil.findTune()
     const resultCollection = qUtil.getResults()
     return {
@@ -257,7 +257,7 @@ const suggestFiles = async (dto, handleError) => {
 
 const getDataFiles = async (dto, handleError) => {
   try {
-    console.log('\n 9☻ entrando al get', dto)
+    //console.log('\n 9☻ entrando al get', dto)
     qUtil.setTableInstance('bv_files')
     qUtil.setAttributes([
       ['file_id', 'idx'],
@@ -266,10 +266,10 @@ const getDataFiles = async (dto, handleError) => {
       ['file_md5', 'name__'],
       ['file_original_name', 'name'],
       //['file_description', 'description'],
-      'file_description',
-      'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
+      //'file_description',
+      //'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
       'activo',
-      'words',
+      //'words',
     ])
     qUtil.setWhere({ folder_id: dto.data.folder_id })
     qUtil.setOrder(['file_type', 'file_original_name'])

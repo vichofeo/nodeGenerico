@@ -12,33 +12,44 @@ module.exports = (sequelize, DataTypes) => {
       bv_files.belongsTo(models.bv_folder, {
         as: 'folder_root',
         foreignKey: 'folder_id',
-        targetKey: 'folder_id'
+        targetKey: 'folder_id',
       })
     }
   }
   bv_files.init(
     {
-      file_id:{ type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
+      file_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       file_name: { type: DataTypes.STRING(128), allowNull: true },
+      file_original_name: { type: DataTypes.TEXT, allowNull: true },
       file_type: { type: DataTypes.STRING(128), allowNull: true },
       file_md5: { type: DataTypes.STRING(512), allowNull: true },
-      file_description: { type: DataTypes.TEXT, allowNull: true },
-      file_original_name: { type: DataTypes.TEXT, allowNull: true },
+
       folder_id: { type: DataTypes.INTEGER, allowNull: false },
-      title: { type: DataTypes.STRING(512), allowNull: true },
-      author: { type: DataTypes.STRING(1024), allowNull: true },
-      year: { type: DataTypes.STRING(4), allowNull: true },
-      city: { type: DataTypes.STRING(512), allowNull: true },
-      edition: { type: DataTypes.STRING(512), allowNull: true },
-      page_number: { type: DataTypes.INTEGER, allowNull: true },
-      editorial: { type: DataTypes.STRING(512), allowNull: true },
-      url: { type: DataTypes.STRING(1024), allowNull: true },
-      collection: { type: DataTypes.STRING(512), allowNull: true },
-      words: { type: DataTypes.STRING(512), allowNull: true },
+
       activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
       create_date: { type: DataTypes.DATE, allowNull: true },
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
       dni_register: { type: DataTypes.STRING(25), allowNull: true },
+
+      tipo_documento: { type: DataTypes.STRING(64), allowNull: false },
+      area_tematica: { type: DataTypes.STRING(64), allowNull: false },
+      tipo_componente: { type: DataTypes.STRING(64), allowNull: false },
+      codigo: { type: DataTypes.STRING(24), allowNull: false },
+      titulo: { type: DataTypes.TEXT, allowNull: false },
+      fecha_publicacion: { type: DataTypes.DATEONLY, allowNull: true },
+      fecha_actualizacion: { type: DataTypes.DATEONLY, allowNull: true },
+      autores: { type: DataTypes.TEXT, allowNull: false },
+      organismo_emisor: { type: DataTypes.STRING(1024), allowNull: false },
+      resumen: { type: DataTypes.TEXT, allowNull: false },
+      palabras_clave: { type: DataTypes.TEXT, allowNull: false },
+      ambito_aplicacion: { type: DataTypes.STRING(64), allowNull: false },
+      ciudad_publicacion: { type: DataTypes.STRING(1024), allowNull: false },
+      url: { type: DataTypes.STRING(1024), allowNull: false },
     },
     {
       sequelize,
