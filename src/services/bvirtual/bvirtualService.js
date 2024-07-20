@@ -269,6 +269,7 @@ const getDataFiles = async (dto, handleError) => {
       //'file_description',
       //'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
       'activo',
+      'tipo_documento', 'area_tematica', 'tipo_componente', 'codigo', 'titulo', 'fecha_publicacion', 'fecha_actualizacion', 'autores', 'organismo_emisor', 'resumen', 'palabras_clave', 'ambito_aplicacion', 'ciudad_publicacion', 'url',
       //'words',
     ])
     qUtil.setWhere({ folder_id: dto.data.folder_id })

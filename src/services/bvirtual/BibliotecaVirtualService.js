@@ -57,6 +57,7 @@ const getDataModelNew = async (dto, handleError) => {
                 for (const index in result[key].campos) {
                     if (!result[key].campos[index][1])
                         result[key].campos[index][1] = true
+                    if (result[key].campos[index][3]=='MS') result[key].valores[index].selected= {value:-1}
                 }
             }
         }

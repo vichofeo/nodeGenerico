@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "vico",
-    "database": "ss_sscpdb",    
+    "database": "epi_testdb",    
     "schema": "pruebas",    
     "searchPath": "pruebas",
     "host": "localhost",

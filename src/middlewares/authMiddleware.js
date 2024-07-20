@@ -11,7 +11,7 @@ handleError.setRes(res)
         if(!req.headers.authorization){            
             handleError.handleErrorResponse()
         }
-
+console.log(".........",req.headers.authorization)
         const tmp =  req.headers.authorization.split(" ").pop()
         if(!tmp) {
             handleError.setCode(403)       

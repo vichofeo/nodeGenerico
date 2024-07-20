@@ -10,7 +10,7 @@
 "use strict"
 const PARAMETROS = {
     bvirtual: {
-        table: 'u_frm_evaluacion',
+        table: 'bv_files',
         alias: 'bvirtual',
         cardinalidad: "1",
         noKeyAutomatic: true,
@@ -22,18 +22,21 @@ const PARAMETROS = {
             //codigo: ['Codigo', false, true, 'TT', 24],
             titulo: ['Nombre oficial completo de la norma', true, true, 'TA', 2048],
             fecha_publicacion: ['Fecha de Publicación', true, true, 'F', 10],
-            fecha_actualizacion: ['Fecha de Actualización', true, true, 'F', 10],
+            fecha_actualizacion: ['Fecha de Actualización', true, false, 'F', 10],
             autores: ['Autor/es', true, true, 'TA', 2048],
-            organismo_emisor:['Entidad o institución responsable de la emisión de la norma', true, true, 'TT', 1024],
+            organismo_emisor:['Entidad o institución responsable de la emisión de la norma', true, true, 'MS', 1024],
             resumen: ['Breve descripción del contenido y alcance de la norma', true, true, 'TA'],
             palabras_clave: ['Términos clave que describen el contenido y facilitan la búsqueda', true, true, 'TT', 2048],
             //ambito_aplicacion: ['Ámbito de aplicación', true, true, 'TT', 64],
-            ciudad_publicacion: ['Ciudad de Publicacion', true, true, 'TT', 1024],
-            url: ['URL de procedencia (Si Existiese)', true, true, 'TT', 1024],
+            ciudad_publicacion: ['Ciudad de Publicacion', true, false, 'MS', 1024],
+            url: ['URL de procedencia (Si Existiese)', true, false, 'TT', 1024],
 
         },
         key: ['file_id'],
-        ilogic: null,//{},
+        ilogic: {
+            organismo_emisor:`SELECT distinct organismo_emisor  as value, organismo_emisor as text FROM bv_files WHERE organismo_emisor is not null and trim(organismo_emisor)!='' order by 1`,
+            ciudad_publicacion:`SELECT distinct ciudad_publicacion  as value, ciudad_publicacion as text FROM bv_files WHERE ciudad_publicacion is not null and trim(ciudad_publicacion)!='' order by 1`
+        },//null
         //keyRoot: 'enunciado_root',
         moreData: [],
         update: [],
