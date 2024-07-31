@@ -192,21 +192,21 @@ const searchFiles = async (dto, handleError) => {
       ['file_type', 'type'],
       ['file_md5', 'name__'],
       ['file_original_name', 'name'],
-      ['file_description', 'description'],
-      'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
+      
+      'tipo_documento', 'tipo_componente', 'codigo', 'titulo', 'autores', 'organismo_emisor', 'resumen', 'palabras_clave', 'ambito_aplicacion', 'ciudad_publicacion', 'anio_publicacion', 'anios_actualizacion',
       'activo',
-      'words',
+      
     ])
     qUtil.setWhere({ 
       ...qUtil.orWhere({file_original_name: qUtil.ilikeWhere(value),
-        file_description:qUtil.ilikeWhere(value),
-        words: qUtil.ilikeWhere(value),
-        title: qUtil.ilikeWhere(value),
-        author: qUtil.ilikeWhere(value),
-        year: qUtil.ilikeWhere(value),
-        city: qUtil.ilikeWhere(value),
-        editorial: qUtil.ilikeWhere(value),
-        collection: qUtil.ilikeWhere(value),
+        resumen:qUtil.ilikeWhere(value),
+        palabras_clave: qUtil.ilikeWhere(value),
+        titulo: qUtil.ilikeWhere(value),
+        autores: qUtil.ilikeWhere(value),
+        organismo_emisor: qUtil.ilikeWhere(value),
+        //anio_publicacion: qUtil.ilikeWhere(value),
+        ciudad_publicacion: qUtil.ilikeWhere(value),
+        
       })
      })
     qUtil.setOrder(['file_type', 'file_original_name'])
@@ -269,7 +269,7 @@ const getDataFiles = async (dto, handleError) => {
       //'file_description',
       //'title', 'author', 'year', 'city', 'editorial', 'url', 'collection',
       'activo',
-      'tipo_documento', 'area_tematica', 'tipo_componente', 'codigo', 'titulo', 'fecha_publicacion', 'fecha_actualizacion', 'autores', 'organismo_emisor', 'resumen', 'palabras_clave', 'ambito_aplicacion', 'ciudad_publicacion', 'url',
+      'tipo_documento', 'tipo_componente', 'ambito_aplicacion', 'codigo', 'titulo', 'anio_publicacion', 'anios_actualizacion', 'autores', 'organismo_emisor', 'resumen', 'palabras_clave',  'ciudad_publicacion', 'url',
       //'words',
     ])
     qUtil.setWhere({ folder_id: dto.data.folder_id })

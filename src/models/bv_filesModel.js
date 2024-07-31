@@ -36,18 +36,20 @@ module.exports = (sequelize, DataTypes) => {
       last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
       dni_register: { type: DataTypes.STRING(25), allowNull: true },
 
-      tipo_documento: { type: DataTypes.STRING(64), allowNull: false },
-      area_tematica: { type: DataTypes.STRING(64), allowNull: false },
+      tipo_documento: { type: DataTypes.STRING(64), allowNull: false },      
       tipo_componente: { type: DataTypes.STRING(64), allowNull: false },
+      ambito_aplicacion: { type: DataTypes.STRING(64), allowNull: false },      
       codigo: { type: DataTypes.STRING(24), allowNull: false },
       titulo: { type: DataTypes.TEXT, allowNull: false },
-      fecha_publicacion: { type: DataTypes.DATEONLY, allowNull: true },
-      fecha_actualizacion: { type: DataTypes.DATEONLY, allowNull: true },
+      
+      anio_publicacion: { type: DataTypes.INTEGER, allowNull: true },
+      anios_actualizacion: { type: DataTypes.STRING(3096), allowNull: true },
+      
       autores: { type: DataTypes.TEXT, allowNull: false },
       organismo_emisor: { type: DataTypes.STRING(1024), allowNull: false },
       resumen: { type: DataTypes.TEXT, allowNull: false },
       palabras_clave: { type: DataTypes.TEXT, allowNull: false },
-      ambito_aplicacion: { type: DataTypes.STRING(64), allowNull: false },
+      
       ciudad_publicacion: { type: DataTypes.STRING(1024), allowNull: false },
       url: { type: DataTypes.STRING(1024), allowNull: false },
     },
