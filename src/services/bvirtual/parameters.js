@@ -1,7 +1,7 @@
 //[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio]
 /**
  * objeto de configuracion para diversas pantallas
- * campos:[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio, Reservado]
+ * campos:[label, editable, requerido, <T?:texto, C:combo, R:Radio, H:checkBox, F: fecha>, tamanio, Reservado, FilasTamTextAreaVmultiple]
  * T?->TT: texto, TN: texto numero entero, TM: TextMail, TD: Texto decimal, TA: Text Area
  * use-se la opcion dual cuando la interaccion y la insercion es con tablas de bd
  * referer.condicional:['aplicacion_id,$app'] 
@@ -47,7 +47,37 @@ const PARAMETROS = {
         ],
     },
 
+    opsBvirtual: {
+        table: 'bv_files',
+        alias: 'opsBvirtual',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {
+            
+            gestion_publicacion: ['Nombre oficial completo de la norma', true, false, 'H', 2048,,'M'],
+            tipo_documento: ['Fecha de Publicación', true, false, 'H', 10,,'M'],
+            tipo_componente: ['Fecha de Actualización', true, false, 'H', 10,,'M'],
+            ambito_aplicacion: ['Autor/es', true, false, 'H', 2048,,'M'],
+            
 
+        },
+        key: ['file_id'],
+        ilogic: {
+            gestion_publicacion: `SELECT distinct anio_publicacion  as value, anio_publicacion as text FROM bv_files WHERE anio_publicacion is not null order by 1 desc`,
+            tipo_documento:`SELECT distinct tipo_documento  as value, tipo_documento as text FROM bv_files WHERE tipo_documento is not null order by 1`,
+            tipo_componente:`SELECT distinct tipo_componente  as value, tipo_componente as text FROM bv_files WHERE tipo_componente is not null order by 1`,
+            ambito_aplicacion: `SELECT distinct ambito_aplicacion  as value, ambito_aplicacion as text FROM bv_files WHERE ambito_aplicacion is not null order by 1`
+        },//null
+        //keyRoot: 'enunciado_root',
+        moreData: [],
+        update: [],
+        referer: [
+           // { ref: 'f_is_atributo', apropiacion: 'tipo_documento', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'BV_TIPO_DOCUMENTO'}, condicional:null, multiple:false },
+            //{ ref: 'f_is_atributo', apropiacion: 'area_tematica', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'BV_AREA_TEMATICA'}, condicional:null, multiple:false },
+            //{ ref: 'f_is_atributo', apropiacion: 'tipo_componente', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'BV_TIPO_COMPONENTE'}, condicional:null, multiple:false }
+        ],
+    },
 
 
 
