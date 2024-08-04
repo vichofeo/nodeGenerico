@@ -121,6 +121,7 @@ module.exports = class FrmsUtils {
     }
   }
   #getDataparam1 = async (nameModeloFromParam, idx) => {
+    console.log("\n\n P1: ",nameModeloFromParam)
     this.#qUtils.setResetVars()
     //try {
     //tabla de datos
@@ -131,6 +132,7 @@ module.exports = class FrmsUtils {
     let result = {}
 
     this.#qUtils.setTableInstance(objModel.table)
+    //RUTINA  para datos asociados segun SEQUELIZE desdeorden de parametros
     if (objModel.included) {
       //obtiene datos con tabla incluida
       this.#qUtils.setWhere({ [objModel.key]: idx })
@@ -146,7 +148,7 @@ module.exports = class FrmsUtils {
     if (aux) result = aux
 
     parametros.valores = result
-    parametros.exito = Object.keys(parametros.valores).length ? true : false
+    parametros.exito = Object.keys(parametros.valores).length ? true : false //flag: exito si es datos edicion
 
     if(!parametros.exito){
       for (const key in parametros.campos) {
@@ -154,21 +156,21 @@ module.exports = class FrmsUtils {
       }
     }
 
-    console.log('\n\n **** OBTENIENDO MOREdATA A VALORES')
+    console.log('\n\n P3: **** OBTENIENDO MOREdATA A VALORES')
     //OBTENIENDO MOREDATA SI EXISTE
     parametros = await this.#getMoreDataParam(parametros, objModel.moreData, idx)
 
     console.log(
-      '**************************ENTRANDO A REFERERE *****************************'
+      '\n\n P4: ************************ENTRANDO A REFERERE *****************************'
     )
     //obtiene referencias PARA LOS COMBOS Y OTROS
     parametros = await this.#getDataparamReferer(parametros, objModel.referer)
     console.log(
-      '**************************SALIENDO A REFERERE *****************************'
+      '\n\n P5: **************************SALIENDO A REFERERE *****************************', 
     )
     //complementa referencia si existe el campo ilogic que contiene querys textuales q solo funcionan con el id instutucion logueado
     if (objModel.ilogic) {
-      console.log('!!!!!!!!!!!!EXISTE ILOGIC PRINCIPAL ****** ')
+      console.log('\n\n P6: !!!!!!!!!!!!EXISTE ILOGIC PRINCIPAL ****** ')
       for (const key in objModel.ilogic) {
         //reenplaz variables por valores de sesion o ya encontrados en valores y con la llve key de la raiz
         let queryIlogic = objModel.ilogic[key].replaceAll('$'+objModel.key[0], parametros.valores[objModel.key[0]])        
@@ -182,7 +184,10 @@ module.exports = class FrmsUtils {
         await this.#qUtils.excuteSelect() //await sequelize.query(queryIlogic, { mapToModel: true, type: QueryTypes.SELECT, raw: false, });
         const result = this.#qUtils.getResults()
         parametros.valores[key] = {
-          selected: this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo}),
+          selected: (parametros.campos[key] &&  parametros.campos[key][6] &&  parametros.campos[key][6] =='M') ? 
+                    this.#qUtils.searchSelectedInMultipleComboBox(result, parametros.exito ? tempo:[])          
+                    :this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo}),
+                    
           items: result,
           dependency: false,
         }
@@ -207,7 +212,7 @@ module.exports = class FrmsUtils {
       this.#qUtils.setResetVars()
       const tablaRef = element.ref
       const apropiacion = element.apropiacion
-      const multiple = element.multiple
+      const multiple = (parametros.campos[apropiacion] &&  parametros.campos[apropiacion][6] &&  parametros.campos[apropiacion][6] =='M') ? true:false //element.multiple
       const campos = this.#qUtils.transAttribByComboBox(element.campos)
       const condicion = element.condicion ? element.condicion : {}
       const condicional = element.condicional
@@ -412,7 +417,7 @@ module.exports = class FrmsUtils {
   #replaceStringByDataSession(stringSepararedByComa) {
     const vars = ['$app', '$inst', '$dni', '$usr']
     const d = this.#getDataSession()
-    const equi = [d.app, d.inst, d.dni, d.usr]
+    const equi = [d?.app, d?.inst, d?.dni, d?.usr]
     for (let i = 0; i < vars.length; i++) {
       stringSepararedByComa = stringSepararedByComa.replaceAll(vars[i], equi[i])
     }
@@ -429,12 +434,12 @@ module.exports = class FrmsUtils {
   }
   #seteaObjWithDataSession() {
     const obj = {}
-    obj.institucion_id = this.#dataSession.inst
-    obj.dni_register = this.#dataSession.dni
-    obj.aplicacion_id = this.#dataSession.app
+    obj.institucion_id = this.#dataSession?.inst
+    obj.dni_register = this.#dataSession?.dni
+    obj.aplicacion_id = this.#dataSession?.app
     obj.create_date = new Date()
 
-    obj.login =  this.#dataSession.usr
+    obj.login =  this.#dataSession?.usr
     
     return obj
   }

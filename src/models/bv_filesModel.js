@@ -13,6 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         as: 'folder_root',
         foreignKey: 'folder_id',
         targetKey: 'folder_id',
+      }),
+      bv_files.belongsTo(models.f_is_atributo, {
+        as: 'fambito',
+        foreignKey: 'ambito_aplicacion',
+        targetKey: 'atributo_id',
       })
     }
   }

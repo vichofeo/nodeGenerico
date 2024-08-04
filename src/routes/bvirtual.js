@@ -34,6 +34,10 @@ router.get("/:idx/:modelo", authMiddleWare, controller.getDataModel1)
 
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
 
+//libre
+router.get("/fr/:modelo/new",  controller.getDataModelNew)
+router.post("/fr",  bvController.getFrFiles)
+
 //folder
 router.get("/folders/f/get", authMiddleWare, bvController.getDataFolders)
 router.post("/folders/save", authMiddleWare, bvController.saveDataFolders)

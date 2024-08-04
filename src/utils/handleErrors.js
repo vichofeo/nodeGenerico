@@ -39,7 +39,7 @@ module.exports = class HandleErrors {
     }
     handleErrorResponse(payload={}){
         console.log("\n\n****Error pa log RESPONSE def\n\n")
-        this.#_res.json({error: this.#_message, ...payload})
+        this.#_res.json({ok: false,error: this.#_message, ...payload})
         return;
     }
 

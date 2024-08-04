@@ -28,7 +28,7 @@ const getDataModelNew = async (req, res)=>{
     
     const idx='-1'
     const modelo = req.params.modelo
-    const token = req.headers.authorization
+    const token = req.headers?.authorization
 
     const result = await service.getDataModelNew({idx:idx, modelo:modelo, token:token, new:true},handleError)    
     handleError.setResponse(result)

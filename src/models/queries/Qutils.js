@@ -285,9 +285,9 @@ module.exports = class Qutils {
     return this.searchSelectedInDataComboBox(this.#results, selected)
   }
 
-  searchSelectedForMultipleComboBox(selected) {
+  searchSelectedInMultipleComboBox(data, selected){
     try {
-      const datos = this.#results
+      const datos = data
       let i = 0
       let sw = 0
       const results = []
@@ -305,6 +305,9 @@ module.exports = class Qutils {
       console.log(error);
       return this.#sinDatoByCombo
     };
+  }
+  searchSelectedForMultipleComboBox(selected) {
+    return this.searchSelectedInMultipleComboBox(this.#results, selected)
   }
 
   getInitialOpCbox(){

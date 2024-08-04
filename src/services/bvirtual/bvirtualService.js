@@ -435,6 +435,48 @@ const editFile = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
+
+//Free data
+const getFrFiles = async (dto, handleError) => {
+  try {
+    //console.log('\n 9☻ entrando al get', dto)
+    qUtil.setTableInstance('bv_files')
+    qUtil.setAttributes([
+      //['file_id', 'idx'],
+      //['file_name', '__name'],
+      //['file_type', 'type'],
+      //['file_md5', 'name__'],
+      //['file_original_name', 'name'],
+      
+      'activo',
+      'tipo_documento', 'tipo_componente', 'ambito_aplicacion', 
+      'codigo', 'titulo', 'anio_publicacion', 'anios_actualizacion', 
+      'autores', 
+      'organismo_emisor', 'resumen', 
+      'palabras_clave',  'ciudad_publicacion', 'url',
+      
+    ])
+    //qUtil.setWhere({ folder_id: dto.data.folder_id })
+    qUtil.setInclude({
+      association: 'fambito', required: false,
+      attributes: [['atributo','ambito']],
+    })
+    qUtil.setOrder(['create_date'])
+    await qUtil.findTune()
+    const result = qUtil.getResults()
+
+    return {
+      ok: true,
+      data: result,
+      message: 'Solicitud ejecutada correctamente',
+    }
+  } catch (error) {    
+    handleError.setMessage('Error de sistema: BVIRTGEFREEFILESSRV')
+    handleError.setHttpError(error.message)
+  }
+}
+
+
 module.exports = {
   searchFiles, suggestFiles,
   getDataFolders,
@@ -446,5 +488,7 @@ module.exports = {
   uploadFile,
   deleteFile,
 
-  getFile,editFile
+  getFile,editFile,
+
+  getFrFiles
 }
