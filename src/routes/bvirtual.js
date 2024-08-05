@@ -6,6 +6,7 @@ const  authMiddleWare = require('./../middlewares/authMiddleware')
 
 const controller = require('../controllers/bvirtual/bibliotecaVirtualController')
 const bvController =  require('../controllers/bvirtual/bvirtualController')
+const bvFreeController =  require('../controllers/bvirtual/bvFreeController')
 //const ufamController = require('../controllers/acrehab/evaluacionController')
 
 const PATH_LOCAL = __dirname
@@ -36,7 +37,7 @@ router.post("/cbox", authMiddleWare, controller.getDataCboxLigado)
 
 //libre
 router.get("/fr/:modelo/new",  controller.getDataModelNew)
-router.post("/fr",  bvController.getFrFiles)
+router.post("/fr",  bvFreeController.getFrFiles)
 
 //folder
 router.get("/folders/f/get", authMiddleWare, bvController.getDataFolders)

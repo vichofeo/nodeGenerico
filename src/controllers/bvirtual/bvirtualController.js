@@ -105,17 +105,7 @@ const editFile = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
-//get data all files
-const getFrFiles = async (req, res)=>{
-        
-    //const token = req.headers.authorization
-    //const idx =  req.params.idx
 
-    const data =  req.body
-    const result = await service.getFrFiles(data,handleError)
-    handleError.setResponse(result)
-    res.status(handleError.getCode()).json(handleError.getResponse())
-}
 
 module.exports = {
     searchFiles, suggestFiles,
@@ -123,6 +113,5 @@ module.exports = {
 
     getDataFiles, uploadFile, deleteFile,
     getFile, editFile,
-
-    getFrFiles
+    
 }
