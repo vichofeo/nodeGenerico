@@ -20,14 +20,46 @@ const getFrFiles = async (dto, handleError) => {
     ])
     //qUtil.setWhere({ folder_id: dto.data.folder_id })
     qUtil.setInclude({
-      association: 'fambito', required: false,
+      association: 'fambito', required: true,
       attributes: [['atributo','ambito']],
     })
     qUtil.setOrder(['create_date'])
 
-    //evalua busqueda segun dto
-    if(dto.tipo =='S'){
-      console.log("*********EXITO *****")
+    //condicion por busqueda: Orden search
+    if(dto?.tipo =='S'){
+      //resumen:qUtil.ilikeWhere(value),
+      
+      const payload =  dto.payload
+      const value =  `%${payload.valor}%`
+      if(payload.atributo=='ambito_aplicacion'){
+        qUtil.setInclude({
+          association: 'fambito', required: true,
+          attributes: [['atributo','ambito']],
+          where:{atributo: qUtil.ilikeWhere(value)}
+        })
+      }else{
+        qUtil.setWhere({
+          [payload.atributo]: qUtil.ilikeWhere(value),
+        })
+      }
+      
+    }
+
+    //condicion por busqueda: Orden filtro
+    if(dto?.tipo =='F'){
+      console.log("???????????EXITO FFF?????: ", dto.payload)
+      const payload =  dto.payload
+      const w = {}
+      for (const key in payload) {
+        console.log("\n\n lenght:", key, ":::", payload[key].length)
+        if(payload[key].length>0){
+          w[key] = payload[key]
+        }
+      }
+      if(Object.keys(w).length>0)
+      qUtil.setWhere({
+        ...qUtil.orWhere({...w})
+      })
     }
 
 

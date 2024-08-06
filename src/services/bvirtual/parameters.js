@@ -55,7 +55,7 @@ const PARAMETROS = {
         included: null, //para el caso de una asociacion con table
         campos: {
             
-            gestion_publicacion: ['Por Año de Publicacion', true, false, 'HV', 2048,,'M'],
+            anio_publicacion: ['Por Año de Publicacion', true, false, 'HV', 2048,,'M'],
             tipo_documento: ['Por Tipo Documento', true, false, 'HV', 10,,'M'],
             tipo_componente: ['Por su Aplicacion', true, false, 'HV', 10,,'M'],
             ambito_aplicacion: ['Ambito Aplicacion', true, false, 'HV', 2048,,'M'],
@@ -64,7 +64,7 @@ const PARAMETROS = {
         },
         key: ['file_id'],
         ilogic: {
-            gestion_publicacion: `SELECT distinct anio_publicacion  as value, anio_publicacion||' ('||count(*)||')' as text FROM bv_files WHERE anio_publicacion is not null group by 1 order by 1 desc`,
+            anio_publicacion: `SELECT distinct anio_publicacion  as value, anio_publicacion||' ('||count(*)||')' as text FROM bv_files WHERE anio_publicacion is not null group by 1 order by 1 desc`,
             tipo_documento:`SELECT distinct tipo_documento  as value, tipo_documento||' ('||count(*)||')' as text FROM bv_files WHERE tipo_documento is not null group by 1 order by 1`,
             tipo_componente:`SELECT distinct tipo_componente  as value, tipo_componente||' ('||count(*)||')' as text FROM bv_files WHERE tipo_componente is not null group by 1 order by 1`,
             ambito_aplicacion: `SELECT DISTINCT f.ambito_aplicacion  as VALUE, a.atributo ||' ('||count(f.*)||')' as text FROM bv_files f, f_is_atributo a WHERE f.ambito_aplicacion is not NULL 
