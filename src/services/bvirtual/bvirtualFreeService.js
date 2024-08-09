@@ -10,6 +10,9 @@ const getFrFiles = async (dto, handleError) => {
     //console.log('\n 9☻ entrando al get', dto)
     qUtil.setTableInstance('bv_files')
     qUtil.setAttributes([
+      
+      //[qUtil.literal("file_md5||'&'||file_id||'==' "), 'idx'],
+      ['file_id','idx'],
       'activo',
       'tipo_documento', 'tipo_componente', 'ambito_aplicacion', 
       'codigo', 'titulo', 'anio_publicacion', 'anios_actualizacion', 
@@ -23,7 +26,7 @@ const getFrFiles = async (dto, handleError) => {
       association: 'fambito', required: true,
       attributes: [['atributo','ambito']],
     })
-    qUtil.setOrder(['create_date'])
+    qUtil.setOrder([['create_date','DESC']])
 
     //condicion por busqueda: Orden search
     if(dto?.tipo =='S'){
@@ -78,7 +81,44 @@ const getFrFiles = async (dto, handleError) => {
 }
 
 
+const getFrFile = async (dto, handleError) => {
+  try {
+    qUtil.setTableInstance('bv_files') 
+    qUtil.setInclude({
+      association: 'fambito', required: true,
+      attributes: [['atributo','ambito']],
+    })       
+    await qUtil.findID(dto.idx)
+
+    const result = qUtil.getResults()
+
+    if (Object.keys(result).length > 0) {
+      //./public/images in process.env.UPLOADS
+      
+      //const file = process.env.UPLOADS + '/'+result.file_name      
+      //var fs = require('fs')
+      //var body = fs.readFileSync(file)
+
+      //const file64 = { name: result.file_original_name, type: result.file_type, file: body.toString('base64') }
+      return {
+        ok: true,
+        data: result,
+        message: 'Solicitud ejecutada correctamente',
+      }
+    } else {
+      return {
+        ok: false,
+        message: 'Solicitud sin resultados, identificador no valido',
+      }
+    }
+  } catch (error) {
+    console.log('\n\nerror::: EN SERVICES GETfILE\n', error)
+    handleError.setMessage('Error de sistema: BVIRTGETFILE64SRV')
+    handleError.setHttpError(error.message)
+  }
+}
+
 
 module.exports = {
-  getFrFiles
+  getFrFiles, getFrFile
 }

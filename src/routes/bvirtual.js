@@ -38,6 +38,8 @@ router.post("/cbox", authMiddleWare, controller.getDataCboxLigado)
 //libre
 router.get("/fr/:modelo/new",  controller.getDataModelNew)
 router.post("/fr",  bvFreeController.getFrFiles)
+router.get("/fr/:idx/get",  bvFreeController.getFrFile)
+router.get("/fr/:idx/getb64",  bvController.getFile)
 
 //folder
 router.get("/folders/f/get", authMiddleWare, bvController.getDataFolders)

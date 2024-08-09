@@ -43,9 +43,11 @@ const getFrmsInfo = async (dto) => {
     console.log("EN EL PODEROROSO")
     const idx = dto.idx
     const qUtils = new QUtils()
+    qUtils.setResetVars()
+    
     qUtils.setTableInstance('f_formulario')
     qUtils.setAttributes([
-      ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name'], 'ordenanza', 'descripcion'
+      ['codigo_formulario','frm_cod'],['formulario_id','frm'],['nombre_formulario','frm_name'], 'ordenanza', 'descripcion', 'version'
     ])
     
     //qUtils.setOrder([qUtils.getGestor().col('sections.orden'), qUtils.getGestor().col('sections.questions.orden'), qUtils.getGestor().col('sections.questions.answers.orden'), qUtils.getGestor().col('sections.questions.questions.orden')])
@@ -70,7 +72,7 @@ const getFrmsInfo = async (dto) => {
     qUtils.pushInclude(cnf)
     cnf = {
       association: 'sections', required: false,
-      attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm']],      
+      attributes: [['nombre_subfrm','name_section'], ['orden','ord'], ['subfrm_id','sfrm'],'descripcion', 'codigo'],      
       include: [
         {
           association: 'questions', required: false,
@@ -130,12 +132,14 @@ const getFrmsInfo = async (dto) => {
 
     await qUtils.findTune()
     const r = qUtils.getResults()
+    qUtil.setResetVars()
 
     //recorre resultados para encontrar datos de mrow, mcol y mscol
     const auxRcols = ['mrow', 'mcol', 'mscol']    
     for (const key in r[0]?.sections) {
       for(const k in r[0]?.sections[key]?.questions){
         //busca informacion solo si hay mrow, mcol y mscol
+        qUtil.setResetVars()
         qUtils.setTableInstance('f_is_atributo')
         qUtils.setAttributes(qUtils.transAttribByComboBox(['atributo_id','atributo'])) 
         qUtils.setOrder(['orden'])       
