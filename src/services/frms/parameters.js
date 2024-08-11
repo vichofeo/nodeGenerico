@@ -125,7 +125,76 @@ const PARAMETROS = {
             { ref: 'f_is_gr_atributo', apropiacion: 'col_code', campos: ['grupo_atributo', 'grupo'], condicion: null, condicional:null },
             { ref: 'f_is_gr_atributo', apropiacion: 'scol_code', campos: ['grupo_atributo', 'grupo'], condicion: null, condicional:null },
         ],
-    }
+    },
+    evaluacionn:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, f_formulario f ,f_formulario_institucion_cnf cnf, f_formulario_registro eval ',
+        alias: 'evaluacionn',
+        cardinalidad: "n",
+        linked:"evaluacion",
+        campos: `eval.registro_id as idx, 'evaluacion' as linked,
+
+d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
+p.primer_apellido AS evaluador,
+
+f.nombre_formulario as frm, eval.periodo,
+eval.concluido, eval.activo,
+
+CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
+TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , atr1.atributo as conclusion, atr1.color 
+`,
+
+        camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },        
+                    { value: "evaluador", text: "Evaluador" }, 
+                    { value: "frm", text: "FORM." }, 
+                    { value: "ver", text: "Accion" },                   
+                    
+                    { value: "creacion", text: "Creacion" },
+                    //{value:'creador', text:'Creado Por'},
+                    { value: "concluido", text: " " },                     
+                    
+        ],
+        key: ['eval.formulario_id'],
+        precondicion: ['f.formulario_id = cnf.formulario_id', 
+        'cnf.formulario_id = eval.formulario_id ','cnf.institucion_id=eval.institucion_id',
+            'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',
+            'i.cod_pais =  d.cod_pais ',' i.cod_dpto =  d.cod_dpto',
+        'i.institucion_root =  eg.institucion_id',
+    "eval.institucion_id='$inst'"],
+        groupOrder: ` ORDER BY  eval.create_date desc `,//null string    
+        update: [],
+        referer: [ 
+            { ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido',
+
+
+}           
+        ],
+    },
+
+    fregis: {
+        table:'f_formulario',
+        alias: 'regis',
+        cardinalidad: "1",
+        campos: {
+            institucion_id:['Institucion', true, true, 'C'],
+            formulario_id: ['Formulario', true, false, 'C'],      
+            periodo:['Periodo',true, false, 'C']      
+        },
+        key: ['formulario_id'],
+        moreData:[
+           // { ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },
+        ],
+        update: [],
+        ilogic:{formulario_id:`SELECT formulario_id as value, nombre_formulario as text FROM f_formulario WHERE formulario_id = '$formulario_id' and  activo = 'Y'`,
+            periodo:`SELECT TO_CHAR(NOW(),'YYYYMM') as value, TO_CHAR(NOW(),'YYYYMM') as text`
+        },
+        referer: [
+            //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
+            { ref: 'ae_institucion', apropiacion: 'institucion_id', campos: ['institucion_id', 'nombre_institucion'], condicion: null, condicional:['institucion_id,$inst'] },
+            //{ ref: 'f_formulario', apropiacion: 'formulario_id', campos: ['formulario_id', 'nombre_formulario'], condicion: [formulario_id:], condicional:null },
+            
+        ],
+    },
 }
 
 const immutableObject = (obj) =>

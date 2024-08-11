@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       dni_register:{type: DataTypes.STRING(25), allowNull: false},
       create_date:{type: DataTypes.DATE, allowNull: false},
       last_modify_date_time:{type: DataTypes.DATE, allowNull: true}, 
+      limite_dia:{type: DataTypes.INTEGER, allowNull: false, defaultValue:5},
     },
     {
       sequelize,

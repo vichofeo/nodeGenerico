@@ -40,7 +40,7 @@ const getfrmsConstuct = async (dto) => {
 
 const getFrmsInfo = async (dto) => {
   try {
-    console.log("EN EL PODEROROSO")
+    console.log("***** OBTENIENDO TODA INFORMACION DEL FORMULARIO **********")
     const idx = dto.idx
     const qUtils = new QUtils()
     qUtils.setResetVars()
@@ -212,7 +212,7 @@ const saveCnfForms = async (dto)=>{
     }
     else return {
       ok: false,
-      r:result,       
+      rr:result,       
       message: 'La Transaccion ha fallado. vuelva a intentarlo o comuniquese con su administrador',
     }
   } catch (error) {
@@ -225,6 +225,13 @@ const saveCnfForms = async (dto)=>{
   }
 }
 
+/**
+ * 0  -> 1 radio
+ * 1  -> 2 check
+ * 2  -> 4 texto
+ * 3  -> 8 grid Respuestas
+ *
+ */
 const saveFormsRes = async (dto)=>{
   await  qUtil.startTransaction()
   try {
@@ -232,13 +239,16 @@ const saveFormsRes = async (dto)=>{
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
 
-    const idx = dto.frm
+    const frm = dto.frm
+    const idx =  dto.idx
+    
     const respuestas = []
     qUtil.setTableInstance("f_formulario_llenado")
     for (const seccion_id in dto.respuestas) {
       if(seccion_id!= '-1'){
         for (const pregunta_id in dto.respuestas[seccion_id]) {
-          const tmp = {formulario_id:idx, subfrm_id:seccion_id, enunciado_id: pregunta_id, ...obj_cnf}
+          const tmp = {registro_id:idx, formulario_id:frm, subfrm_id:seccion_id, enunciado_id: pregunta_id, ...obj_cnf}
+          //const tmp = {formulario_id:idx, subfrm_id:seccion_id, enunciado_id: pregunta_id, ...obj_cnf}
           let datos = {}
           switch (dto.respuestas[seccion_id][pregunta_id].tipo) {
             case 0:
@@ -262,14 +272,14 @@ const saveFormsRes = async (dto)=>{
                 }
               }
               break;
-              case 100:
+            case 100:
                 for(const row in dto.respuestas[seccion_id][pregunta_id].answers.tabla){
                   for(const col in dto.respuestas[seccion_id][pregunta_id].answers.tabla[row]){
                     const auxx= dto.respuestas[seccion_id][pregunta_id].answers.tabla[row][col]
                     datos = {...tmp, res_frm_id: uuidv4(), 
                       row_ll: auxx.row.value,
                       col_ll: auxx.col,
-                      scoll: auxx.scol,
+                      scol_ll: auxx.scol,
                       texto:auxx.valor}
                     respuestas.push(datos)
                   }
@@ -292,7 +302,7 @@ const saveFormsRes = async (dto)=>{
     return {
       ok: true,
       data: respuestas,
-      message: 'Datos Guardados',
+      message: 'Datos del llenado Guardados',
       
     }
     

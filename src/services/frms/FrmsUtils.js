@@ -161,7 +161,7 @@ module.exports = class FrmsUtils {
     parametros = await this.#getMoreDataParam(parametros, objModel.moreData, idx)
 
     console.log(
-      '\n\n P4: ************************ENTRANDO A REFERERE *****************************'
+      '\n\n P4: ************************ENTRANDO A REFERERE ***************************** \n' 
     )
     //obtiene referencias PARA LOS COMBOS Y OTROS
     parametros = await this.#getDataparamReferer(parametros, objModel.referer)

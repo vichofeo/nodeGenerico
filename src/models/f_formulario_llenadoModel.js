@@ -9,13 +9,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      f_formulario_llenado.belongsTo(models.f_formulario,{
+        as:'form',
+        foreignKey: 'formulario_id'
+      }),
+      f_formulario_llenado.belongsTo(models.f_formulario_registro,{
+        as:'regis',
+        foreignKey: 'registro_id'
+      })
     }
   }
   f_formulario_llenado.init(
     {
       res_frm_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true},
       
-      institucion_id:{type: DataTypes.STRING(64), allowNull: true},      
+      //institucion_id:{type: DataTypes.STRING(64), allowNull: true},    
+      registro_id: {type: DataTypes.STRING(64), allowNull: true},       
       formulario_id:{type: DataTypes.STRING(64), allowNull: true},
       subfrm_id:{type: DataTypes.STRING(64), allowNull: true},
       enunciado_id:{type: DataTypes.STRING(64), allowNull: true},      
@@ -33,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
       col_ll:{type: DataTypes.STRING(64), allowNull: true},
       scol_ll:{type: DataTypes.STRING(64), allowNull: true},
       
+      concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
       
         
     },
