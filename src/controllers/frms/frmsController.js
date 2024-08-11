@@ -72,9 +72,40 @@ const saveEvalForm = async(req, res)=>{
 
   //res.json(result)
 }
+const getDataFrmAll = async(req, res)=>{
+  
+  const token =  req.headers.authorization
+  const result = await frmEvalService.getDataFrmAll({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
+
+const modifyDataFrm = async(req, res)=>{
+  
+  const token =  req.headers.authorization
+  const result = await frmEvalService.modifyDataFrm({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
+
+const modifyDataEval = async(req, res)=>{
+  
+  const token =  req.headers.authorization
+  const result = await frmEvalService.modifyDataEval({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
 module.exports = {
   getfrmsConstuct, getFrmsInfo,
   getCnfForms, getCnfFormswIdx, saveCnfForms, saveFormsRes,
 
-  getEvalForms, saveEvalForm
+  getEvalForms, saveEvalForm,
+  getDataFrmAll,
+  modifyDataFrm, modifyDataEval
 }

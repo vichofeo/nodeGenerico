@@ -277,6 +277,7 @@ const saveFormsRes = async (dto)=>{
                   for(const col in dto.respuestas[seccion_id][pregunta_id].answers.tabla[row]){
                     const auxx= dto.respuestas[seccion_id][pregunta_id].answers.tabla[row][col]
                     datos = {...tmp, res_frm_id: uuidv4(), 
+                      irow_ll: auxx?.irow >=0 ? auxx.irow: -1,
                       row_ll: auxx.row.value,
                       col_ll: auxx.col,
                       scol_ll: auxx.scol,
@@ -316,6 +317,8 @@ const saveFormsRes = async (dto)=>{
     }
   }
 }
+
+
 module.exports = {
   getfrmsConstuct,
   getFrmsInfo, getCnfForms, 

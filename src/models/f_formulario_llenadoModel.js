@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       last_modify_date_time:{type: DataTypes.DATE, allowNull: false},
       dni_register:{type: DataTypes.STRING(25), allowNull: true},
 
+      irow_ll:{type: DataTypes.INTEGER, allowNull: true, defaultValue:-1},
       row_ll:{type: DataTypes.STRING(64), allowNull: true},
       col_ll:{type: DataTypes.STRING(64), allowNull: true},
       scol_ll:{type: DataTypes.STRING(64), allowNull: true},

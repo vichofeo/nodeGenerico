@@ -19,6 +19,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'enunciado_id',
         targetKey: 'enunciado_id'
       }),
+      f_frm_enunciado.hasMany(models.f_formulario_llenado, {
+        as:'respuestas',
+        foreignKey: 'enunciado_id',
+        targetKey: 'enunciado_id'
+      }),
       f_frm_enunciado.hasMany(models.f_frm_enunciado, {
         as:'questions',
         foreignKey: 'enunciado_root'
@@ -70,6 +75,7 @@ module.exports = (sequelize, DataTypes) => {
 
       repeat_row:{type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false} ,
       repeat:{type: DataTypes.STRING(64), allowNull: true, defaultValue:0},
+      
       
         
     },
