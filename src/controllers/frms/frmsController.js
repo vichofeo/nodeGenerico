@@ -58,9 +58,10 @@ const saveFormsRes = async(req, res)=>{
 
 //CONTROLADORES PARA EVALUACION DE  FORMULARIO
 const getEvalForms = async(req, res)=>{
-  const idx = req.params.idx
+  //const idx = req.params.idx
   const token =  req.headers.authorization
-  const result = await frmEvalService.getEvalForms({idx:idx, token: token})
+  const data =  req.body
+  const result = await frmEvalService.getEvalForms({idx:data.idx, token: token, swModel:data.swAll})
   res.json(result)
 }
 const saveEvalForm = async(req, res)=>{

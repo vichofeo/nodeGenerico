@@ -144,6 +144,7 @@ module.exports = class FrmsUtils {
       await this.#qUtils.findUnique()
 
     } else await this.#qUtils.findID(idx)
+    
     const aux = this.#qUtils.getResults()
     if (aux) result = aux
 

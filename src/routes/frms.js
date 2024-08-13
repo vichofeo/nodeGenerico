@@ -13,7 +13,7 @@ router.post('', authMiddleWare, frmsController.saveCnfForms)
 router.post('/fres/save', authMiddleWare, frmsController.saveFormsRes)
 
 //para evaluacion
-router.get('/evals/:idx', authMiddleWare, frmsController.getEvalForms)
+router.put('/evals', authMiddleWare, frmsController.getEvalForms)
 router.post('/eval/save', authMiddleWare, frmsController.saveEvalForm)
 router.post('/eval/get/all', authMiddleWare, frmsController.getDataFrmAll)
 router.put('/eval/get/all', authMiddleWare, frmsController.modifyDataFrm)

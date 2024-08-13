@@ -17,6 +17,8 @@ const { v4: uuidv4 } = require('uuid')
 const servicesBasics = require('./FrmsService')
 const { where } = require('sequelize')
 
+const estado_conclusion='7'
+
 const verificaPrimal = async (f_id) => {
   const obj_cnf = await frmUtil.getRoleSession()
   const obj_session = frmUtil.getObjSession()
@@ -34,7 +36,7 @@ const verificaPrimal = async (f_id) => {
   //verifica si ya existe el registro con el periodo actual
   query = `SELECT COUNT(*) AS existencia
 FROM f_formulario_registro
-WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' AND periodo=TO_CHAR(NOW(),'YYYYMM')`
+WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' AND periodo='202403'` //periodo=TO_CHAR(NOW(),'YYYYMM')
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
   const existe = qUtil.getResults()
@@ -47,9 +49,9 @@ WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}'
 
 const getEvalForms = async (dto) => {
   try {
-    const paramLocalModelo = 'evaluacionn'
+    const paramLocalModelo = !dto.swModel ? 'evaluacionn' : 'evaluacion_todes'
     dto.modelos = [paramLocalModelo]
-
+console.log("\n\n\n&&&&&&&&&&&& MODELO: ",dto ," &&&&&&&&&&&&\n\n\n")
     frmUtil.setParametros(PARAMETROS)
     await frmUtil.getDataParams(dto)
     const result = frmUtil.getResults()
@@ -220,6 +222,7 @@ const construyeDatos = async (dto) =>{
 const getDataFrmAll =  async (dto, handleError) => {
   try {
     console.log("\n\n\n *********** PROCESO POR MICROCONSULTA **************")
+    frmUtil.setToken(dto.token)
     //segun dto de carga obtiene datos
     // dto.frm &&  dto.sec &&  dto.prg
     if(dto.data.frm &&  dto.data.sec &&  dto.data.prg)
@@ -249,6 +252,7 @@ const getDataFrmAll =  async (dto, handleError) => {
 const getEvalInfo = async (dto) => {
   try {
     
+    const obj_cnf = frmUtil.getObjSession()
     const idx = dto.reg
     
     qUtil.setResetVars()
@@ -258,9 +262,15 @@ const getEvalInfo = async (dto) => {
     const r = qUtil.getResults()
     qUtil.setResetVars()
 
+    if(r.concluido == estado_conclusion || r.dni_register != obj_cnf.dni_register)
+      r.concluido = true
+    else r.concluido = false
+
+    //verifica estado de conclusion
     return {
       ok: true,
       data: r,
+      //obj:obj_cnf,
       message: 'Resultado exitoso. Parametros Evaluacion obtenido',
     }
   } catch (error) {
@@ -456,17 +466,20 @@ const getFrmSecQueAnsersInfo = async (dto) => {
           }else{
             //pregunta por scol y col
             if(element.scol){
-              //con subcolumna
+              //con subcolumna y columna
               if(obj.repeat_row){
                 const index = Number(element.irow)
-                rpstas.rows[index] = element.row
+                
+                
+                rpstas.rows[index] = obj.mrow.fatributos.find((o) => o.value === element.row)// element.row
                 rpstas.cols[`${element.irow}|${element.col}|${element.scol}`] =   {value: element.valor, index:element.rll  }
               } else
               rpstas.cols[`${element.row}|${element.col}|${element.scol}`] =   {value: element.valor, index:element.rll  }
-            }else{              
+            }else{
+              //solo con columna 
               if(obj.repeat_row){
                 const index = Number(element.irow)
-                rpstas.rows[index] = element.row
+                rpstas.rows[index] = obj.mrow.fatributos.find((o) => o.value === element.row) //element.row
                 rpstas.cols[`${element.irow}|${element.col}`] = {value: element.valor, index:element.rll  }
               }else
               rpstas.cols[`${element.row}|${element.col}`] = {value: element.valor, index:element.rll  }
@@ -610,7 +623,7 @@ const modifyDataEval = async (dto, handleError)=>{
     //actuliza estados
 
 qUtil.setTableInstance('f_formulario_registro')
-qUtil.setDataset({concluido:'7', ...obj_cnf})
+qUtil.setDataset({concluido:estado_conclusion, ...obj_cnf})
 qUtil.setWhere({registro_id:reg})
 await qUtil.modify()
 
