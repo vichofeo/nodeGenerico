@@ -57,6 +57,8 @@ module.exports = (sequelize, DataTypes) => {
       
       ciudad_publicacion: { type: DataTypes.STRING(1024), allowNull: false },
       url: { type: DataTypes.STRING(1024), allowNull: false },
+
+      img: { type: DataTypes.TEXT, allowNull: false },
     },
     {
       sequelize,

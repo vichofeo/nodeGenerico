@@ -1,3 +1,6 @@
+const pdfConverter = require('pdf-poppler')
+const path = require('path')
+
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
@@ -288,7 +291,12 @@ const getDataFiles = async (dto, handleError) => {
     handleError.setHttpError(error.message)
   }
 }
-
+/**
+ * Almacena archivo fisico y en bd 
+ * @param {*} dto 
+ * @param {*} handleError 
+ * @returns 
+ */
 const uploadFile = async (dto, handleError) => {
   try {
     frmUtil.setToken(dto.token)
@@ -476,6 +484,105 @@ const getFrFiles = async (dto, handleError) => {
   }
 }
 
+//Utilitarios local
+const uploadFiles = async (dto, handleError) => {
+  try {
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()//await frmUtil.getRoleSession()
+    const dir =  process.env.UPLOADS
+      //inicia tranaccion
+      await qUtil.startTransaction()
+      qUtil.setTableInstance('bv_files')
+      qUtil.setWhere({img: null})   
+      await qUtil.findTune()
+      const result = qUtil.getResults()
+      
+      const fs = require('fs')
+      const {unlink} = require('fs/promises')
+      for (const element of result) {
+        const idx = element.file_id
+        delete element.file_id
+        await convertImage(dir+'/'+element.file_name, dir)
+
+        
+        //await convertImg(dir+'/'+element.file_name, dir+'/'+element.file_name )
+        //leee el archivo 
+        //const files = glob.readdirSync(dir+'/'+element.file_name+'-*.jpg', {});
+
+        //console.log("luego de convertir FIles::::", files)
+        var nn = element.file_name 
+      let patron =  new RegExp("^"+nn+".*.jpg$", 'g')
+      let body =  fs.readdirSync(dir)                          
+                          .filter((allFilesPaths) => allFilesPaths.match(patron) !== null)
+      console.log("FULTRADO..", body)
+      if(body.length==1){
+        let file =  dir + '/' + body[0]
+        let bd = fs.readFileSync(file)
+        bd=  bd.toString('base64')
+        //guarda elemento
+        qUtil.setTableInstance('bv_files')
+        qUtil.setDataset({img:bd})
+        qUtil.setWhere({file_id: idx})
+        await qUtil.modify()
+        await unlink(file)    
+        
+      }
+
+      }
+
+      return {
+        ok:true,
+        data: result
+      }
+    
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    console.log('\n\nerror::: EN SERVICES SAVE\n', error)
+    handleError.setMessage('Error de sistema: BVIRTSAVEFOLDERSRV')
+    handleError.setHttpError(error.message)
+  }
+}
+const  convertImage = async (pdfPath, outputPath)=> {
+
+  let option = {
+      format : 'jpeg',
+      out_dir : outputPath, //'E:\\temp',
+      out_prefix : path.basename(pdfPath, path.extname(pdfPath)),
+      page : 1,
+      scale: 384
+  }
+// option.out_dir value is the path where the image will be saved
+
+
+  await pdfConverter.convert(pdfPath, option)
+  /*.then(() => {
+      console.log('file converted')
+      console.log(path.basename(pdfPath, path.extname(pdfPath)))
+  })
+  .catch(err => {
+      console.log('an error has occurred in the pdf converter ' + err)
+  })*/
+
+
+}
+const convertImg = async (pdfPath, out_file)=>{
+  const { Poppler } = require("node-poppler");
+
+const file = pdfPath //"test_document.pdf";
+const poppler = new Poppler();
+const options = {
+	//firstPageToConvert: 1,
+	lastPageToConvert: 1,
+	jpegFile: true,
+  scalePageTo:384, 
+  singleFile: false
+};
+const outputFile = out_file //`test_document.png`;
+const res = await poppler.pdfToCairo(file, out_file, options);
+//const res = await poppler.pdfToCairo(file, undefined, options);
+
+console.log("Convirtiendo....", res)//.toString('base64'))
+}
 
 module.exports = {
   searchFiles, suggestFiles,

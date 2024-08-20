@@ -264,7 +264,14 @@ const getEvalInfo = async (dto) => {
 
     if(r.concluido == estado_conclusion || r.dni_register != obj_cnf.dni_register)
       r.concluido = true
-    else r.concluido = false
+    else {
+      //verifica primal segun dias limite
+      const obj_ctrl =  await verificaPrimal(r.formulario_id)
+      if(obj_ctrl.primal)
+        r.concluido = false
+      else
+      r.concluido = true
+    }
 
     //verifica estado de conclusion
     return {

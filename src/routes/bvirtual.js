@@ -51,6 +51,7 @@ router.get("/files/:idx/get", authMiddleWare, bvController.getDataFiles)
 router.post("/files/search", authMiddleWare, bvController.searchFiles)
 router.post("/files/suggest", authMiddleWare, bvController.suggestFiles)
 
+//router.post("/file/upload", authMiddleWare, upload, bvController.uploadFile)
 router.post("/file/upload", authMiddleWare, upload, bvController.uploadFile)
 router.delete("/file/:idx/:idy/delete", authMiddleWare, bvController.deleteFile)
 router.get("/file/:idx/get", authMiddleWare, bvController.getFile)
