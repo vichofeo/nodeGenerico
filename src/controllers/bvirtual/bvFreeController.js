@@ -20,7 +20,7 @@ const getFrFile = async (req, res)=>{
         
  //   const token = req.headers.authorization
     const idx =  req.params.idx
-
+    
     const result = await service.getFrFile({ idx: idx},handleError)
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())

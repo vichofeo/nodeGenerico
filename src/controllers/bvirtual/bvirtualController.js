@@ -90,8 +90,9 @@ const getFile = async (req, res)=>{
         
     const token = req.headers.authorization
     const idx =  req.params.idx
+    const body =  req.body
 
-    const result = await service.getFile({token:token, idx: idx},handleError)
+    const result = await service.getFile({token:token, idx: idx, ...body},handleError)
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }

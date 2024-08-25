@@ -35,7 +35,8 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY ente_gestor, gestion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
+      to_char((select max(fecha_emision) from tmp_ames),'DD/MM/YYYY') as obs
                 FROM tmp_ames 
                 WHERE 1=1 $w$
                 GROUP BY departamento, gestion 
@@ -170,7 +171,8 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY ente_gestor, gestion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value
+      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value,
+      to_char((select max(fecha_emision) from tmp_inas),'DD/MM/YYYY') as obs
                 FROM tmp_inas 
                 WHERE 1=1 $w$
                 GROUP BY ciudad, gestion 
@@ -283,7 +285,8 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY ente_gestor, gestion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value
+      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value,
+      to_char((select max(fecha_emision) from tmp_rrame),'DD/MM/YYYY') as obs
                 FROM tmp_rrame 
                 WHERE 1=1 $w$
                 GROUP BY ciudad, gestion 

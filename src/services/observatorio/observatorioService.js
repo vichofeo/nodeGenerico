@@ -24,7 +24,7 @@ observatorio.cancer = {campos:{}, alias:'cancer', referer:[]}
 observatorio.cancer.ilogic = {cancer: AEB.dash_cancer.ilogic.cancer_casos }
 
 observatorio.carmelo = {campos:{}, alias:'carmelo', referer:[]}
-observatorio.carmelo.ilogic = {carmelo: AEB.dash_carmelo.ilogic.car_etario }
+observatorio.carmelo.ilogic = {carmelo: AEB.dash_carmelo.ilogic.car_dpto_eg }
 
 observatorio.pai = {campos:{}, alias:'pai', referer:[]}
 observatorio.pai.ilogic = {pai: AEB.dash_pai.ilogic.pai_hetario, pai_dia:AEB.dash_pai.ilogic.pai_day }
@@ -53,7 +53,8 @@ observatorio.rrame.ilogic = {rrame: UFAM.dash_rrame.ilogic.ames_dpto_eg_gestion 
 //MedTrab
 observatorio.metrab = {campos:{}, alias:'metrab', referer:[]}
 observatorio.metrab.ilogic = {metrab: `SELECT pivot as pila,  ejex, value,
-                SUM(value) OVER (PARTITION BY pivot ORDER BY pivot, ejex ) AS total_acumulado
+                SUM(value) OVER (PARTITION BY pivot ORDER BY pivot, ejex ) AS total_acumulado,
+                TO_CHAR((SELECT MAX(periodo) FROM tmp_mt_frms t0 WHERE t0.formulario=tt.pivot),'MM/YYYY') AS obs
                 FROM (
                 SELECT 
                 formulario AS pivot, 					 

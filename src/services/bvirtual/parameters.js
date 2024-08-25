@@ -58,7 +58,8 @@ const PARAMETROS = {
             anio_publicacion: ['Por Año de Publicacion', true, false, 'HV', 2048,,'M'],
             tipo_documento: ['Por Tipo Documento', true, false, 'HV', 10,,'M'],
             tipo_componente: ['Por su Aplicacion', true, false, 'HV', 10,,'M'],
-            ambito_aplicacion: ['Ambito Aplicacion', true, false, 'HV', 2048,,'M'],
+            ambito_aplicacion: ['Por Ambito Aplicacion', true, false, 'HV', 2048,,'M'],
+            organismo_emisor: ['Por Entidad Responsable', true, false, 'HV', 2048,,'M'],
             
 
         },
@@ -68,7 +69,13 @@ const PARAMETROS = {
             tipo_documento:`SELECT distinct tipo_documento  as value, tipo_documento||' ('||count(*)||')' as text FROM bv_files WHERE tipo_documento is not null group by 1 order by 1`,
             tipo_componente:`SELECT distinct tipo_componente  as value, tipo_componente||' ('||count(*)||')' as text FROM bv_files WHERE tipo_componente is not null group by 1 order by 1`,
             ambito_aplicacion: `SELECT DISTINCT f.ambito_aplicacion  as VALUE, a.atributo ||' ('||count(f.*)||')' as text FROM bv_files f, f_is_atributo a WHERE f.ambito_aplicacion is not NULL 
-                                AND f.ambito_aplicacion =  a.atributo_id group by f.ambito_aplicacion,a.atributo order BY 2`
+                                AND f.ambito_aplicacion =  a.atributo_id group by f.ambito_aplicacion,a.atributo order BY 2`,
+            organismo_emisor: `SELECT 'asuss' AS VALUE, 'ASUSS ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor ILIKE '%asuss%')||')' AS TEXT
+                                UNION
+                                SELECT 'ministerio' AS VALUE, 'MSyD ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor ILIKE '%ministerio%')||')' AS TEXT
+                                UNION 
+                                SELECT 'otros_b' AS VALUE, 'OTROS ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor not ILIKE '%asuss%' and organismo_emisor not ILIKE '%ministerio%')||')' AS TEXT
+                                ORDER BY 1`                    
         },//null
         //keyRoot: 'enunciado_root',
         moreData: [],

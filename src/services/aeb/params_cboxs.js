@@ -191,7 +191,8 @@ const PDEPENDENCIES = {
         FROM tmp_carmelo
         WHERE 1=1 $w$
         GROUP BY genero`,
-      car_dpto_eg: `SELECT departamento as pila,  ente_gestor AS ejex, COUNT(*) AS value					 
+      car_dpto_eg: `SELECT departamento as pila,  ente_gestor AS ejex, COUNT(*) AS value, 
+                  TO_CHAR((SELECT MAX(fecha_dispensacion)FROM tmp_carmelo),'dd/mm/YYYY') AS obs
                 FROM tmp_carmelo
                 WHERE 1=1 $w$
                 GROUP BY 1,2
@@ -324,7 +325,8 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY 1
                 ORDER BY 1`,
-      pai_day: `SELECT TO_CHAR(fecha_vacunacion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value
+      pai_day: `SELECT TO_CHAR(fecha_vacunacion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
+                TO_CHAR((select MAX(fecha_vacunacion) FROM tmp_pai),'DD/MM/YYYY') AS obs
                 FROM tmp_pai
                 WHERE 1=1 $w$
                 GROUP BY 1
@@ -390,7 +392,7 @@ const PDEPENDENCIES = {
                   LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor = p.ente_gestor)
                   order by 3 
 `,
-      cancer_casos: `SELECT 'Registrados' as pivot ,gestion as ejex ,COUNT(*) AS value
+      cancer_casos: `SELECT 'Registrados' as pivot ,gestion as ejex ,COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY  1,2
       union all
@@ -399,7 +401,7 @@ const PDEPENDENCIES = {
       when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
       when tecnica_recoleccion='LAB' then 'Laboratorio'
       else tecnica_recoleccion end as pivot ,
-      gestion as periodo ,COUNT(*) AS value
+      gestion as periodo ,COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY  1,2
       ORDER BY 1,2)

@@ -363,6 +363,10 @@ module.exports = class Qutils {
   notNull(){
     return {[Op.not]: null}
   }
+  
+  notIn(arrayEscalar=[]){
+    return {[Op.notIn]: arrayEscalar}
+  }
 /**
  * Sentenci OR para where recibe on obj o un ArrayOb
  * @param {*} ObjOrArrayObj 
@@ -386,5 +390,8 @@ module.exports = class Qutils {
  */
   ilikeWhere(value){
     return {[Op.iLike]: value}
+  }
+  ilikeNotWhere(value){
+    return {[Op.notILike]: value}
   }
 }

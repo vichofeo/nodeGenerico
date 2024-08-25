@@ -332,8 +332,16 @@ const uploadFile = async (dto, handleError) => {
           message: 'El Archivo ya existe en el folder selecionado',
         }
       } else {
+        //construye archivo de imagen
+        const img64 = await __uploadFileImage(dto.data.file_name)
+        
+        qUtil.setDataset(Object.assign(dto.data, {img: img64}))
+
         //inserta
         await qUtil.create()
+        const result = qUtil.getResults()
+        
+
         await qUtil.commitTransaction()
         return getDataFiles(dto, handleError)
       }
@@ -348,6 +356,26 @@ const uploadFile = async (dto, handleError) => {
     console.log('\n\nerror::: EN SERVICES SAVE\n', error)
     handleError.setMessage('Error de sistema: BVIRTSAVEFOLDERSRV')
     handleError.setHttpError(error.message)
+  }
+}
+
+const __uploadFileImage = async (fileName) =>{
+  const fs = require('fs')
+  const {unlink} = require('fs/promises')
+  const dir =  process.env.UPLOADS
+  //obtiene archivo en fisico
+  await convertImage(`${dir}/${fileName}`, dir)
+  //busca archivo fisico para convertir en b64 y almacenar
+  const patron = new RegExp("^"+fileName+".*.jpg$", 'g')
+  //filtra y obtiene un array de resultados
+  const body =  fs.readdirSync(dir)                          
+                .filter((allFilesPaths) => allFilesPaths.match(patron) !== null)
+  if(body.length ==1){
+    let img =  `${dir}/${body[0]}`
+    let result = fs.readFileSync(img)
+    await unlink(img)    
+    return 'data:image/jpeg;base64, '+ result.toString('base64')
+    
   }
 }
 
@@ -388,6 +416,7 @@ const deleteFile = async (dto, handleError) => {
 
 const getFile = async (dto, handleError) => {
   try {
+    await qUtil.startTransaction()
     qUtil.setTableInstance('bv_files')        
     await qUtil.findID(dto.idx)
 
@@ -401,18 +430,36 @@ const getFile = async (dto, handleError) => {
       var fs = require('fs')
       var body = fs.readFileSync(file)
       const file64 = { name: result.file_original_name, type: result.file_type, file: body.toString('base64') }
+      //procesa si se trata de una peticion desde la version publica
+      if(dto?.viewdown){
+        //existe actualiza contadoras
+        qUtil.setTableInstance('bv_files')
+        if(dto.viewdown?.view){
+          qUtil.setDataset({views: result.views + 1})
+          qUtil.setWhere({file_id:result.file_id})
+          await qUtil.modify()
+        }else if(dto.viewdown?.down){
+          qUtil.setDataset({downs: result.downs + 1})
+          qUtil.setWhere({file_id:result.file_id})
+          await qUtil.modify()
+        }
+        
+      }
+      await qUtil.commitTransaction()
       return {
         ok: true,
         data: file64,
         message: 'Solicitud ejecutada correctamente',
       }
     } else {
+      await qUtil.commitTransaction()
       return {
         ok: false,
         message: 'Solicitud sin resultados, identificador no valido',
       }
     }
   } catch (error) {
+    await qUtil.rollbackTransaction()
     console.log('\n\nerror::: EN SERVICES GETfILE\n', error)
     handleError.setMessage('Error de sistema: BVIRTGETFILE64SRV')
     handleError.setHttpError(error.message)

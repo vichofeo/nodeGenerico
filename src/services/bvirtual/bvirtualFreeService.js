@@ -10,59 +10,82 @@ const getFrFiles = async (dto, handleError) => {
     //console.log('\n 9☻ entrando al get', dto)
     qUtil.setTableInstance('bv_files')
     qUtil.setAttributes([
-      
+
       //[qUtil.literal("file_md5||'&'||file_id||'==' "), 'idx'],
-      ['file_id','idx'],
+      ['file_id', 'idx'],
       'activo',
-      'tipo_documento', 'tipo_componente', 'ambito_aplicacion', 
-      'codigo', 'titulo', 'anio_publicacion', 'anios_actualizacion', 
-      'autores', 
-      'organismo_emisor', 'resumen', 
-      'palabras_clave',  'ciudad_publicacion', 'url',
-      
+      'tipo_documento', 'tipo_componente', 'ambito_aplicacion',
+      'codigo', 'titulo', 'anio_publicacion', 'anios_actualizacion',
+      'autores',
+      'organismo_emisor', 'resumen',
+      'palabras_clave', 'ciudad_publicacion', 'url', 'views', 'downs'
+
     ])
     //qUtil.setWhere({ folder_id: dto.data.folder_id })
     qUtil.setInclude({
       association: 'fambito', required: true,
-      attributes: [['atributo','ambito']],
+      attributes: [['atributo', 'ambito']],
     })
-    qUtil.setOrder([['create_date','DESC']])
+    qUtil.setOrder([['create_date', 'DESC']])
 
     //condicion por busqueda: Orden search
-    if(dto?.tipo =='S'){
+    if (dto?.tipo == 'S') {
       //resumen:qUtil.ilikeWhere(value),
-      
-      const payload =  dto.payload
-      const value =  `%${payload.valor}%`
-      if(payload.atributo=='ambito_aplicacion'){
+
+      const payload = dto.payload
+      const value = `%${payload.valor}%`
+      if (payload.atributo == 'ambito_aplicacion') {
         qUtil.setInclude({
           association: 'fambito', required: true,
-          attributes: [['atributo','ambito']],
-          where:{atributo: qUtil.ilikeWhere(value)}
+          attributes: [['atributo', 'ambito']],
+          where: { atributo: qUtil.ilikeWhere(value) }
         })
-      }else{
+      } else {
         qUtil.setWhere({
           [payload.atributo]: qUtil.ilikeWhere(value),
         })
       }
-      
+
     }
 
     //condicion por busqueda: Orden filtro
-    if(dto?.tipo =='F'){
+    if (dto?.tipo == 'F') {
       console.log("???????????EXITO FFF?????: ", dto.payload)
-      const payload =  dto.payload
+      const payload = dto.payload
       const w = {}
+      let w2 = undefined
       for (const key in payload) {
-        console.log("\n\n lenght:", key, ":::", payload[key].length)
-        if(payload[key].length>0){
-          w[key] = payload[key]
+        console.log("\n\n lenght:", key, ":::", payload[key].length, "\n", payload[key])
+        if (payload[key].length > 0) {
+          if (key == 'organismo_emisor') {
+            //pregunta si en arrayu existe la opcion otros_b
+            let tmp = payload[key]
+            if (payload[key].includes('otros_b')) {
+              w2 = Object.assign({ ...qUtil.andWhere([{ [key]: qUtil.ilikeNotWhere(`%asuss%`) }, { [key]: qUtil.ilikeNotWhere(`%ministerio%`) }]) }, w2)
+              //filtra la opcion 
+              tmp = payload[key].filter(op => op != 'otros_b')
+            }
+            if (tmp.length >= 1) {
+              const t = []
+              for (const opcion of tmp)
+                t.push({ [key]: qUtil.ilikeWhere(`%${opcion}%`) })
+              w2 = qUtil.orWhere([{ ...qUtil.orWhere(t) }, { ...w2 }])
+            }
+          } else
+            w[key] = payload[key]
         }
       }
-      if(Object.keys(w).length>0)
+      
+      if (Object.keys(w).length > 0 || typeof w2 == 'object'){
+        console.log("objeto w includes:", w)
+      console.log("objeto w2 ilikes:", w2)
       qUtil.setWhere({
-        ...qUtil.orWhere({...w})
+        ...w,
+        //...qUtil.orWhere({...w}),
+        ...w2,
       })
+      }
+        
     }
 
 
@@ -74,7 +97,7 @@ const getFrFiles = async (dto, handleError) => {
       data: result,
       message: 'Solicitud ejecutada correctamente',
     }
-  } catch (error) {    
+  } catch (error) {
     handleError.setMessage('Error de sistema: BVIRTGEFREEFILESSRV')
     handleError.setHttpError(error.message)
   }
@@ -83,18 +106,18 @@ const getFrFiles = async (dto, handleError) => {
 
 const getFrFile = async (dto, handleError) => {
   try {
-    qUtil.setTableInstance('bv_files') 
+    qUtil.setTableInstance('bv_files')
     qUtil.setInclude({
       association: 'fambito', required: true,
-      attributes: [['atributo','ambito']],
-    })       
+      attributes: [['atributo', 'ambito']],
+    })
     await qUtil.findID(dto.idx)
 
     const result = qUtil.getResults()
 
     if (Object.keys(result).length > 0) {
       //./public/images in process.env.UPLOADS
-      
+
       //const file = process.env.UPLOADS + '/'+result.file_name      
       //var fs = require('fs')
       //var body = fs.readFileSync(file)

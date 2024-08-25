@@ -58,7 +58,10 @@ module.exports = (sequelize, DataTypes) => {
       ciudad_publicacion: { type: DataTypes.STRING(1024), allowNull: false },
       url: { type: DataTypes.STRING(1024), allowNull: false },
 
-      img: { type: DataTypes.TEXT, allowNull: false },
+      views:{type: DataTypes.INTEGER, allowNull: false, defaultValue:0},
+      downs:{type: DataTypes.INTEGER, allowNull: false, defaultValue:0},
+
+      img: { type: DataTypes.TEXT, allowNull: true },
     },
     {
       sequelize,
