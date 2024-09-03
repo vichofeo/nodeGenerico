@@ -27,13 +27,13 @@ module.exports = class HandleErrors {
         this.#_objResponse= obj
     }
     handleHttpError(error){
-        console.log("\n\n************Error para logs INGRESO:\n\n", error)
+        console.log("\n\n************Error para logs HANDLE-> INGRESO:\n\n", error)
         this.#_res.status(500) //condicion inesperada
         this.#_res.send({error: "ERROR", ok:false, message: this.#_message })        
         return;    
     }
     setHttpError(error){
-        console.log("\n\n************Error para logs INGRESO:\n\n", error)
+        console.log("\n\n************Error para logs SETHTTP-> INGRESO:\n\n", error)
         this.setCode(500)
         this.#setObjResponse({error: "ERROR", ok:false, message: this.#_message })
     }

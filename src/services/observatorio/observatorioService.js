@@ -21,7 +21,21 @@ observatorio.hemofilia = {campos:{}, alias:'hemofilia', referer:[]}
 observatorio.hemofilia.ilogic = {hemofilia: AEB.dash_hemofilia.ilogic.hemo_dpto}
 
 observatorio.cancer = {campos:{}, alias:'cancer', referer:[]}
-observatorio.cancer.ilogic = {cancer: AEB.dash_cancer.ilogic.cancer_casos }
+//observatorio.cancer.ilogic = {cancer: AEB.dash_cancer.ilogic.cancer_casos }
+observatorio.cancer.ilogic = {cancer: `SELECT gestion as pila ,
+'Registrados' as ejex ,COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
+      FROM tmp_cancer WHERE 1=1 
+      GROUP BY  1,2
+      union all
+      (SELECT gestion as periodo ,
+      case when tecnica_recoleccion='DF' then 'Defuncion'
+      when tecnica_recoleccion='EH' then 'Egreso Hospitalario'
+      when tecnica_recoleccion='LAB' then 'Laboratorio'
+      else tecnica_recoleccion end as ejex ,
+      COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
+      FROM tmp_cancer WHERE 1=1 
+      GROUP BY  1,2
+      ORDER BY 3 desc,2)` }
 
 observatorio.carmelo = {campos:{}, alias:'carmelo', referer:[]}
 observatorio.carmelo.ilogic = {carmelo: AEB.dash_carmelo.ilogic.car_dpto_eg }

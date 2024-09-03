@@ -10,6 +10,7 @@ module.exports = class Qutils {
   #where
   #attributes
   #order
+  #groupBy
   #set
   #include
   #alias
@@ -38,6 +39,7 @@ module.exports = class Qutils {
     this.#where = null
     this.#attributes = null
     this.#order = null
+    this.#groupBy =  null
     this.#set = null
     this.#include = null
     this.query = ""
@@ -66,6 +68,13 @@ module.exports = class Qutils {
   }
   setOrder(order) {
     this.#order = order
+  }
+  /**
+   * 
+   * @param {*} groupBy = Array(String)
+   */
+  setGroupBy(groupBy){
+    this.#groupBy =  groupBy
   }
   setAliasInclude(alias) {
     this.#alias = alias
@@ -135,6 +144,7 @@ module.exports = class Qutils {
       attributes: this.#attributes,
       where: this.#where,
       order: this.#order,
+      group: this.#groupBy,
       include: this.#include
     })
     this.#transformResultToArray()

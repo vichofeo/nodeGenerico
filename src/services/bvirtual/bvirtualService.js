@@ -1,4 +1,4 @@
-const pdfConverter = require('pdf-poppler')
+//const pdfConverter = require('pdf-poppler')
 const path = require('path')
 
 const QUtils = require('./../../models/queries/Qutils')
@@ -353,6 +353,9 @@ const uploadFile = async (dto, handleError) => {
     }
   } catch (error) {
     await qUtil.rollbackTransaction()
+    const {unlink} = require('fs/promises')
+    const file = process.env.UPLOADS + '/'+dto.file.filename
+    await unlink(file)
     console.log('\n\nerror::: EN SERVICES SAVE\n', error)
     handleError.setMessage('Error de sistema: BVIRTSAVEFOLDERSRV')
     handleError.setHttpError(error.message)
@@ -364,7 +367,8 @@ const __uploadFileImage = async (fileName) =>{
   const {unlink} = require('fs/promises')
   const dir =  process.env.UPLOADS
   //obtiene archivo en fisico
-  await convertImage(`${dir}/${fileName}`, dir)
+  //await convertImage(`${dir}/${fileName}`, dir)
+  await convertImg(`${dir}/${fileName}`, `${dir}/${fileName}` )
   //busca archivo fisico para convertir en b64 y almacenar
   const patron = new RegExp("^"+fileName+".*.jpg$", 'g')
   //filtra y obtiene un array de resultados
@@ -565,7 +569,7 @@ const uploadFiles = async (dto, handleError) => {
       if(body.length==1){
         let file =  dir + '/' + body[0]
         let bd = fs.readFileSync(file)
-        bd=  bd.toString('base64')
+        bd= 'data:image/jpeg;base64, '+ bd.toString('base64')
         //guarda elemento
         qUtil.setTableInstance('bv_files')
         qUtil.setDataset({img:bd})
