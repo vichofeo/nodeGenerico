@@ -1,4 +1,4 @@
-const { QueryTypes, UUIDV4, Op } = require("sequelize")
+const { QueryTypes, UUIDV4, Op } = require('sequelize')
 const db = require('../index')
 const tk = require('./../../services/utilService')
 
@@ -11,6 +11,7 @@ module.exports = class Qutils {
   #attributes
   #order
   #groupBy
+  #having
   #set
   #include
   #alias
@@ -20,12 +21,10 @@ module.exports = class Qutils {
   #op
   #opSelect
 
-
   #transac
 
   constructor() {
-    if (Qutils.instance)
-      return Qutils.instance
+    if (Qutils.instance) return Qutils.instance
 
     this.#sequelize = db.sequelize
     this.#sinDatoByCombo = { value: '-1', text: '-Sin Dato-' }
@@ -39,10 +38,11 @@ module.exports = class Qutils {
     this.#where = null
     this.#attributes = null
     this.#order = null
-    this.#groupBy =  null
+    this.#groupBy = null
+    this.#having = null
     this.#set = null
     this.#include = null
-    this.query = ""
+    this.query = ''
     this.#alias = null
     this.#opOptions = {}
     this.#op = { notin: Op.notIn, in: Op.in, between: Op.between }
@@ -58,7 +58,7 @@ module.exports = class Qutils {
   }
   /**
    * setea campos de la consulta ['c1','c2'...]
-   * @param {*} attributes 
+   * @param {*} attributes
    */
   setAttributes(attributes) {
     this.#attributes = attributes
@@ -70,23 +70,28 @@ module.exports = class Qutils {
     this.#order = order
   }
   /**
-   * 
+   *
    * @param {*} groupBy = Array(String)
    */
-  setGroupBy(groupBy){
-    this.#groupBy =  groupBy
+  setGroupBy(groupBy) {
+    this.#groupBy = groupBy
+  }
+  setHaving(sentenceLiteral){
+    this.#having = sentenceLiteral
   }
   setAliasInclude(alias) {
     this.#alias = alias
   }
   setIncludeLigado(tableDBNameIncluded) {
-    this.#include = [{
-      model: db[tableDBNameIncluded],
-      as: this.#alias,
-      attributes: this.#attributes,
-      where: this.#where,
-      order: this.#order,
-    }]
+    this.#include = [
+      {
+        model: db[tableDBNameIncluded],
+        as: this.#alias,
+        attributes: this.#attributes,
+        where: this.#where,
+        order: this.#order,
+      },
+    ]
   }
   setInclude(cnf_include = {}) {
     this.#include = [cnf_include]
@@ -110,7 +115,7 @@ module.exports = class Qutils {
   getTableInstance(tableDBName) {
     return db[tableDBName]
   }
-  
+
   getResults() {
     return JSON.parse(JSON.stringify(this.#results))
   }
@@ -127,17 +132,19 @@ module.exports = class Qutils {
   }
   /**
    * select * from where {}
-   * @param {campo:valor, c2:v2 ....} whereObjDat 
-   * @returns 
+   * @param {campo:valor, c2:v2 ....} whereObjDat
+   * @returns
    */
   find() {
-    this.#results = this.#table.findAll({ where: this.#where }).then((data) => data)
+    this.#results = this.#table
+      .findAll({ where: this.#where })
+      .then((data) => data)
     this.#transformResultToArray()
   }
   /**
    * select ?? from where {..}
-   * @param {attributes:[], where:{a:v, a2:v2 ....}} data 
-   * @returns 
+   * @param {attributes:[], where:{a:v, a2:v2 ....}} data
+   * @returns
    */
   async findTune() {
     this.#results = await this.#table.findAll({
@@ -145,58 +152,87 @@ module.exports = class Qutils {
       where: this.#where,
       order: this.#order,
       group: this.#groupBy,
-      include: this.#include
+      having: this.#having,
+      include: this.#include,
     })
     this.#transformResultToArray()
+  }
+  async findCount(){
+    this.#results = await this.#table.count({      
+      where: this.#where,
+      order: this.#order,
+      group: this.#groupBy,
+      having: this.#having,
+      include: this.#include,
+    })
+    
   }
   async findUnique() {
     this.#results = await this.#table.findOne({
       attributes: this.#attributes,
       where: this.#where,
       order: this.#order,
-      include: this.#include
+      include: this.#include,
     })
   }
   /**
    * select * from where id=??
-   * @param {String} datoKey 
-   * @returns 
+   * @param {String} datoKey
+   * @returns
    */
   async findID(datoKey) {
-    const data = await this.#table.findByPk(datoKey,{include: this.#include, order: this.#order})
+    const data = await this.#table.findByPk(datoKey, {
+      include: this.#include,
+      order: this.#order,
+    })
     this.#results = data ? data : {}
-
   }
-
-
 
   /**
    * Insert data
-   * @param {objDatos} dato 
-   * @returns 
+   * @param {objDatos} dato
+   * @returns
    */
   async create() {
-    this.#results = await this.#table.create(this.#set, { transaction: this.#transac, include: this.#include })
+    this.#results = await this.#table.create(this.#set, {
+      transaction: this.#transac,
+      include: this.#include,
+    })
   }
   /**
    * update
-   * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data 
+   * @param {set:{a:v,a2:v2,....}, where:{a:v1,a2:v2...}} data
    */
   async modify() {
-    this.#results = await this.#table.update(this.#set, { where: this.#where }, { transaction: this.#transac })
+    this.#results = await this.#table.update(
+      this.#set,
+      { where: this.#where },
+      { transaction: this.#transac }
+    )
   }
   /**
    * Elimina
    */
   async deleting() {
-    this.#results = await this.#table.destroy({ where: this.#where }, { transaction: this.#transac })
+    this.#results = await this.#table.destroy(
+      { where: this.#where },
+      { transaction: this.#transac }
+    )
   }
   async createwLote() {
-    this.#results = await this.#table.bulkCreate(this.#set, { transaction: this.#transac, ignoreDuplicates: true, include: this.#include })
+    this.#results = await this.#table.bulkCreate(this.#set, {
+      transaction: this.#transac,
+      ignoreDuplicates: true,
+      include: this.#include,
+    })
   }
 
   async excuteSelect() {
-    this.#results = await this.#sequelize.query(this.#query, { mapToModel: true, type: QueryTypes.SELECT, raw: false, })
+    this.#results = await this.#sequelize.query(this.#query, {
+      mapToModel: true,
+      type: QueryTypes.SELECT,
+      raw: false,
+    })
   }
 
   async findData1toNFromReferer() {
@@ -212,24 +248,23 @@ module.exports = class Qutils {
     this.#transac = await this.#sequelize.transaction()
   }
   async commitTransaction() {
-    await this.#transac.commit();
+    await this.#transac.commit()
   }
   async rollbackTransaction() {
-    await this.#transac.rollback();
+    await this.#transac.rollback()
   }
   // ------------------------ utilitarios complementarios a la clase
   /**
-     * transforma result a array normal
-     * @param {results} datos 
-     * @returns 
-     */
+   * transforma result a array normal
+   * @param {results} datos
+   * @returns
+   */
   #transformResultToArray() {
     if (Array.isArray(this.#results)) {
       const datos = this.#results
-      //this.#results = null 
+      //this.#results = null
       this.#results = datos.map((obj) => {
-        if (obj.dataValues)
-          return obj.dataValues
+        if (obj.dataValues) return obj.dataValues
         else return obj
       })
     }
@@ -237,7 +272,7 @@ module.exports = class Qutils {
 
   /**
    * transforma Array de campos a forma value,text
-   * @param ['a1,a2'] arrayCampos 
+   * @param ['a1,a2'] arrayCampos
    * @returns [[a1,value],[a2,text]]
    */
   transAttribByComboBox(arrayCampos) {
@@ -259,16 +294,11 @@ module.exports = class Qutils {
     }
   }
 
-
-
-
-
-
   /**
    * Busca opcion por defaul en coleccion de datos (value,text) realizadas con query nativo para comboBox
-   * @param {results} data 
-   * @param {{value:xx, text:yy}} selected 
-   * @returns 
+   * @param {results} data
+   * @param {{value:xx, text:yy}} selected
+   * @returns
    */
   searchSelectedInDataComboBox(data, selected) {
     try {
@@ -286,16 +316,16 @@ module.exports = class Qutils {
       if (sw) return datos[i]
       else return this.#sinDatoByCombo
     } catch (error) {
-      console.log(error);
+      console.log(error)
       return this.#sinDatoByCombo
-    };
+    }
   }
 
   searchSelectedForComboBox(selected) {
     return this.searchSelectedInDataComboBox(this.#results, selected)
   }
 
-  searchSelectedInMultipleComboBox(data, selected){
+  searchSelectedInMultipleComboBox(data, selected) {
     try {
       const datos = data
       let i = 0
@@ -303,7 +333,7 @@ module.exports = class Qutils {
       const results = []
       for (const ii in datos) {
         sw = 1
-        const resultado = selected.find((obj) => obj.value === datos[ii].value);
+        const resultado = selected.find((obj) => obj.value === datos[ii].value)
         if (resultado) {
           results.push(datos[ii])
         }
@@ -312,15 +342,15 @@ module.exports = class Qutils {
       if (sw) return results
       else return this.#sinDatoByCombo
     } catch (error) {
-      console.log(error);
+      console.log(error)
       return this.#sinDatoByCombo
-    };
+    }
   }
   searchSelectedForMultipleComboBox(selected) {
     return this.searchSelectedInMultipleComboBox(this.#results, selected)
   }
 
-  getInitialOpCbox(){
+  getInitialOpCbox() {
     return this.#initialByCombo
   }
 
@@ -328,80 +358,80 @@ module.exports = class Qutils {
   /**
    * sentencia DISTINCT
    * @param {*} campo : CAMPPO DE TABLA
-   * @returns 
+   * @returns
    */
-  distinctData(campo){
-    return this.#sequelize.fn('DISTINCT',this.col(campo))
+  distinctData(campo) {
+    return this.#sequelize.fn('DISTINCT', this.col(campo))
   }
 
   /**
-   * sentencia para contar 
+   * sentencia para contar
    * @param {*} campo : campo de tabla
-   * @returns 
+   * @returns
    */
-  countData(campo){
-    return this.#sequelize.fn('COUNT',this.col(campo))
+  countData(campo) {
+    return this.#sequelize.fn('COUNT', this.col(campo))
   }
   /**
    * convierte el campos select con operaciones a campo de sequelize ej campa||campb
-   * @param {*} cadenaCampoSelect 
-   * @returns 
+   * @param {*} cadenaCampoSelect
+   * @returns
    */
-  literal(cadenaCampoSelect){
+  literal(cadenaCampoSelect) {
     return this.#sequelize.literal(cadenaCampoSelect)
   }
-/**
- * convierte campo de asociacion para orderby
- * @param {*} cadenaCampoSelectInclude 
- * @returns 
- */
+  /**
+   * convierte campo de asociacion para orderby
+   * @param {*} cadenaCampoSelectInclude
+   * @returns
+   */
   col(cadenaCampoSelectInclude) {
     return this.#sequelize.col(cadenaCampoSelectInclude)
   }
   /**
    * devuele objeto de != para query
-   * @param {*} value 
-   * @returns 
+   * @param {*} value
+   * @returns
    */
-  distinto(value){
-    return {[Op.ne]: value}
+  distinto(value) {
+    return { [Op.ne]: value }
   }
   /**
-   * sentencia not null 
-   * @returns 
+   * sentencia not null
+   * @returns
    */
-  notNull(){
-    return {[Op.not]: null}
+  notNull() {
+    return { [Op.not]: null }
   }
-  
-  notIn(arrayEscalar=[]){
-    return {[Op.notIn]: arrayEscalar}
-  }
-/**
- * Sentenci OR para where recibe on obj o un ArrayOb
- * @param {*} ObjOrArrayObj 
- * @returns 
- */
-  orWhere(ObjOrArrayObj){
-    return {[Op.or]:ObjOrArrayObj}
+
+  notIn(arrayEscalar = []) {
+    return { [Op.notIn]: arrayEscalar }
   }
   /**
- * Sentencia AND para where recibe on obj o un ArrayOb
- * @param {*} ObjOrArrayObj 
- * @returns 
- */
-  andWhere(ObjOrArrayObj){
-    return {[Op.and]:ObjOrArrayObj}
+   * Sentenci OR para where recibe on obj o un ArrayOb
+   * @param {*} ObjOrArrayObj
+   * @returns
+   */
+  orWhere(ObjOrArrayObj) {
+    return { [Op.or]: ObjOrArrayObj }
   }
-/**
- * Sentencia ILike, no distingue mayus or Minus, value estring %value%
- * @param {String} value 
- * @returns 
- */
-  ilikeWhere(value){
-    return {[Op.iLike]: value}
+  /**
+   * Sentencia AND para where recibe on obj o un ArrayOb
+   * @param {*} ObjOrArrayObj
+   * @returns
+   */
+  andWhere(ObjOrArrayObj) {
+    return { [Op.and]: ObjOrArrayObj }
   }
-  ilikeNotWhere(value){
-    return {[Op.notILike]: value}
+  /**
+   * Sentencia ILike, no distingue mayus or Minus, value estring %value%
+   * @param {String} value
+   * @returns
+   */
+  ilikeWhere(value) {
+    return { [Op.iLike]: value }
+  }
+  ilikeNotWhere(value) {
+    return { [Op.notILike]: value }
   }
 }

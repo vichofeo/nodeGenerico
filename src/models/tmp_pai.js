@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       nombre: { type: DataTypes.STRING, allowNull: true },
       celular: { type: DataTypes.STRING, allowNull: true },
       fecha_nacimiento: { type: DataTypes.DATEONLY, allowNull: true },
-      edad: { type: DataTypes.STRING, allowNull: true },
+      edad: { type: DataTypes.DECIMAL, allowNull: true },
       genero: { type: DataTypes.STRING, allowNull: true },
       nacionalidad: { type: DataTypes.STRING, allowNull: true },
       cod_dpto: { type: DataTypes.STRING, allowNull: true },
@@ -42,15 +42,19 @@ module.exports = (sequelize, DataTypes) => {
       cel_usr: { type: DataTypes.STRING, allowNull: true },
       validacion: { type: DataTypes.STRING, allowNull: true },
       embarazo: { type: DataTypes.STRING, allowNull: true },
-      fecha_registro: { type: DataTypes.DATE, allowNull: true },
-      fecha_modificacion: { type: DataTypes.DATE, allowNull: true },
+      fecha_registro: { type: DataTypes.DATE(21), allowNull: true },
+      fecha_modificacion: { type: DataTypes.DATE(21), allowNull: true },
       jeringa_administracion: { type: DataTypes.STRING, allowNull: true },
       lote_diluyente: { type: DataTypes.STRING, allowNull: true },
       jeringa_dilusion: { type: DataTypes.STRING, allowNull: true },
 
       swloadend: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
       f_vacunacion: { type: DataTypes.STRING, allowNull: true },
-      f_nacimiento: { type: DataTypes.STRING, allowNull: true }
+      f_nacimiento: { type: DataTypes.STRING, allowNull: true },
+      f_edad: { type: DataTypes.STRING, allowNull: true },
+      hash: { type: DataTypes.STRING, allowNull: true, unique: true },
+      hasher: { type: DataTypes.STRING, allowNull: true },
+      dni_register: { type: DataTypes.STRING, allowNull: true }
     },
     {
       sequelize,
