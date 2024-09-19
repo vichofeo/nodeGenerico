@@ -234,6 +234,9 @@ module.exports = class Qutils {
       raw: false,
     })
   }
+  async excuteUpdate() {
+    this.#results = await this.#sequelize.query(this.#query)
+  }
 
   async findData1toNFromReferer() {
     await this.findTune()

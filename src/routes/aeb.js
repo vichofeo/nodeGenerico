@@ -5,6 +5,8 @@ const  authMiddleWare = require('./../middlewares/authMiddleware')
 
 const controller = require('../controllers/aeb/aebController')
 const loaderController = require('../controllers/aeb/aebLoaderController')
+const reportController = require('../controllers/aeb/aebReportsTmpsController')
+
 //const ufamController = require('../controllers/acrehab/evaluacionController')
 
 //admin
@@ -25,6 +27,11 @@ router.post('/xlsx/statustmps', authMiddleWare, loaderController.statusTmps)
 router.post('/xlsx/suprtmps', authMiddleWare, loaderController.vaciarTmps)
 router.post('/xlsx/load', authMiddleWare, loaderController.xlsxLoad)
 router.post('/xlsx/normalize', authMiddleWare, loaderController.xlsxNormalize)
+
+//rutas para reportes
+router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialReport)
+router.post('/xlsx/statusReport', authMiddleWare, reportController.tmpsStatus)
+router.post('/xlsx/dataReport', authMiddleWare, reportController.tmpsReport)
 
 
 

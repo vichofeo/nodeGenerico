@@ -52,6 +52,8 @@ module.exports = (sequelize, DataTypes) => {
       f_vacunacion: { type: DataTypes.STRING, allowNull: true },
       f_nacimiento: { type: DataTypes.STRING, allowNull: true },
       f_edad: { type: DataTypes.STRING, allowNull: true },
+      f_genero: { type: DataTypes.STRING, allowNull: true },
+      
       hash: { type: DataTypes.STRING, allowNull: true, unique: true },
       hasher: { type: DataTypes.STRING, allowNull: true },
       dni_register: { type: DataTypes.STRING, allowNull: true }
