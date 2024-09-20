@@ -227,8 +227,8 @@ const PARAMETROS = {
         update: [],
         ilogic: {
             formulario_id: `SELECT formulario_id as value, nombre_formulario as text FROM f_formulario WHERE formulario_id = '$formulario_id' and  activo = 'Y'`,
-            //periodo: `SELECT TO_CHAR(NOW(),'YYYYMM') as value, TO_CHAR(NOW(),'YYYYMM') as text`
-            periodo: `SELECT '202403' as value, '202403 - Marzo' as text`
+            periodo: `SELECT TO_CHAR(current_date - interval '1 month','YYYYMM') as value, TO_CHAR(current_date - interval '1 month','YYYY-Month') as text`
+            //periodo: `SELECT '202403' as value, '202403 - Marzo' as text`
         },
         referer: [
             //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },

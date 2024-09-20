@@ -36,7 +36,7 @@ const verificaPrimal = async (f_id) => {
   //verifica si ya existe el registro con el periodo actual
   query = `SELECT COUNT(*) AS existencia
 FROM f_formulario_registro
-WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' AND periodo='202403'` //periodo=TO_CHAR(NOW(),'YYYYMM')
+WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' AND periodo=TO_CHAR(NOW(),'YYYYMM')` //periodo=TO_CHAR(NOW(),'YYYYMM')
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
   const existe = qUtil.getResults()
@@ -221,7 +221,7 @@ const construyeDatos = async (dto) =>{
 
 const getDataFrmAll =  async (dto, handleError) => {
   try {
-    console.log("\n\n\n *********** PROCESO POR MICROCONSULTA **************")
+    console.log("\n\n\n *********** PROCESO POR MICROCONSULTA **************", dto)
     frmUtil.setToken(dto.token)
     //segun dto de carga obtiene datos
     // dto.frm &&  dto.sec &&  dto.prg
@@ -479,6 +479,7 @@ const getFrmSecQueAnsersInfo = async (dto) => {
                 
                 
                 rpstas.rows[index] = obj.mrow.fatributos.find((o) => o.value === element.row)// element.row
+                if(!rpstas.rows[index]) rpstas.rows[index]=  {value: null, text: null}
                 rpstas.cols[`${element.irow}|${element.col}|${element.scol}`] =   {value: element.valor, index:element.rll  }
               } else
               rpstas.cols[`${element.row}|${element.col}|${element.scol}`] =   {value: element.valor, index:element.rll  }
