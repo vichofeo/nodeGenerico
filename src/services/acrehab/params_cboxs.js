@@ -177,6 +177,39 @@ const PDEPENDENCIES = {
         ],
         
     },
+
+    /************** conflicto */
+    
+    cf_camas_eess:{                
+        alias: 'eg_eess',        
+        campos: {            
+            ente_gestor_id: ['Ente Gestor', false, true, 'C'],
+            establecimiento_id: ['Establecimiento de Salud', false, true, 'C'],            
+            nivel: ['Nivel del establecimiento de salud', false, true, 'C'],            
+        }, 
+        ilogic: {            
+            ente_gestor_id:`SELECT DISTINCT eg.institucion_id AS value, eg.nombre_corto AS text
+            FROM  ae_institucion i, al_departamento d, ae_institucion eg
+            WHERE i.tipo_institucion_id='EESS'
+            AND i.cod_dpto =  d.cod_dpto
+            AND i.institucion_root =  eg.institucion_id AND i.cod_dpto = '02'
+            ORDER BY 2`,
+            establecimiento_id: `SELECT DISTINCT i.institucion_id AS value, d.nombre_dpto ||' - '||  i.nombre_institucion||' - '||e.nivel_atencion text
+            FROM  r_institucion_salud e, ae_institucion i, al_departamento d, ae_institucion eg
+            WHERE i.tipo_institucion_id='EESS' AND e.institucion_id =  i.institucion_id
+            AND i.cod_dpto =  d.cod_dpto
+            AND i.institucion_root =  eg.institucion_id AND eg.institucion_id= '$campoForeign' 
+            AND i.cod_dpto='02'
+            ORDER BY 2`,
+            nivel:`SELECT nivel_atencion AS value, nivel_atencion AS TEXT
+            FROM r_institucion_salud
+            WHERE institucion_id='$campoForeign'`,
+            
+       
+        },
+        referer: [        
+        ],
+    },
     
 }
 module.exports = PDEPENDENCIES

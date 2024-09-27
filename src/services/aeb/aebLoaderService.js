@@ -1,7 +1,7 @@
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
-const LOADERS = JSON.parse(JSON.stringify(require('./parametersLoad')))
+const LOADERS = require('./parametersLoad')//JSON.parse(JSON.stringify(require('./parametersLoad')))
 
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
@@ -62,17 +62,19 @@ const statusTmps = async (dto, handleError) => {
 
 const vaciarTmps = async (dto, handleError) => {
   try {
-    const data = dto.body
-    const index = Object.entries(data)[0][0]
+    const data = dto.data
+    const model = Object.entries(data)[0][0]
+    const modelos = LOADERS
     //elimina registros con flag swloadend=0
-    await modelos[index].destroy({
-      where: { ...data[index] },
-    })
-    res.send({
+    const query = `DELETE FROM ${modelos[model].alias} WHERE ${modelos[model]?.metodo(data[model])}` 
+    qUtil.setQuery(query)
+    await qUtil.excuteUpdate()
+
+    return{
       ok: true,
       message:
-        'Vaciado de datos ' + data[index].gestion + ' realizado con exito',
-    })
+        'Vaciado de datos ' + model + ' realizado con exito',
+    }
   } catch (error) {
     console.log(error)
     handleError.setMessage('Error de sistema: SUPRTMPSSRV')
@@ -366,7 +368,7 @@ const xlsxNormalize = async (dto, handleError) => {
         sw[model].process = false
         //elimina registros malos        
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
-        await qUtil.deleting()
+        //await qUtil.deleting()
       } else {
         sw[model].process = true
         //se procesan los archivos sin observacion ->swLoadend =  true

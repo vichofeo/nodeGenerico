@@ -16,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       f_formulario_llenado.belongsTo(models.f_formulario_registro,{
         as:'regis',
         foreignKey: 'registro_id'
+      }),
+      f_formulario_llenado.belongsTo(models.f_formulario_img_cnf,{
+        as:'pdfxy',
+        foreignKey: 'cxy_id',
+        targetKey: 'cxy_id'
       })
     }
   }
@@ -45,6 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       
       concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
       
+      cxy_id: {type: DataTypes.INTEGER,  allowNull: true },
         
     },
     {

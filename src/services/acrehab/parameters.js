@@ -46,7 +46,6 @@ const PARAMETROS = {
             
             concluido: ['Concluido', true, true, 'TP'], 
             
-            
         },        
         key: ['evaluacion_id'],        
         ilogic:null,//{},
@@ -118,6 +117,59 @@ const PARAMETROS = {
         moreData:[],
         update: [],
         referer: [],
+    },
+
+    cf_camas:{
+        table: 'cf_evento',
+        alias: 'reportecamas',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                        
+            total_camas_disp: ['Total camas', true, true, 'TN'],
+            total_camas_disp_uti: ['Total camas UTI', true, true, 'TN'],
+            total_camas_disp_uci: ['Total camas UCI', true, true, 'TN'],
+            total_camas_disp_eme: ['Total camas EMERGENCIAS', true, true, 'TN'],
+            
+            m_camas_disp: ['# Camas Disponibles - Mañana', true, true, 'TN'], 
+            m_camas_disp_uti: ['# Camas Disponibles UTI - Mañana', true, true, 'TN'], 
+            m_camas_disp_uci: ['# Camas Disponibles UCI - Mañana', true, true, 'TN'], 
+            m_camas_dis_eme: ['# Camas Disponibles Emergencia - Mañana', true, true, 'TN'],
+            t_camas_disp: ['# Camas Disponibles - Tarde', true, true, 'TN'],  
+            t_camas_disp_uti: ['# Camas Disponibles UTI - Tarde', true, true, 'TN'],  
+            t_camas_disp_uci: ['# Camas Disponibles UCI - Tarde', true, true, 'TN'],
+            t_camas_disp_eme: ['# Camas Disponibles Emergencia - Tarde', true, true, 'TN'], 
+            n_camas_disp: ['# Camas Disponibles - Noche', true, true, 'TN'],  
+            n_camas_disp_uti: ['# Camas Disponibles UTI - Noche', true, true, 'TN'],  
+            n_camas_disp_uci: ['# Camas Disponibles - UCI - Noche', true, true, 'TN'],   
+            n_camas_disp_eme: ['# Camas Disponibles - Emergencia - Noche', true, true, 'TN']
+            
+        },        
+        key: ['idx'],        
+        ilogic:{},
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [],
+    },
+
+    cf_camasn:{
+        table: 'cf_evento e, ae_institucion i, ae_institucion h',
+        alias: 'reportecamasn',
+        cardinalidad: "n",
+        linked:"cf_camas",
+        campos: `e.idx, 'cf_camas' as linked, 
+         to_char(e.fecha_registro, 'YYYY-MM-DD') AS registro, i.nombre_corto, h.nombre_institucion, e.nivel`,
+
+        camposView: [{ value: "registro", text: "Fecha Registro" }, { value: "nombre_corto", text: "Ente Gestor" }, { value: "nombre_institucion", text: "Establecimiento Salud" },        
+                    { value: "nivel", text: "NIvel" }   ],
+        key: [],
+        precondicion: ["e.ente_gestor_id =  i.institucion_id", "e.establecimiento_id = h.institucion_id",
+            "e.dni_register='$dni'", "e.fecha_registro::date BETWEEN (CURRENT_DATE- INTERVAL '1 day')::date AND CURRENT_DATE::date" 
+        ],
+        update: [],
+        referer: [            
+        ],
     },
  
 }

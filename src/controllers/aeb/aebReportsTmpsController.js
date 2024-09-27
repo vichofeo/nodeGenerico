@@ -26,7 +26,7 @@ const tmpsReport = async (req, res) =>{
     const body =  req.body
     const token =  req.headers.authorization
 
-    const result =  await service.tmpsReport({token:token, modelo: body.model, condicion:body.solicitud}, handleError) 
+    const result =  await service.tmpsReport({token:token, modelo: body.model, condicion:body.solicitud, option:body?.option}, handleError) 
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
     

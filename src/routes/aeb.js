@@ -24,9 +24,9 @@ router.post("/cbox", authMiddleWare, controller.getDataCboxLigado)
 
 router.post('/xlsx/initializetmps', authMiddleWare, loaderController.initialData)
 router.post('/xlsx/statustmps', authMiddleWare, loaderController.statusTmps)
-router.post('/xlsx/suprtmps', authMiddleWare, loaderController.vaciarTmps)
 router.post('/xlsx/load', authMiddleWare, loaderController.xlsxLoad)
 router.post('/xlsx/normalize', authMiddleWare, loaderController.xlsxNormalize)
+router.post('/xlsx/suprtmps', authMiddleWare, loaderController.vaciarTmps)
 
 //rutas para reportes
 router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialReport)

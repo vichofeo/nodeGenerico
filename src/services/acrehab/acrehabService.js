@@ -184,12 +184,42 @@ await qUtil.startTransaction()
 
 }
 
-
+const saveDataModel = async (dto, handleError) => {
+    //inicia transaccion
+    
+    try {
+        dto.modelos = [dto.modelo]
+        console.log("\n\n\n---------------------------GUARDANDO... MODELO:", dto.modelo,"\n\n\n")
+        frmUtil.setParametros(PARAMETROS)
+        await frmUtil.saveDataParams(dto)
+        const result = frmUtil.getResults()
+    
+        if(result)
+        return {
+          ok: true,     
+          r:result, 
+          message: 'Resultado exitoso. Parametros Guardados',
+        }
+        else return {
+          ok: false,
+          rr:result,       
+          message: 'La Transaccion ha fallado. vuelva a intentarlo o comuniquese con su administrador',
+        }
+      } catch (error) {
+        console.log(error)
+        return {
+          ok: false,
+          message: 'Error de sistema: OBJSAVEFRMCNF',
+          error: error.message,
+        }
+      }
+    
+    }
 
 
 module.exports = {
     getDataModelN,
     getDataModelNew,
     getDataCboxLigado,
-    acrehabEvalSave
+    acrehabEvalSave, saveDataModel
 }

@@ -2,13 +2,22 @@ const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
 const REPORTS = require('./parametersReports')//JSON.parse(JSON.stringify(require('./parametersReports')))
+const REPORTSUCASS = require('../acrehab/parametersReports')
+
+const theReports= {
+  aeb: REPORTS,
+  ucass: REPORTSUCASS
+}
 
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
 const tmpsInitialReport = (dto, handleError) => {
     try {
-      const data = REPORTS
+      let data = REPORTS
+      if(dto.option)
+      data = theReports[dto.option]
+
       const d = {}
       for (const key in data) {
         d[key] = { title: data[key].alias }
@@ -28,8 +37,11 @@ const tmpsInitialReport = (dto, handleError) => {
   }
 
   const tmpsStatus = async (dto, handleError) => {
-    try {
-      const modelos = REPORTS
+    try { 
+      
+      let modelos = REPORTS
+      if(dto.option)
+        modelos = theReports[dto.option]
   
       let response = {}
       
@@ -60,8 +72,12 @@ const tmpsInitialReport = (dto, handleError) => {
     }
   }
 
-const tmpsReport = async (dto, handleError) => {
+  const tmpsReport = async (dto, handleError) => {
     try {
+
+      let optionReport = REPORTS
+      if(dto.option)
+        optionReport = theReports[dto.option]
 
         //VALIDAR USO Y CONDICIONES SEGUN TOKEN //pendiente de patente
         //dondicion extra por lugar
@@ -74,24 +90,24 @@ const tmpsReport = async (dto, handleError) => {
         //construye query de datos
         console.log("*****************************************::::::::::::::", datoCondicion)
         
-        let campos = REPORTS[modelo].campos
-        let from = REPORTS[modelo].tables
-        let where = REPORTS[modelo].metodo(datoCondicion) + ' '
+        let campos = optionReport[modelo].campos
+        let from = optionReport[modelo].tables
+        let where = optionReport[modelo].metodo(datoCondicion) + ' '
 
         let leftjoin = ''
-        for (let i = 0; i < REPORTS[modelo].referer.length; i++) {
+        for (let i = 0; i < optionReport[modelo].referer.length; i++) {
             console.log(i)
-            if (REPORTS[modelo].referer[i].tabla) {
+            if (optionReport[modelo].referer[i].tabla) {
                 leftjoin = `${leftjoin} ,
-                     ${REPORTS[modelo].referer[i].tabla}`
+                     ${optionReport[modelo].referer[i].tabla}`
             } else {
-                campos = ` ${campos} , ${REPORTS[modelo].referer[i].campos}`                
+                campos = ` ${campos} , ${optionReport[modelo].referer[i].campos}`                
                 leftjoin = `${leftjoin} 
-                    LEFT JOIN ${REPORTS[modelo].referer[i].ref} ON (${REPORTS[modelo].referer[i].camporef} = ${REPORTS[modelo].referer[i].camporefForeign})`
+                    LEFT JOIN ${optionReport[modelo].referer[i].ref} ON (${optionReport[modelo].referer[i].camporef} = ${optionReport[modelo].referer[i].camporefForeign})`
             }
         }
-        if (REPORTS[modelo].precondicion && REPORTS[modelo].precondicion.length)
-            where = `${where} AND ${REPORTS[modelo].precondicion.join(' AND ')}`
+        if (optionReport[modelo].precondicion && optionReport[modelo].precondicion.length)
+            where = `${where} AND ${optionReport[modelo].precondicion.join(' AND ')}`
 
         //ejecuta query construido
         let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
@@ -103,26 +119,26 @@ const tmpsReport = async (dto, handleError) => {
         let headers = []
         //convierte en array resultados
         if (result.length > 0) {
-            headers = REPORTS[modelo].headers//Object.keys(result[0])
+            headers = optionReport[modelo].headers//Object.keys(result[0])
             result = result.map((obj, index) => Object.values(obj))
             result.unshift(headers)
         }
 
         //construye datos de configuracion para reporte dinamico
         const cnf = {
-            tipo_agregacion: REPORTS[modelo].tipo,
-            campos_ocultos: REPORTS[modelo].camposOcultos,
-            diferencia: headers.filter(x => REPORTS[modelo].camposOcultos.indexOf(x) === -1),
-            rows: REPORTS[modelo].rows,
-            cols: REPORTS[modelo].cols,
-            vals: REPORTS[modelo].camposOcultos,
-            mdi: REPORTS[modelo].mdi
+            tipo_agregacion: optionReport[modelo].tipo,
+            campos_ocultos: optionReport[modelo].camposOcultos,
+            diferencia: headers.filter(x => optionReport[modelo].camposOcultos.indexOf(x) === -1),
+            rows: optionReport[modelo].rows,
+            cols: optionReport[modelo].cols,
+            vals: optionReport[modelo].camposOcultos,
+            mdi: optionReport[modelo].mdi
         }
         datosResult[modelo] = { values: result, headers: headers, cnf }
 
         return {
             ok: true,
-            data: { ...datosResult, model: modelo, titulo: REPORTS[modelo].alias },            
+            data: { ...datosResult, model: modelo, titulo: optionReport[modelo].alias },            
             message: 'Resultado exitoso. Parametros obtenidos'
         }
 

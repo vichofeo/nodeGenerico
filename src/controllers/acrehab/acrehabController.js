@@ -52,6 +52,13 @@ const acrehabEvalSave = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const saveDataModel = async (req, res) =>{        
+    const token =  req.headers.authorization
+
+    const result =  await service.saveDataModel({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 
 
 
@@ -61,7 +68,7 @@ module.exports = {
     getDataModel1, 
     getDataModelN, getDataModelNew, 
     getDataCboxLigado,
-    acrehabEvalSave, 
+    acrehabEvalSave, saveDataModel
 
 
 }

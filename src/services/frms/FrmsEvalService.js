@@ -25,6 +25,7 @@ const verificaPrimal = async (f_id) => {
 
   //verifica pertinencia de datos segun configuracion de firmularios
   //qUtil.setTableInstance('f_formulario_institucion_cnf')
+  console.log("\n\n verifica pertinencia de datos segun configuracion de firmularios\n\n")
   let query = `SELECT COUNT(*) as conteo
               FROM f_formulario_institucion_cnf cnf
               WHERE cnf.formulario_id='${f_id}' AND cnf.institucion_id = '${obj_session.institucion_id}'
@@ -33,12 +34,15 @@ const verificaPrimal = async (f_id) => {
   await qUtil.excuteSelect()
   const control = qUtil.getResults()
 
-  //verifica si ya existe el registro con el periodo actual
+  //verifica si ya existe el registro PARA EL PERIODO ANTERIOR
+  console.log("\n\n verifica si ya existe el registro PARA EL PERIODO ANTERIOR\n\n")
   query = `SELECT COUNT(*) AS existencia
-FROM f_formulario_registro
-WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' AND periodo=TO_CHAR(NOW(),'YYYYMM')` //periodo=TO_CHAR(NOW(),'YYYYMM')
+          FROM f_formulario_registro
+          WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' 
+          AND periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')` //periodo=TO_CHAR(NOW(),'YYYYMM')
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
+
   const existe = qUtil.getResults()
 
   if (obj_cnf.primal && control[0].conteo > 0 && existe[0].existencia <= 0)
@@ -256,7 +260,7 @@ const getEvalInfo = async (dto) => {
     const idx = dto.reg
     
     qUtil.setResetVars()
-    
+    console.log("\n\n ***********VERIFICANDO VALIDEZ FORMULARIO ********** \n\n")
     qUtil.setTableInstance('f_formulario_registro')
     await qUtil.findID(idx)
     const r = qUtil.getResults()
@@ -267,10 +271,12 @@ const getEvalInfo = async (dto) => {
     else {
       //verifica primal segun dias limite
       const obj_ctrl =  await verificaPrimal(r.formulario_id)
-      if(obj_ctrl.primal)
+      console.log("\n\n ***********VALIDEZ FORMULARIO ********** \n\n", obj_ctrl)
+      r.concluido = obj_ctrl.primal
+      /*if(obj_ctrl.primal)
         r.concluido = false
       else
-      r.concluido = true
+      r.concluido = true*/
     }
 
     //verifica estado de conclusion

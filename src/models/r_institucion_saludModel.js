@@ -9,6 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      r_institucion_salud.belongsTo(models.r_is_atributo,{
+        as:'inivel',
+        foreignKey: 'nivel_atencion',
+        targetKey: 'atributo_id'
+      }),
+      r_institucion_salud.belongsTo(models.ae_institucion,{
+        as:'ieg',
+        foreignKey: 'ente_gestor_id',
+        targetKey: 'institucion_id'
+      })
     }
   }
   r_institucion_salud.init(

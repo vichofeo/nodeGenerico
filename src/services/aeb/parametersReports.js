@@ -60,7 +60,7 @@ const REPORTS = {
   },
   oncologia: {
     table:'tmp_cancer',
-    tables:'tmp_caNcer',
+    tables:'tmp_cancer',
     alias: 'Datos Pacientes de Oncologia - CANCER',    
     attributes:[["to_char(fecha_diagnostico, 'YYYY')", 'periodo'], ['count(*)', 'registros']],
     campos: `departamento, ente_gestor_name, establecimiento, edad, edad_recodificada,genero,to_char(fecha_diagnostico,'YYYY-MM'),diagnostico_histopatologico,localizacion, sitio_primario,cie_grupo,localizacion_metastasis,to_char(fecha_defuncion,'YYYY-MM')`,
@@ -77,6 +77,56 @@ const REPORTS = {
       if(Array.isArray(dato)){
         if(dato.length==1 && dato[0]=='Todos') sentencia = ['1=1']
         else sentencia =  dato.map(val=>`to_char(fecha_diagnostico, 'YYYY')='${val}'`)        
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      }else sentencia = '1=2'
+      return sentencia
+    },
+    
+  },
+  camas: {
+    table:'tmp_camas',
+    tables:'tmp_camas',
+    alias: 'Datos Camas disponibles',    
+    attributes:[["to_char(fecha_registro, 'YYYY-MM-DD')", 'periodo'], ['count(*)', 'registros']],
+    campos: `to_char(fecha_registro,'YYYY-MM-DD'), mail_origen, ente_gestor, establecimieno, nivel_atencion, servicios_primer, servicios_segundo, servicios_tercer, total_camas, camas_disponibles, total_camas_emergencia, camas_emergencia_disponibles`,
+    headers:['Marca temporal','Dirección de correo electrónico','ENTE GESTOR','NOMBRE DEL ESTABLECIMIENTO DE SALUD','NIVEL DE ATENCIÓN','SERVICIOS DEL EESS PRIMER NIVEL','SERVICIOS DEL EESS SEGUNDO NIVEL','SERVICIOS EESS TERCER NIVEL','TOTAL CAMAS HOSPITALIZACIÓN','NÚMERO DE CAMAS DISPONIBLES HOSPITALIZACIÓN','TOTAL CAMAS UREGENCIAS/EMERGENCIAS','NÚMERO DE CAMAS DISPONIBLES URGENCIAS/EMERGENCIAS'],
+    tipo: 'Sum',
+    camposOcultos: ['TOTAL CAMAS HOSPITALIZACIÓN','NÚMERO DE CAMAS DISPONIBLES HOSPITALIZACIÓN','TOTAL CAMAS UREGENCIAS/EMERGENCIAS','NÚMERO DE CAMAS DISPONIBLES URGENCIAS/EMERGENCIAS'],
+    rows: ['ENTE GESTOR'],
+    cols: [],
+    mdi: 'mdi-seat-flat-angled',
+    precondicion: [],    
+    referer: [],    
+    metodo: function (dato=Array()) {
+      let sentencia =  ""
+      if(Array.isArray(dato)){
+        if(dato.length==1 && dato[0]=='Todos') sentencia = ['1=1']
+        else sentencia =  dato.map(val=>`to_char(fecha_registro, 'YYYY-MM-DD')='${val}'`)        
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      }else sentencia = '1=2'
+      return sentencia
+    },
+    
+  },
+  pacientes_conflicto: {
+    table:'tmp_pacientes',
+    tables:'tmp_pacientes',
+    alias: 'Datos Pacientes Hospitalizados - Conflictos',    
+    attributes:[["to_char(fecha_registro, 'YYYY-MM-DD')", 'periodo'], ['count(*)', 'registros']],
+    campos: `to_char(fecha_registro,'YYYY-MM-DD'), mail_origen, ente_gestor, edad,  diagnostico, conducta, establecimiento`,
+    headers:['Marca temporal', 'Dirección de correo electrónico', '1. SEGURO AL QUE PERTENECE', '3. EDAD', '5. DIAGNÓSTICO', '6. CONDUCTA', '7. CENTRO DE REFERENCIA'],
+    tipo: 'Count',
+    camposOcultos: [],
+    rows: ['1. SEGURO AL QUE PERTENECE'],
+    cols: ['7. CENTRO DE REFERENCIA'],
+    mdi: 'mdi-seat-flat-angled',
+    precondicion: [],    
+    referer: [],    
+    metodo: function (dato=Array()) {
+      let sentencia =  ""
+      if(Array.isArray(dato)){
+        if(dato.length==1 && dato[0]=='Todos') sentencia = ['1=1']
+        else sentencia =  dato.map(val=>`to_char(fecha_registro, 'YYYY-MM-DD')='${val}'`)        
         sentencia = `( ${sentencia.join(' OR ')} ) `
       }else sentencia = '1=2'
       return sentencia

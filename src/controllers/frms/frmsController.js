@@ -4,7 +4,7 @@ const handleError = new HandleErrors()
 
 const frmService = require('../../services/frms/FrmsService')
 const frmEvalService = require('../../services/frms/FrmsEvalService')
-
+const pdfXYService =  require('../../services/frms/FrmPDFPrintService')
 
 const getfrmsConstuct =  async (req, res) =>{    
     const modelo = req.params.modelo
@@ -102,11 +102,18 @@ const modifyDataEval = async(req, res)=>{
 
   //res.json(result)
 }
+const pdfOptions = async(req, res)=>{
+  const token =  req.headers.authorization
+  const result = await pdfXYService.getValuesFrmWithXY({...req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 module.exports = {
   getfrmsConstuct, getFrmsInfo,
   getCnfForms, getCnfFormswIdx, saveCnfForms, saveFormsRes,
 
   getEvalForms, saveEvalForm,
   getDataFrmAll,
-  modifyDataFrm, modifyDataEval
+  modifyDataFrm, modifyDataEval, 
+  pdfOptions
 }
