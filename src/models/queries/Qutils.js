@@ -437,4 +437,8 @@ module.exports = class Qutils {
   ilikeNotWhere(value) {
     return { [Op.notILike]: value }
   }
+  /** operadores de comparacion */
+  cMayorIgualQue(valueInteger){
+    return {[Op.gte]: valueInteger}
+  }
 }

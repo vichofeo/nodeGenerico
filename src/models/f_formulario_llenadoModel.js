@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
         as:'pdfxy',
         foreignKey: 'cxy_id',
         targetKey: 'cxy_id'
+      }),
+      f_formulario_llenado.belongsTo(models.f_is_atributo,{
+        as:'surow',
+        foreignKey: 'row_ll',
+        targetKey: 'atributo_id'
       })
     }
   }

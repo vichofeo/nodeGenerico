@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
       cx: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 10 },
       cy: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 10 },
       align: { type: DataTypes.STRING, allowNull: true, defaultValue:'right' },
+
+      sw_tipo: { type: DataTypes.INTEGER, allowNull: false, defaultValue:0 },
       
       formulario_id: { type: DataTypes.STRING(64), allowNull: true },
       subfrm_id: { type: DataTypes.STRING(64), allowNull: true },

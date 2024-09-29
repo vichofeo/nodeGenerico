@@ -13,6 +13,7 @@ const QUtils = require('../../models/queries/Qutils')
 const qUtil = new QUtils()
 
 const { v4: uuidv4 } = require('uuid')
+const { text } = require('express')
 
 const getfrmsConstuct = async (dto) => {
   try {
@@ -276,9 +277,10 @@ const saveFormsRes = async (dto)=>{
                 for(const row in dto.respuestas[seccion_id][pregunta_id].answers.tabla){
                   for(const col in dto.respuestas[seccion_id][pregunta_id].answers.tabla[row]){
                     const auxx= dto.respuestas[seccion_id][pregunta_id].answers.tabla[row][col]
+                    
                     datos = {...tmp, res_frm_id: uuidv4(), 
                       irow_ll: auxx?.irow >=0 ? auxx.irow: -1,
-                      row_ll: auxx.row.value,
+                      row_ll: auxx?.irow >=0 ? null : auxx.row.value, //auxx.row.value,
                       col_ll: auxx.col,
                       scol_ll: auxx.scol,
                       texto:auxx.valor}
@@ -318,9 +320,31 @@ const saveFormsRes = async (dto)=>{
   }
 }
 
+const modifyCXYLlenado =  async (dto)=>{
+  
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSessionForModify()
+    const formulario_id =  dto.formulario_id
+    const registro_id =  dto.registro_id
+
+    const query = `UPDATE f_formulario_llenado l
+SET cxy_id =  i.cxy_id, dni_register='${obj_cnf.dni_register}' , last_modify_date_time= NOW()
+FROM f_formulario_img_cnf i
+WHERE 
+l.formulario_id =  i.formulario_id AND l.subfrm_id =  i.subfrm_id  AND  l.enunciado_id =  i.enunciado_id 
+AND COALESCE(l.opcion_id, '-1') = COALESCE(i.opcion_id, '-1') 
+AND  COALESCE(l.irow_ll, '-11') = COALESCE(i.irow_ll,'-11') 
+ AND  COALESCE(l.row_ll,'-1') =  COALESCE(i.row_ll,'-1')
+ AND  COALESCE(l.col_ll, '-1') = COALESCE(i.col_ll, '-1') AND  COALESCE(l.scol_ll, '-1') = COALESCE(i.scol_ll, '-1')
+AND l.formulario_id='${formulario_id}' AND l.registro_id='${registro_id}'`
+qUtil.setQuery(query)
+await qUtil.excuteUpdate()
+  
+}
 
 module.exports = {
   getfrmsConstuct,
   getFrmsInfo, getCnfForms, 
-  saveCnfForms, saveFormsRes
+  saveCnfForms, saveFormsRes,
+  modifyCXYLlenado
 }

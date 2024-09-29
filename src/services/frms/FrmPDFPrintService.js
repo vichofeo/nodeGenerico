@@ -54,6 +54,7 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
     const row_ll = qUtil.literal("CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE null END")// insert ?  qUtil.literal("CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE null END") : qUtil.literal("CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE '-1' END")
 
     //1. informacion de subtotales
+    console.log("\n\n SUBTOTALES\n\n")
     qUtil.setTableInstance('f_formulario_llenado')
     qUtil.setWhere({registro_id: registro_id, formulario_id: formulario_id, scol_ll:qUtil.notNull()})
     qUtil.setAttributes(['subfrm_id',  'enunciado_id', 
@@ -79,6 +80,7 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
     }     
         
     //2. totales
+    console.log("\n\n TOTALES\n\n")
     qUtil.setTableInstance('f_formulario_llenado')
     qUtil.setWhere({registro_id: registro_id, formulario_id: formulario_id})
     qUtil.setAttributes(['subfrm_id',  'enunciado_id', opcion_id, 
@@ -102,10 +104,59 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
             totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll] = obj.total
         }
     }   
-                    
+          
+    //3. totales verticales por columna vtotal
+    console.log("\n\n TOTALES VERTICALES\n\n")
+    qUtil.setTableInstance('f_formulario_llenado')
+    qUtil.setWhere({registro_id: registro_id, formulario_id: formulario_id, scol_ll: null})
+    qUtil.setAttributes(['subfrm_id',  'enunciado_id', 
+                    opcion_id,                     
+                    [qUtil.literal('null'), 'irow_ll'],                     
+                    'col_ll', [qUtil.literal("SUM(texto::DECIMAL)"), 'stotal']
+                ])
+    qUtil.setGroupBy(['subfrm_id',  'enunciado_id', 'opcion_id', 'col_ll'])            
+    qUtil.setOrder(['subfrm_id',  'enunciado_id', 'opcion_id'])
+    await qUtil.findTune()
+    if(insert) totales.vtotales = qUtil.getResults()
+    else{
+        totales.vtotales = {}
+        for (const obj of qUtil.getResults()) {            
+            if(!totales.vtotales[obj.subfrm_id]) totales.vtotales[obj.subfrm_id]={}
+            if(!totales.vtotales[obj.subfrm_id][obj.enunciado_id]) totales.vtotales[obj.subfrm_id][obj.enunciado_id]={}
+            if(!totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]) totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]={}
+            if(!totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]) totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]={}
+            
+            totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.col_ll]= obj.stotal
+        }
+    }   
+   
+
     return totales
 }
+const ___getLabelRowRepeat =  async (registro_id, formulario_id)=>{
+    console.log("\n\n ETIQUETASS\n\n")
+    
+    const query =  `SELECT 
+distinct f.subfrm_id, f.enunciado_id, f.irow_ll, a.atributo
+FROM f_formulario_llenado f
+LEFT JOIN f_is_atributo a ON a.atributo_id= f.row_ll
+WHERE irow_ll>=0
+AND f.formulario_id ='${formulario_id}' AND f.registro_id='${registro_id}'
+ORDER BY 1,2,3`
+qUtil.setQuery(query)
+    await qUtil.excuteSelect()
+    
+    const results = {}
+    for (const obj of qUtil.getResults()) {
+        if(!results[obj.subfrm_id]) results[obj.subfrm_id]={}
+        if(!results[obj.subfrm_id][obj.enunciado_id]) results[obj.subfrm_id][obj.enunciado_id]={}
+        results[obj.subfrm_id][obj.enunciado_id][obj.irow_ll] = obj.atributo ? obj.atributo : ''
+    }
 
+//    console.log(results)
+    return results
+
+}
 const getValuesFrmWithXY = async (dto, handleError) => {
     try {
         frmUtil.setToken(dto.token)
@@ -119,8 +170,11 @@ const getValuesFrmWithXY = async (dto, handleError) => {
         const nombre_solicitud =  registro.nombre_solicitud
         delete registro.nombre_solicitud
         
-        //2. OBtiene totales y subtotales
+        //2. OBtiene totales y subtotales y complementos
+        //2.1. Totales, subtotales y total vertical
         const totales =  await ___getDataTotalFrm(registro_id, formulario_id)
+        //2.2 etiquetas para filas con reperticion
+        const labels =  await ___getLabelRowRepeat(registro_id, formulario_id)
 
 
         //3. obtiene as respuestas del llenado y lo convierte en objeto por el id de xy
@@ -150,7 +204,7 @@ const getValuesFrmWithXY = async (dto, handleError) => {
         qUtil.setOrder(['orden'])
         await qUtil.findTune()
         results = qUtil.getResults()
-
+        
         //4. prepara salida de datos
         for (const i in results) {
             const element = results[i]
@@ -159,16 +213,23 @@ const getValuesFrmWithXY = async (dto, handleError) => {
             for (const j in element.cxy) {
                 const ele =  element.cxy[j]
                 const xy_id =  ele.cxy_id
+                //console.log("::::ELEMENTO:", ele)
                 //delete results[i].cxy[j].cxy_id
+                
                 if(respuestas[xy_id])                    
                 results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align,  value: respuestas[xy_id]}
                 else {
                     //[obj.subfrm_id]:{[obj.enunciado_id]:{[obj.opcion_id]:{[obj.irow_ll]:{[obj.row_ll]:{[obj.scol_ll]: obj.stotal}}}}}
-                    results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align, value: '-Sin Valor-'}                    
-                    if(typeof totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll] != 'undefined')
+                    results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align, value: '-99'}                    
+                    if((ele.irow_ll !=null && ele.sw_tipo ==1) && totales.subtotales.hasOwnProperty(ele.subfrm_id) && totales.subtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll] != 'undefined')
                         results[i].cxy[j].value = totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll]
-                    else if(typeof totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll] != 'undefined')
+                    else if((ele.irow_ll !=null && ele.sw_tipo ==1) && totales.totales.hasOwnProperty(ele.subfrm_id) && totales.totales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll] != 'undefined')
                         results[i].cxy[j].value = totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll]
+                    else if((ele.irow_ll ==null && ele.sw_tipo ==1) && totales.vtotales.hasOwnProperty(ele.subfrm_id) && totales.vtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll] != 'undefined')
+                        results[i].cxy[j].value = totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll]
+                    else if((ele.irow_ll !=null && ele.sw_tipo ==20) && labels.hasOwnProperty(ele.subfrm_id) && labels[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll] != 'undefined')
+                        results[i].cxy[j].value = labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll]
+
                 }
             
             }

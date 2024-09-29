@@ -93,9 +93,15 @@ const saveEvalForm = async (dto, handleError) => {
 
     //guarda todos parametros formulario
     const respuestas =   await construyeDatos({ idx: dto.data.formulario_id, token: dto.token })
-    await servicesBasics.saveFormsRes({frm: dto.data.formulario_id, respuestas: respuestas, idx:result.registro_id, token: dto.token})
+    const rr = await servicesBasics.saveFormsRes({frm: dto.data.formulario_id, respuestas: respuestas, idx:result.registro_id, token: dto.token})
 
-    
+    if(rr.ok==false){
+      throw new Error('error Guardado Formulario') 
+    }
+    //actualiza cxy del registro enviado
+
+    await servicesBasics.modifyCXYLlenado({token: dto.token, formulario_id: dto.data.formulario_id, registro_id: result.registro_id})
+
     return await getEvalForms({ idx: dto.data.formulario_id, token: dto.token })
 
     
@@ -396,7 +402,7 @@ const getFrmSectionQuestionsInfo = async (dto) => {
 
 const getFrmSecQueAnsersInfo = async (dto) => {
   try {
-    console.log("***** OBTENIENDO TODA INFORMACION PREGUNTAS **********")
+    console.log("***** OBTENIENDO TODA INFORMACION PREGUNTAS **********\n\n")
     const frm_id = dto.frm
     const sec_id = dto.sec
     const enu_id = dto.prg
@@ -467,7 +473,7 @@ const getFrmSecQueAnsersInfo = async (dto) => {
       }
 
       //reconstruye respùesta
-      console.log("************CONSTUYE RESÙESTAS***********")
+      console.log("\n************CONSTUYE RESÙESTAS***********\n\n", r)
       
       for(const k in r){
         const obj = r[k]
