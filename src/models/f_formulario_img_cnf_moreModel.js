@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
         img_id: { type: DataTypes.STRING(64), allowNull: true },
         clave: { type: DataTypes.STRING, allowNull: true }, 
         cx: { type: DataTypes.INTEGER, allowNull: false, defaultValue:10 }, 
-        cy: { type: DataTypes.INTEGER, allowNull: false, defaultValue:10 }
+        cy: { type: DataTypes.INTEGER, allowNull: false, defaultValue:10 },
+        align: { type: DataTypes.STRING, allowNull: true, defaultValue:'left' },
 
     },
     {

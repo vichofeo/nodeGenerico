@@ -83,7 +83,32 @@ const REPORTS = {
     },
     
   },
-  camas: {
+  snis302a: {
+    table:'tmp_snis',
+    tables:'tmp_snis',
+    alias: 'Datos snis - Formularios 302A',    
+    attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
+    campos: `departamento,ente_gestor,establecimiento,gestion,semana,formulario,grupo,variable,subvariable,valor`,
+    headers:['DEPARTAMENTO','ENTE GESTOR','ESTABLECIMIENTO / INSTITUCION', 'GESTION', 'SEMANA EPIDEMIOLOGICA', 'FORMULARIO', 'GRUPO DE VARIABLES', 'VARIABLE', 'SUBVARIABLE', 'VALOR'],
+    tipo: 'Sum',
+    camposOcultos: ['VALOR'],
+    rows: ['DEPARTAMENTO','FORMULARIO', 'GRUPO DE VARIABLES'],
+    cols: ['VARIABLE', 'SUBVARIABLE'],
+    mdi: 'mdi-seat-flat-angled',
+    precondicion: [],    
+    referer: [],    
+    metodo: function (dato=Array()) {
+      let sentencia =  ""
+      if(Array.isArray(dato)){
+        if(dato.length==1 && dato[0]=='Todos') sentencia = ['1=1']
+        else sentencia =  dato.map(val=>`gestion||'-'||semana='${val}'`)        
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      }else sentencia = '1=2'
+      return sentencia
+    },
+    
+  },
+  /*camas: {
     table:'tmp_camas',
     tables:'tmp_camas',
     alias: 'Datos Camas disponibles',    
@@ -132,7 +157,7 @@ const REPORTS = {
       return sentencia
     },
     
-  },
+  },*/
 }
 
 

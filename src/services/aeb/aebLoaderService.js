@@ -6,12 +6,14 @@ const LOADERS = require('./parametersLoad')//JSON.parse(JSON.stringify(require('
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
+const loaderUtils =  require('./aebUtilsLoaders')
+
 const initialData = (dto, handleError) => {
   try {
     const data = LOADERS
     const d = {}
     for (const key in data) {
-      d[key] = { file: data[key].file, table: data[key].table, forFilter: data[key].forFilter }
+      d[key] = { file: data[key].file, table: data[key].table, forFilter: data[key].forFilter, applyFilter: data[key].filterByFunc?  true: false }
 
     }
 
@@ -96,6 +98,14 @@ const xlsxLoad = async (dto, handleError) => {
 
     const model = Object.entries(datos)[0][0]
 
+    
+    if(modelos[model].filterByFunc){
+      const metodo =  modelos[model].filterByFunc.alias
+      const params = modelos[model].filterByFunc.params
+      const result =  loaderUtils[metodo](datos[model], params)
+      if(result.ok) datos[model] =  result.results
+    }
+
     //reEscribe valores a subir
     datos[model] = datos[model].map((obj) => {
       obj.dni_register = obj_cnf.dni_register
@@ -115,7 +125,7 @@ const xlsxLoad = async (dto, handleError) => {
     console.log('\n\n datosss:', datos[model].length, '\n model ::', model)
     while (inicio <= datos[model].length) {
 
-      console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
+      //console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
 
       const tmp = datos[model].slice(inicio, fin)
       inicio = fin
@@ -156,7 +166,7 @@ const xlsxLoad = async (dto, handleError) => {
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
 
         await qUtil.modify()
-        console.log('\n..........\n', qUtil.getResults())
+        //console.log('\n..........\n', qUtil.getResults())
 
         await qUtil.commitTransaction()
       } catch (error) {
@@ -304,8 +314,13 @@ const xlsxNormalize = async (dto, handleError) => {
       //1.- Verifica campos abligatorios
       qUtil.setTableInstance(element.alias)
       for (const index of validates) {
+        let whereNull = index>1 ?  qUtil.orWhere([{ [element.table[index]]: null }]) 
+                        :qUtil.orWhere([{ [element.table[index]]: null }, { [element.table[index]]: '' }]) 
         qUtil.setAttributes([[qUtil.literal("count(*)"), 'conteo']])
-        qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register, ...qUtil.orWhere([{ [element.table[index]]: null }, { [element.table[index]]: '' }]) })
+        qUtil.setWhere({ swloadend: false, 
+            dni_register: obj_cnf.dni_register, 
+            ...whereNull
+            })
         await qUtil.findTune()
 
         const r = qUtil.getResults()
@@ -368,7 +383,7 @@ const xlsxNormalize = async (dto, handleError) => {
         sw[model].process = false
         //elimina registros malos        
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
-        //await qUtil.deleting()
+        await qUtil.deleting()
       } else {
         sw[model].process = true
         //se procesan los archivos sin observacion ->swLoadend =  true

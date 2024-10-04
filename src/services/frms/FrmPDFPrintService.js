@@ -1,4 +1,20 @@
-
+/**
+ * metodos para extraer datos para impresion de PDF v001
+ * notas: esta asociado a la tabla f_formulario_img_cnf (x,y)
+ * tiene tipos de registros:
+ *  + sw_tipo = 0 : registro normal 
+ *  TOTALES HORIZONTALES
+ *  + sw_tipo = 11: suma de subtotales con scol not null (no suma columnas q admiten subcolumnas sw_sg = true)
+ *      + sw_tipo =  11.1 suma subtotales con scol not null (subcolumnas con sw_sg= false)
+ *  + sw_tipo = 12: suma totales q tengan mas de una columna sw_sg = true
+ *      + sw_tipo = 12.1 suma totales cn mas de una columna pero q no admiten subcolumnas sw_sg = false
+ *  TOTALES VERTICALES O POR COLUMNA
+ *  + sw_tipo = 13 suma totales  cuando no hay subcolumna
+ *  + sw_tipo = 14 suma totales por columna cuando existe subcolumna sw_sg=true
+ *      + sw_tipo = 14.1 suma totales por columna cuando sw_sg=false
+ *  OTROS
+ *  $ sw_tipo = 20 para obtener labels cuando son filas por repeticion o irow>=0 
+ */
 const FrmUtils = require('./FrmsUtils')
 const frmUtil = new FrmUtils()
 
@@ -55,7 +71,7 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
 
     //1. informacion de subtotales
     console.log("\n\n SUBTOTALES\n\n")
-    qUtil.setTableInstance('f_formulario_llenado')
+    /*qUtil.setTableInstance('f_formulario_llenado')
     qUtil.setWhere({registro_id: registro_id, formulario_id: formulario_id, scol_ll:qUtil.notNull()})
     qUtil.setAttributes(['subfrm_id',  'enunciado_id', 
                     opcion_id,                     
@@ -65,7 +81,24 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
                 ])
     qUtil.setGroupBy(['subfrm_id',  'enunciado_id', 'opcion_id', 'irow_ll', 'row_ll', 'scol_ll'])            
     qUtil.setOrder(['subfrm_id',  'enunciado_id', 'opcion_id', 'irow_ll'])
-    await qUtil.findTune()
+    await qUtil.findTune()*/
+    //por query hasta q haya una nueva idea por la columna con subculuna independiente
+    let query = `SELECT subfrm_id, enunciado_id, opcion_id, irow_ll, 
+            CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE null END AS row_ll, 
+            scol_ll,
+            SUM(CASE WHEN fa.sw_sg THEN texto::DECIMAL ELSE 0 END) AS stotal,
+            SUM(CASE WHEN fa.sw_sg=false THEN texto::DECIMAL ELSE 0 END)  AS stotal_diferenciado
+            FROM f_formulario_llenado fll
+            LEFT JOIN f_is_atributo fa ON (fa.atributo_id=fll.col_ll)
+            WHERE scol_ll IS NOT NULL  
+            AND registro_id = '${registro_id}' 
+            AND formulario_id = '${formulario_id}' 
+            GROUP BY subfrm_id, enunciado_id, opcion_id, irow_ll, row_ll, scol_ll 
+            ORDER BY subfrm_id, enunciado_id, 
+            opcion_id, irow_ll`
+    qUtil.setQuery(query)
+    await qUtil.excuteSelect()
+
     if(insert) totales.subtotales = qUtil.getResults()
     else{
         totales.subtotales = {}
@@ -75,13 +108,13 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
             if(!totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]) totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]={}
             if(!totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]) totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]={}
             if(!totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll]) totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll]={}
-            totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll][obj.scol_ll]= obj.stotal
+            totales.subtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll][obj.scol_ll]= {subtotal: obj.stotal, sdiferenciado: obj.stotal_diferenciado}
         }
     }     
         
     //2. totales
     console.log("\n\n TOTALES\n\n")
-    qUtil.setTableInstance('f_formulario_llenado')
+    /*qUtil.setTableInstance('f_formulario_llenado')
     qUtil.setWhere({registro_id: registro_id, formulario_id: formulario_id})
     qUtil.setAttributes(['subfrm_id',  'enunciado_id', opcion_id, 
                     irow_ll, 
@@ -91,7 +124,23 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
     qUtil.setGroupBy(['subfrm_id',  'enunciado_id', 'opcion_id', 'irow_ll', 'row_ll'])            
     qUtil.setHaving(qUtil.literal("COUNT(col_ll)>1"))
     qUtil.setOrder(['subfrm_id',  'enunciado_id', 'opcion_id', 'irow_ll'])
-    await qUtil.findTune()
+    await qUtil.findTune()*/
+    //va por query hasta q el programadorcito pienese en algo innovador
+    query = `SELECT subfrm_id, enunciado_id, opcion_id, irow_ll, 
+            CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE null END AS row_ll,
+            SUM(CASE WHEN fa.sw_sg THEN texto::DECIMAL ELSE 0 END)  AS total,
+            SUM(CASE WHEN fa.sw_sg=false THEN texto::DECIMAL ELSE 0 END)  AS total_diferenciado 
+            FROM f_formulario_llenado fll 
+            LEFT JOIN f_is_atributo fa ON (fa.atributo_id=fll.col_ll)
+            WHERE registro_id = '${registro_id}' 
+            AND formulario_id = '${formulario_id}' 
+            GROUP BY subfrm_id, enunciado_id, opcion_id, irow_ll, row_ll
+            HAVING COUNT(col_ll)>1 
+            ORDER BY subfrm_id, enunciado_id, 
+            opcion_id, irow_ll`
+    qUtil.setQuery(query)        
+    await qUtil.excuteSelect()
+
     if(insert) totales.totales =  qUtil.getResults()
     else{
         totales.totales = {}
@@ -101,7 +150,7 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
             if(!totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]) totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]={}
             if(!totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]) totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]={}
             
-            totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll] = obj.total
+            totales.totales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.row_ll] = {total: obj.total, diferenciado: obj.total_diferenciado}
         }
     }   
           
@@ -112,7 +161,7 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
     qUtil.setAttributes(['subfrm_id',  'enunciado_id', 
                     opcion_id,                     
                     [qUtil.literal('null'), 'irow_ll'],                     
-                    'col_ll', [qUtil.literal("SUM(texto::DECIMAL)"), 'stotal']
+                    'col_ll', [qUtil.literal("SUM(texto::DECIMAL)"), 'vtotal']
                 ])
     qUtil.setGroupBy(['subfrm_id',  'enunciado_id', 'opcion_id', 'col_ll'])            
     qUtil.setOrder(['subfrm_id',  'enunciado_id', 'opcion_id'])
@@ -126,10 +175,40 @@ const ___getDataTotalFrm =  async (registro_id, formulario_id, insert=false)=>{
             if(!totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]) totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]={}
             if(!totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]) totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]={}
             
-            totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.col_ll]= obj.stotal
+            totales.vtotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.col_ll]= obj.vtotal
+            
         }
     }   
    
+    //4. Totales por columna cuando exste subcolumnas
+    query = `SELECT subfrm_id, enunciado_id, opcion_id, irow_ll,
+            CASE WHEN irow_ll < 0 THEN coalesce(row_ll,'-1') ELSE null END AS row_ll,
+            col_ll,
+            SUM(CASE WHEN fa.sw_sg THEN texto::DECIMAL ELSE 0 END) AS ctotal,
+            SUM(CASE WHEN fa.sw_sg=false THEN texto::DECIMAL ELSE 0 END)  AS ctotal_diferenciado
+            FROM f_formulario_llenado fll
+            LEFT JOIN f_is_atributo fa ON (fa.atributo_id=fll.col_ll)
+            WHERE scol_ll IS NOT NULL
+            AND registro_id = '${registro_id}'
+            AND formulario_id = '${formulario_id}'
+            GROUP BY subfrm_id, enunciado_id, opcion_id, irow_ll, row_ll, col_ll
+            ORDER BY subfrm_id, enunciado_id,
+            opcion_id, col_ll`
+    qUtil.setQuery(query)
+    await qUtil.excuteSelect()
+
+    if(insert) totales.ctotales = qUtil.getResults()
+        else{
+            totales.ctotales = {}
+            for (const obj of qUtil.getResults()) {            
+                if(!totales.ctotales[obj.subfrm_id]) totales.ctotales[obj.subfrm_id]={}
+                if(!totales.ctotales[obj.subfrm_id][obj.enunciado_id]) totales.ctotales[obj.subfrm_id][obj.enunciado_id]={}
+                if(!totales.ctotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]) totales.ctotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id]={}
+                if(!totales.ctotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]) totales.ctotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll]={}
+                
+                totales.ctotales[obj.subfrm_id][obj.enunciado_id][obj.opcion_id][obj.irow_ll][obj.col_ll]= {ctotal: obj.ctotal, cdiferenciado: obj.ctotal_diferenciado}
+            }
+        } 
 
     return totales
 }
@@ -197,7 +276,7 @@ const getValuesFrmWithXY = async (dto, handleError) => {
             where: {cx:qUtil.notNull(), cy: qUtil.notNull()}
         })
         qUtil.pushInclude({association: 'mcxy', required: false,
-            attributes:['cx', 'cy', 'clave'],
+            attributes:['cx', 'cy', 'clave', 'align'],
             where: {cx:qUtil.notNull(), cy: qUtil.notNull()}
         })
         qUtil.setWhere({formulario_id: formulario_id})
@@ -216,19 +295,56 @@ const getValuesFrmWithXY = async (dto, handleError) => {
                 //console.log("::::ELEMENTO:", ele)
                 //delete results[i].cxy[j].cxy_id
                 
-                if(respuestas[xy_id])                    
-                results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align,  value: respuestas[xy_id]}
+                if(respuestas[xy_id])
+                results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align, value: respuestas[xy_id]}
                 else {
                     //[obj.subfrm_id]:{[obj.enunciado_id]:{[obj.opcion_id]:{[obj.irow_ll]:{[obj.row_ll]:{[obj.scol_ll]: obj.stotal}}}}}
-                    results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align, value: '-99'}                    
-                    if((ele.irow_ll !=null && ele.sw_tipo ==1) && totales.subtotales.hasOwnProperty(ele.subfrm_id) && totales.subtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll] != 'undefined')
-                        results[i].cxy[j].value = totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll]
-                    else if((ele.irow_ll !=null && ele.sw_tipo ==1) && totales.totales.hasOwnProperty(ele.subfrm_id) && totales.totales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll] != 'undefined')
-                        results[i].cxy[j].value = totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll]
-                    else if((ele.irow_ll ==null && ele.sw_tipo ==1) && totales.vtotales.hasOwnProperty(ele.subfrm_id) && totales.vtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll] != 'undefined')
+                    results[i].cxy[j] = {cx:ele.cx, cy:ele.cy, align: ele.align,  max_length: ele.max_length, value: '-SinDato-'}
+                    try {
+                        switch (Number(ele.sw_tipo)) {
+                            case 11: 
+                            results[i].cxy[j].value = totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll].subtotal                                
+                                break;
+                            case 11.1: 
+                            results[i].cxy[j].value = totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll].sdiferenciado
+                            break;    
+                            case 12: 
+                            results[i].cxy[j].value = totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll].total
+                            break;
+                            case 12.1:
+                            results[i].cxy[j].value = totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll].diferenciado
+                                break;
+                            case 13:
+                                results[i].cxy[j].value = totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll]
+                                break;
+                            case 14:
+                                results[i].cxy[j].value = totales.ctotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll].ctotal
+                                break;    
+                            case 14.1:
+                                results[i].cxy[j].value = totales.ctotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll].cdiferenciado
+                                break;
+                            case 20:
+                                results[i].cxy[j].value = labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll]
+                                break;        
+                        
+                            default:
+                                results[i].cxy[j].value = '-TYPENoDEFINED-'
+                                break;
+                        }
+                    } catch (error) {
+                        console.log("\n ERROR EN EMPAREJAMIENTO: \n", error)
+                        results[i].cxy[j].value = '-NoCNF-'
+                    }
+                    
+                    /*if( ele.sw_tipo ==11 && totales.subtotales.hasOwnProperty(ele.subfrm_id) && totales.subtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll] != 'undefined')
+                        results[i].cxy[j].value = totales.subtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll][ele.scol_ll].stotal
+                    else if( ele.sw_tipo ==12 && totales.totales.hasOwnProperty(ele.subfrm_id) && totales.totales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll] != 'undefined')
+                        results[i].cxy[j].value = totales.totales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.row_ll].total
+                    else if( ele.sw_tipo ==13 && totales.vtotales.hasOwnProperty(ele.subfrm_id) && totales.vtotales[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll] != 'undefined')
                         results[i].cxy[j].value = totales.vtotales[ele.subfrm_id][ele.enunciado_id][ele.opcion_id][ele.irow_ll][ele.col_ll]
-                    else if((ele.irow_ll !=null && ele.sw_tipo ==20) && labels.hasOwnProperty(ele.subfrm_id) && labels[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll] != 'undefined')
+                    else if( ele.sw_tipo ==20 && labels.hasOwnProperty(ele.subfrm_id) && labels[ele.subfrm_id].hasOwnProperty(ele.enunciado_id) && typeof labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll] != 'undefined')
                         results[i].cxy[j].value = labels[ele.subfrm_id][ele.enunciado_id][ele.irow_ll]
+                    */
 
                 }
             

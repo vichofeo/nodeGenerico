@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       atributo_id: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true, },
       atributo: { type: DataTypes.STRING(512), allowNull: false },
+      sw_sg: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
       grupo_atributo: { type: DataTypes.STRING(64), allowNull: false },
       orden: { type: DataTypes.INTEGER, allowNull: false }
 

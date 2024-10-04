@@ -61,8 +61,32 @@ const PARAMETERS = {
         keyAux:['fecha_diagnostico', "ci", 'fecha_nacimiento',  "apellidos_nombres", "edad", 'genero',  'cie_grupo','departamento', 'ente_gestor_name', 'establecimiento'],
         gender: ['apellidos_nombres', 'genero','f_genero']
     },
-    
-    camas: {
+    snis_302a:{
+        alias:'tmp_snis',
+        attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
+        file: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana', 'Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
+        table: ['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],        
+        validate: [1,1,1,1,2,2,1,1,1,0,0],
+        forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
+        update:[],
+        key:['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable'],
+        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],
+        //gender: ['nombre', 'genero','f_genero']
+        filterByFunc:{
+            alias:'filterSnis302A' ,
+            params: {
+                columnsProcess: [' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
+                columnBasic: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana'],
+                columnPivot: 'Grupo de variables',
+                dataValid: ['Sospecha diagnóstica', 'INMUNOPREVENIBLES', 'INFECCIONES DE TRANSMISIÓN SEXUAL', 'OTRAS INFECCIONES', 'ENFERMEDADES TRANSMITIDAS POR VECTORES (ETV)', 'TUBERCULOSIS Y LEPRA', 'VIOLENCIA, HECHOS DE TRANSITO Y ACCIDENTES', 'INTOXICACIONES', 'Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO'],
+                dataNoProcess: ['Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO'],
+                table: ['departamento', 'ente_gestor', 'establecimiento', 'cue', 'gestion', 'semana'],        
+
+            }
+        }
+
+    }
+    /*camas: {
         alias:'tmp_camas',
         attributes:[["to_char(fecha_registro, 'YYYY-MM-DD')", 'periodo'], ['count(*)', 'registros']],
         file: ['Marca temporal','Dirección de correo electrónico','ENTE GESTOR','NOMBRE DEL ESTABLECIMIENTO DE SALUD','NIVEL DE ATENCIÓN','SERVICIOS DEL EESS PRIMER NIVEL','SERVICIOS DEL EESS SEGUNDO NIVEL','SERVICIOS EESS TERCER NIVEL','TOTAL CAMAS HOSPITALIZACIÓN','NÚMERO DE CAMAS DISPONIBLES HOSPITALIZACIÓN','TOTAL CAMAS UREGENCIAS/EMERGENCIAS','NÚMERO DE CAMAS DISPONIBLES URGENCIAS/EMERGENCIAS'],
@@ -102,7 +126,7 @@ const PARAMETERS = {
             else sentencia = `to_char(fecha_registro, 'YYYY-MM-DD')='${dato}'`
             return sentencia
           },
-    }, 
+    }, */
 
 
 }
