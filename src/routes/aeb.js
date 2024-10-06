@@ -21,12 +21,13 @@ router.post("/cbox", authMiddleWare, controller.getDataCboxLigado)
 //rutas para LOUDER xlsm
 
 //
-
 router.post('/xlsx/initializetmps', authMiddleWare, loaderController.initialData)
 router.post('/xlsx/statustmps', authMiddleWare, loaderController.statusTmps)
 router.post('/xlsx/load', authMiddleWare, loaderController.xlsxLoad)
 router.post('/xlsx/normalize', authMiddleWare, loaderController.xlsxNormalize)
 router.post('/xlsx/suprtmps', authMiddleWare, loaderController.vaciarTmps)
+
+router.post('/xlsx/eg', authMiddleWare, loaderController.egData)
 
 //rutas para reportes
 router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialReport)

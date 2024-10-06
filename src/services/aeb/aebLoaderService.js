@@ -8,6 +8,27 @@ const frmUtil = new FrmUtils()
 
 const loaderUtils =  require('./aebUtilsLoaders')
 
+const egData= async (dto, handleError)=>{
+  try {
+    qUtil.setTableInstance('ae_institucion')
+    qUtil.setAttributes(qUtil.transAttribByComboBox(['institucion_id', 'nombre_corto']))
+    qUtil.setWhere({tipo_institucion_id:'EG'})    
+    qUtil.setOrder(['nombre_corto'])
+    await qUtil.findTune()
+
+    return{
+      ok: true,
+      data: qUtil.getResults()
+    }
+
+    
+  } catch (error) {
+    handleError.setMessage('Error de sistema: LOADEGDATASRV')
+    handleError.setHttpError(error.message)
+    console.log('error:::', error)
+  }
+}
+
 const initialData = (dto, handleError) => {
   try {
     const data = LOADERS
@@ -411,4 +432,5 @@ module.exports = {
   vaciarTmps,
   xlsxLoad,
   xlsxNormalize,
+  egData
 }

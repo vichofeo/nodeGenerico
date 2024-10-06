@@ -3,6 +3,14 @@ const handleError = new HandleErrors()
 
 const service =  require('./../../services/aeb/aebLoaderService')
 
+const egData = async (req, res) =>{    
+    const body =  req.body
+    const token =  req.headers.authorization
+
+    const result =  await service.egData({token:token, ...body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 
 const initialData = async (req, res) =>{    
     const body =  req.body
@@ -54,5 +62,6 @@ module.exports = {
     
     initialData, statusTmps, vaciarTmps,
     xlsxLoad,
-    xlsxNormalize
+    xlsxNormalize,
+    egData
 }
