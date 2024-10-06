@@ -20,6 +20,11 @@ const { now } = require('sequelize/lib/utils')
 
 const estado_conclusion='7'
 
+/**
+ * verifica permisos para crear formulario en periodo de evaluacion
+ * @param {*} f_id 
+ * @returns 
+ */
 const verificaPrimal = async (f_id) => {
   const obj_cnf = await frmUtil.getRoleSession()
   const obj_session = frmUtil.getObjSession()
@@ -50,6 +55,32 @@ const verificaPrimal = async (f_id) => {
     obj_cnf.primal = true
   else obj_cnf.primal = false
   return obj_cnf
+}
+
+const verificaPrimalEnExistencia =  async (f_id) =>{
+  const obj_cnf = await frmUtil.getRoleSession()
+  const obj_session = frmUtil.getObjSession()
+  
+  qUtil.setTableInstance('f_formulario_registro')
+  qUtil.setAttributes([[qUtil.literal(`CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<7`), 'primal'], 
+  [qUtil.literal('CURRENT_DATE'), 'fecha']])
+  qUtil.setWhere({
+    formulario_id:f_id, institucion_id:obj_session.institucion_id, 
+    periodo: qUtil.literal("periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')") })
+  //await qUtil.findTune()
+  const query =  ` SELECT CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<${estado_conclusion} as primal, CURRENT_DATE, CURRENT_TIMESTAMP, now(), CURRENT_TIME
+          FROM f_formulario_registro
+          WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' 
+          AND periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')`
+  qUtil.setQuery(query)
+  await qUtil.excuteSelect()
+  const r =  qUtil.getResults()
+  console.log("\n\n PRIMAL:::::::", r ,"::::::::::::::\n")
+  if(r.length>0){
+    return {primal:r[0].primal}
+  } else{
+    return {primal:false}
+  }
 }
 
 const getEvalForms = async (dto) => {
@@ -84,14 +115,20 @@ const saveEvalForm = async (dto, handleError) => {
     await qUtil.startTransaction()
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession() //await frmUtil.getRoleSession()
+    delete dto.data.last_modify_date_time
 
     //obtiene fechas limite de conclusion y revision
     qUtil.setTableInstance('f_formulario_institucion_cnf')
-    qUtil.setAttributes([[qUtil.literal(`to_date('${dto.periodo}','YYYYMM') + CAST(limite_dia-1 ||'days' AS INTERVAL)`), 'climite']])
-
-
+    qUtil.setAttributes([
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(limite_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_climite'],
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_rlimite']
+    ])
+    qUtil.setWhere({institucion_id: dto.data.institucion_id, formulario_id: dto.data.formulario_id })
+    await qUtil.findTune()
+    const data_cnfFrm =  qUtil.getResults()
+    
     qUtil.setTableInstance('f_formulario_registro')
-    qUtil.setDataset(Object.assign(dto.data, obj_cnf))
+    qUtil.setDataset(Object.assign(dto.data, obj_cnf, data_cnfFrm[0]))
 
     await qUtil.create()
     const result = qUtil.getResults()
@@ -221,7 +258,7 @@ const construyeDatos = async (dto) =>{
             respuestas[seccion.sfrm][pregunta.efrm].answers.tabla.push(tmp)
           }
         }
-      }
+      }//end if type 100
 
     }
   }
@@ -283,13 +320,13 @@ const getEvalInfo = async (dto) => {
       r.concluido = true
     else {
       //verifica primal segun dias limite
-      const obj_ctrl =  await verificaPrimal(r.formulario_id)
+      const obj_ctrl =  await verificaPrimalEnExistencia(r.formulario_id)//await verificaPrimal(r.formulario_id)
       console.log("\n\n ***********VALIDEZ FORMULARIO ********** \n\n", obj_ctrl)
       r.concluido = obj_ctrl.primal
-      /*if(obj_ctrl.primal)
+      if(obj_ctrl.primal)
         r.concluido = false
       else
-      r.concluido = true*/
+      r.concluido = true
     }
 
     //verifica estado de conclusion
