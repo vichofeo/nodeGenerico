@@ -15,10 +15,11 @@ const qUtil = new QUtils()
 const { v4: uuidv4 } = require('uuid')
 
 const servicesBasics = require('./FrmsService')
-const { where } = require('sequelize')
+const { where, NOW } = require('sequelize')
 const { now } = require('sequelize/lib/utils')
 
 const estado_conclusion='7'
+const estado_revision='15'
 
 /**
  * verifica permisos para crear formulario en periodo de evaluacion
@@ -35,7 +36,9 @@ const verificaPrimal = async (f_id) => {
   let query = `SELECT COUNT(*) as conteo
               FROM f_formulario_institucion_cnf cnf
               WHERE cnf.formulario_id='${f_id}' AND cnf.institucion_id = '${obj_session.institucion_id}'
-              AND EXTRACT(DAY FROM NOW()) <= cnf.limite_dia`
+              AND (EXTRACT(DAY FROM NOW()) <= cnf.limite_dia
+              OR (cnf.opening_delay = TO_CHAR(CURRENT_DATE - INTERVAL '1 month','YYYYMM') AND EXTRACT(DAY FROM NOW()) <= cnf.limite_plus)
+              )`
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
   const control = qUtil.getResults()
@@ -60,14 +63,14 @@ const verificaPrimal = async (f_id) => {
 const verificaPrimalEnExistencia =  async (f_id) =>{
   const obj_cnf = await frmUtil.getRoleSession()
   const obj_session = frmUtil.getObjSession()
-  
+  console.log("\n\n...............")
+
   qUtil.setTableInstance('f_formulario_registro')
-  qUtil.setAttributes([[qUtil.literal(`CURRENT_DATE<= fecha_climite and ${obj_cnf.primal} AND concluido::DECIMAL<${estado_conclusion}`), 'primal'], 
-  [qUtil.literal('CURRENT_DATE'), 'fecha']])
-  qUtil.setWhere({
-    formulario_id:f_id, institucion_id:obj_session.institucion_id, 
-    periodo: qUtil.literal("periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')") })
-  //await qUtil.findTune()
+  qUtil.setAttributes([[qUtil.literal(`${obj_cnf.primal} AND concluido::DECIMAL<${estado_conclusion} AND 
+                      (CURRENT_DATE<= fecha_climite OR (ctype_plus<>'c0' AND CURRENT_DATE <=flimite_plus))`), 'primal'], 
+                        [qUtil.literal('CURRENT_DATE'), 'fecha']])
+  qUtil.setWhere({registro_id: f_id   })
+  await qUtil.findTune()
   /*const query =  ` SELECT CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<${estado_conclusion} as primal, CURRENT_DATE, CURRENT_TIMESTAMP, now(), CURRENT_TIME
           FROM f_formulario_registro
           WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' 
@@ -75,7 +78,7 @@ const verificaPrimalEnExistencia =  async (f_id) =>{
   qUtil.setQuery(query)
   await qUtil.excuteSelect()*/
   const r =  qUtil.getResults()
-  console.log("\n\n PRIMAL:::::::", r ,"::::::::::::::\n")
+  console.log("\n\n ********************> PRIMAL:::::::", r ,"::::::::::::::\n")
   if(r.length>0){
     return {primal:r[0].primal}
   } else{
@@ -123,11 +126,23 @@ const saveEvalForm = async (dto, handleError) => {
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(limite_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_climite'],
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_rlimite'], 
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(limite_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'flimite_plus'],
-      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'frevisado_plus']
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'frevisado_plus'],
+      'opening_delay'
     ])
     qUtil.setWhere({institucion_id: dto.data.institucion_id, formulario_id: dto.data.formulario_id })
     await qUtil.findTune()
     const data_cnfFrm =  qUtil.getResults()
+
+    //repone configuracion en caso de ser registro por demora
+    if(data_cnfFrm[0].opening_delay){
+      console.log("\n *************REGISTRO POR DEMORA :::::\n")
+      const obj_mod =  frmUtil.getObjSessionForModify()
+      delete obj_mod.institucion_id
+      qUtil.setDataset({opening_delay: null, ...obj_mod})
+      await qUtil.modify()
+      data_cnfFrm[0].ctype_plus = 'c1'
+
+    }
     
     qUtil.setTableInstance('f_formulario_registro')
     qUtil.setDataset(Object.assign(dto.data, obj_cnf, data_cnfFrm[0]))
@@ -158,6 +173,68 @@ const saveEvalForm = async (dto, handleError) => {
     await qUtil.rollbackTransaction()
     console.log('\n\nerror::: EN SERVICES SAVE\n', error)
     handleError.setMessage('Error de sistema: FRMSPERSAVE')
+    handleError.setHttpError(error.message)
+  }
+}
+
+/**
+ * metodo para habilitar registro en caso sobrepasar fechas calendario
+ * @param {*} dto 
+ * @param {*} handleError 
+ * @returns 
+ */
+const editEvalForm = async (dto, handleError) => {
+  try {
+    await qUtil.startTransaction()
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSessionForModify() //await frmUtil.getRoleSession()
+    delete obj_cnf.institucion_id
+        
+    const estado =  {ctype_plus:'c'+dto.data.estado, dni_plus:obj_cnf.dni_register, modify_date_plus: obj_cnf.last_modify_date_time}
+    let neoData = null
+    //analiza ifnormacion
+    if(dto.data.idx && dto.data.estado==2){
+      console.log("\n ******************INGRESANDO PARA MODIFICAR REGISTRO\n")
+      //es registro para habilitar conclusion con demora
+      qUtil.setTableInstance('f_formulario_registro')
+      qUtil.setDataset(estado)
+      qUtil.setWhere({registro_id:dto.data.idx})
+      await qUtil.modify()
+    }else if(dto.data.idx && dto.data.prevision) {
+      console.log("\n ******************INGRESANDO PARA CAMBIAR ESTADO DE VERIFICACION\n")
+      //es registro para VERIFICAR
+      qUtil.setTableInstance('f_formulario_registro')
+      qUtil.setDataset({revisado: estado_revision, dni_revisado:obj_cnf.dni_register, fecha_revisado:NOW()})
+      qUtil.setWhere({registro_id:dto.data.idx})
+      await qUtil.modify()
+      //obtiene datos de nuevo estado
+      qUtil.setTableInstance('u_is_atributo')
+      qUtil.setAttributes([['atributo', 'revisado'], ['color','revisado_color'], ['atributo_id','revision_estado']])
+      qUtil.setWhere({atributo_id: estado_revision})
+      await qUtil.findTune()
+      neoData = qUtil.getResults()[0]
+
+    }else if(!dto.data.idx && dto.data.estado==1){
+      console.log("\n ******************INGRESANDO PARA MODIFICAR PERIODO\n")
+      //es registro para habilitar registro inicial con demora
+      qUtil.setTableInstance('f_formulario_institucion_cnf')
+      qUtil.setDataset({opening_delay: dto.data.periodo, ...obj_cnf})
+      qUtil.setWhere({institucion_id:dto.data.institucion, formulario_id: dto.data.frm})
+      await qUtil.modify()
+    }
+
+    await qUtil.commitTransaction()
+
+    //getEvalForms(dto, handleError)
+    return {
+      ok:true,
+      data: neoData,
+      message:'Transaccion realizada exitosamente'
+    }
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    console.log('\n\nerror::: EN SERVICES SAVE-EDIT\n', error)
+    handleError.setMessage('Error de sistema: FRMSPEREDITCNF')
     handleError.setHttpError(error.message)
   }
 }
@@ -322,7 +399,7 @@ const getEvalInfo = async (dto) => {
       r.concluido = true
     else {
       //verifica primal segun dias limite
-      const obj_ctrl =  await verificaPrimalEnExistencia(r.formulario_id)//await verificaPrimal(r.formulario_id)
+      const obj_ctrl =  await verificaPrimalEnExistencia(idx)//await verificaPrimal(r.formulario_id)
       console.log("\n\n ***********VALIDEZ FORMULARIO ********** \n\n", obj_ctrl)
       r.concluido = obj_ctrl.primal
       if(obj_ctrl.primal)
@@ -718,6 +795,6 @@ await qUtil.modify()
 
 module.exports = {
   getEvalForms,
-  saveEvalForm,
+  saveEvalForm, editEvalForm,
   getDataFrmAll, modifyDataFrm, modifyDataEval
 }

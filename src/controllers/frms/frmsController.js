@@ -83,6 +83,15 @@ const saveEvalForm = async(req, res)=>{
 
   //res.json(result)
 }
+const editEvalForm = async(req, res)=>{
+  
+  const token =  req.headers.authorization
+  const result = await frmEvalService.editEvalForm({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
 const getDataFrmAll = async(req, res)=>{
   
   const token =  req.headers.authorization
@@ -123,7 +132,7 @@ module.exports = {
   getfrmsConstuct, getFrmsInfo,
   getCnfForms, getCnfFormswIdx, saveCnfForms, saveFormsRes,
 
-  getEvalForms, saveEvalForm,
+  getEvalForms, saveEvalForm, editEvalForm,
   getDataFrmAll,
   modifyDataFrm, modifyDataEval, 
   pdfOptions

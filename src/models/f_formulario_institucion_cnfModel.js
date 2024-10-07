@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 
       limite_plus:{type: DataTypes.INTEGER, allowNull: false, defaultValue:8},
       revision_plus:{type: DataTypes.INTEGER, allowNull: false, defaultValue:12},
+      opening_delay:{type: DataTypes.STRING, allowNull: true, defaultValue:null},
     },
     {
       sequelize,
