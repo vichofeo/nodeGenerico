@@ -201,7 +201,7 @@ const editEvalForm = async (dto, handleError) => {
       qUtil.setWhere({registro_id:dto.data.idx})
       await qUtil.modify()
     }else if(dto.data.idx && dto.data.prevision) {
-      console.log("\n ******************INGRESANDO PARA CAMBIAR ESTADO DE VERIFICACION\n")
+      console.log("\n ******************INGRESANDO PARA CAMBIAR ESTADO DE VERIFICACION  DE CONCLUSION\n")
       //es registro para VERIFICAR
       qUtil.setTableInstance('f_formulario_registro')
       qUtil.setDataset({revisado: estado_revision, dni_revisado:obj_cnf.dni_register, fecha_revisado:NOW()})
@@ -214,8 +214,15 @@ const editEvalForm = async (dto, handleError) => {
       await qUtil.findTune()
       neoData = qUtil.getResults()[0]
 
+    }else if (dto.data.idx && dto.data.vestado==1){
+      console.log("\n ******************INGRESANDO PARA AMPLIAR VERIFICACION  POR DEMORA\n")
+      //AMPLIAR VERIFICACION POR DEMORA
+      qUtil.setTableInstance('f_formulario_registro')
+      qUtil.setDataset({rtype_plus:'r'+dto.data.vestado, dni_plus:obj_cnf.dni_register, modify_date_plus:obj_cnf.last_modify_date_time})
+      qUtil.setWhere({registro_id:dto.data.idx})
+      await qUtil.modify()
     }else if(!dto.data.idx && dto.data.estado==1){
-      console.log("\n ******************INGRESANDO PARA MODIFICAR PERIODO\n")
+      console.log("\n ******************INGRESANDO PARA MODIFICAR PERIODO PARA HABILITAR REGISTRO CON DEMORA\n")
       //es registro para habilitar registro inicial con demora
       qUtil.setTableInstance('f_formulario_institucion_cnf')
       qUtil.setDataset({opening_delay: dto.data.periodo, ...obj_cnf})

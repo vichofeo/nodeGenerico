@@ -181,7 +181,7 @@ const datos = [['1724169469744','MEDICINA INTERNA TOMO II.pdf'],
 ['1724167660278','HEMATOLOGIA.pdf'],
 ['1726858977404','PLAN DE MONITOREO Y EVALUACIÓN DEL PROGRAMA NACIONAL DE CONTROL DE LA TUBERCULOSIS.pdf']
 ]
-const carpeta = 'D:/PdfsAsuss/Dra.Andrea/'
+const carpeta = 'E:/PdfsAsuss/'
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -199,9 +199,13 @@ function fileExists(path) {
 async function scanFiles(){
    try{
       for (const data of datos) {
-         if(fs.existsSync(carpeta+data[1])){
+         if(fs.existsSync(carpeta+data[0])){
             //existe renombra archivo
-            fs.renameSync(carpeta+data[1], carpeta+data[0])
+            //fs.renameSync(carpeta+data[1], carpeta+data[0])
+            console.log("ok")
+            //console.log(":::Existe: ", data[1])
+         }else{
+            console.log( data[0])
          }
       }
    }catch(e){

@@ -190,8 +190,9 @@ const PARAMETROS = {
                 atr1.atributo as conclusion, atr1.color AS conclusion_color,
                 atr2.atributo as revisado, atr2.color AS revisado_color,
                 eval.create_date, 
-        (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus)) AS cdemora,
-        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) as prevision
+        (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) AS cdemora,
+        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) as prevision,
+        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) as hab_revision
                 FROM  au_persona p, f_formulario_registro eval
                 LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
                 LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
@@ -218,23 +219,19 @@ const PARAMETROS = {
 (eval.prevision AND (SELECT COUNT(*) FROM ae_institucion i3 WHERE i3.parent_grp_id= '$inst' AND i3.tipo_institucion_id= 'EESS')>0 ) AS prevision,
         eval.conclusion, eval.conclusion_color , 
         eval.revisado, eval.revisado_color, '|pd-0-pd|' as prdo, 
-        CASE
-  WHEN  (TRUE AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYYMM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
-  (SELECT i2.es_unidad AND 
-i2.tipo_institucion_id='ASUSS' AND 
-i2.parent_grp_id IS NULL AND 
-i2.root IS NULL 
-FROM ae_institucion i2
-WHERE i2.institucion_id='$inst')
-  THEN 1
-WHEN eval.cdemora AND   (SELECT i2.es_unidad AND 
-i2.tipo_institucion_id='ASUSS' AND 
-i2.parent_grp_id IS NULL AND 
-i2.root IS NULL 
-FROM ae_institucion i2
-WHERE i2.institucion_id='$inst') THEN 2
-ELSE 0 END AS hab_conclusion, '$inst' as inst
-        
+CASE
+  WHEN  ($primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYYMM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
+        (SELECT i2.es_unidad AND 
+        i2.tipo_institucion_id='ASUSS' AND 
+        i2.parent_grp_id IS NULL AND 
+        i2.root IS NULL 
+        FROM ae_institucion i2
+        WHERE i2.institucion_id='$inst') THEN 1
+ WHEN eval.cdemora AND (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
+ THEN 2  ELSE 0 END AS hab_conclusion, 
+
+ CASE WHEN $primal AND hab_revision AND (SELECT COUNT(*) FROM ae_institucion i2 WHERE i2.institucion_id='$inst' AND i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL) >0
+THEN 1 ELSE 0 END  AS hab_revision
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
