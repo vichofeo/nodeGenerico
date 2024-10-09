@@ -187,7 +187,8 @@ const PARAMETROS = {
                 eval.concluido AS concluido_estado, eval.revisado as revision_estado,
                 atr1.atributo as conclusion, atr1.color AS conclusion_color,
                 atr2.atributo as revisado, atr2.color AS revisado_color,
-                eval.create_date
+                eval.create_date, 
+        (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus)) AS cdemora
                 FROM  au_persona p, f_formulario_registro eval
                 LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
                 LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
@@ -212,7 +213,25 @@ const PARAMETROS = {
         eval.concluido_estado, eval.revision_estado,
 
         eval.conclusion, eval.conclusion_color , 
-        eval.revisado, eval.revisado_color
+        eval.revisado, eval.revisado_color, '|pd-0-pd|', '$inst' as intitucion_id, '$primal', '$rol',
+        CASE
+  WHEN  (TRUE AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYYMM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
+  (SELECT i2.es_unidad AND 
+i2.tipo_institucion_id='ASUSS' AND 
+i2.parent_grp_id IS NULL AND 
+i2.root IS NULL 
+FROM ae_institucion i2
+WHERE i2.institucion_id='$inst')
+  THEN 1
+WHEN eval.cdemora AND   (SELECT i2.es_unidad AND 
+i2.tipo_institucion_id='ASUSS' AND 
+i2.parent_grp_id IS NULL AND 
+i2.root IS NULL 
+FROM ae_institucion i2
+WHERE i2.institucion_id='$inst') THEN 2
+ELSE
+0
+END
         
         `,
 

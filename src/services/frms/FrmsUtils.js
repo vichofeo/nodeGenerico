@@ -100,7 +100,7 @@ module.exports = class FrmsUtils {
     //tabla de datos
     const objModel = this.#parametros[nameModeloFromParam]
     //CONSTRUYE SENTENCIA SELECT
-    console.log('\n\n\n*****************************************::::::::::::::', objModel.referer.length)
+    console.log('\n\n\n*****************************************::::::::::::::DTO', dto)
     
     let campos = objModel.campos
     let from = objModel.table
@@ -129,7 +129,9 @@ module.exports = class FrmsUtils {
 
     //reemplaza query con variables de session si lo ubiera
     query =  this.#replaceStringByDataSession(query)
+    query =  await this.#replaceStingByDataRoleSession(query)
     query =  this.#replaceStringByDataParamDoms(dto, objModel ,query)
+    query =  this.#replaceTagWithPDomOrDtoValues(dto, objModel, query)
 
     this.#qUtils.setQuery(query)
     await this.#qUtils.excuteSelect()
@@ -440,12 +442,21 @@ module.exports = class FrmsUtils {
   #replaceStringByDataSession(stringSepararedByComa) {
     const vars = ['$app', '$inst', '$dni', '$usr']
     const d = this.#getDataSession()
-    const equi = [d?.app, d?.inst, d?.dni, d?.usr]
+    const equi = [d?.app, d?.inst, d?.dni, d?.usr, d?.rol, d?.primal]
     for (let i = 0; i < vars.length; i++) {
       stringSepararedByComa = stringSepararedByComa.replaceAll(vars[i], equi[i])
     }
 
     return stringSepararedByComa
+  }
+  async #replaceStingByDataRoleSession(stringNormal){
+    const vars =['$rol', '$primal']
+    const r =  await this.getRoleSession()
+    const equi = [r?.rol, r?.primal]
+    for (const i in vars) {
+      stringNormal =  stringNormal.replaceAll(vars[i], equi[i])
+    }
+    return stringNormal
   }
   #replaceStringByDataParamDoms(paramDomsIn, objModel, query){
     const stringReplace = '$paramDoms'
@@ -458,6 +469,29 @@ module.exports = class FrmsUtils {
       query =  query.replaceAll(stringReplace, cadenaWhere)
     }else query =  query.replaceAll(stringReplace, " 1=1 ")
     return query
+  }
+  #replaceTagWithPDomOrDtoValues(dto, objModel, query){
+    const tagIniDom = '|pd-'
+    const tagFinDom = '-pd|'
+    const paramDomsIn = dto
+    let queryAux =  query
+    if(objModel.paramDoms && paramDomsIn.paramDoms && objModel.paramDoms.length>0 && paramDomsIn.paramDoms.length>0){
+      queryAux =  queryAux.split(tagIniDom)
+      if(queryAux.length>=1){
+        for (const i in queryAux) {
+          queryAux[i] =  queryAux[i].split(tagFinDom)
+          if(queryAux[i].length>1){
+            let contenido = queryAux[i][0]            
+            if(contenido.length>=1){
+              queryAux[i][0] = paramDomsIn.paramDoms[Number(contenido)]
+            }
+            queryAux[i] = queryAux[i].join("")
+          }
+        }
+      }
+      queryAux = queryAux.join("")
+    }
+return queryAux
   }
   #replaceStringForQIlogic(query, valores) {    
     

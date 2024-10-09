@@ -121,7 +121,9 @@ const saveEvalForm = async (dto, handleError) => {
     qUtil.setTableInstance('f_formulario_institucion_cnf')
     qUtil.setAttributes([
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(limite_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_climite'],
-      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_rlimite']
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_rlimite'], 
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(limite_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'flimite_plus'],
+      [qUtil.literal(`(to_date('${dto.data.periodo}','YYYYMM') + CAST(revision_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'frevisado_plus']
     ])
     qUtil.setWhere({institucion_id: dto.data.institucion_id, formulario_id: dto.data.formulario_id })
     await qUtil.findTune()

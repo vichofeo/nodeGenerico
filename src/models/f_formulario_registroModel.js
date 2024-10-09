@@ -60,7 +60,8 @@ module.exports = (sequelize, DataTypes) => {
 
         dni_plus: { type: DataTypes.STRING(25), allowNull: true },        
         modify_date_plus: { type: DataTypes.DATE, allowNull: true },
-        type_plus: { type: DataTypes.INTEGER, allowNull: true  },
+        ctype_plus: { type: DataTypes.STRING, allowNull: true, defaultValue:'c0'  },
+        rtype_plus: { type: DataTypes.STRING, allowNull: true, defaultValue:'r0'  },
         flimite_plus: { type: DataTypes.DATEONLY, allowNull: true },
         frevisado_plus: { type: DataTypes.DATEONLY, allowNull: true },
         
