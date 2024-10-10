@@ -45,20 +45,43 @@ const tmpsInitialReport = (dto, handleError) => {
   
       let response = {}
       
-        const element = modelos[dto.model]
-  
+        const element = modelos[dto.model]  
+        const attributes =  element.attributes.map(arr=>[qUtil.literal(arr[0]), arr[1]])
+        const agroup = element.attributes.map(arr=> qUtil.literal(arr[0]))
+
         qUtil.setTableInstance(element.table)
-        qUtil.setAttributes([
-          [qUtil.literal(element.attributes[0][0]), element.attributes[0][1]],
-          [qUtil.literal(element.attributes[1][0]), element.attributes[1][1]],
-        ])
+        qUtil.setAttributes(attributes)
         qUtil.setWhere({ swloadend: true })
-        qUtil.setGroupBy([qUtil.literal(element.attributes[0][0])])
+        agroup.pop()
+        qUtil.setGroupBy(agroup)
+        //pregunta si es cons Subquery especial
+        if(Array.isArray(element.parseAttrib))
+          qUtil.setOrder([qUtil.literal("1")])
+          else
         qUtil.setOrder([[qUtil.literal(element.attributes[0][0]), 'DESC']])
-        await qUtil.findTune()
-        response = { [dto.model]: qUtil.getResults() }
+
+         await qUtil.findTune()
+         
+         let result =  qUtil.getResults()
+         
+         if(element.parseAttrib && Array.isArray(element.parseAttrib)){
+          result =  result.map(obj=>{
+            const keys =  Object.keys(obj)            
+            let oAux =  {}            
+            for (const i in keys) {
+              let k = keys[i]
+              
+              if(element.parseAttrib.includes(i.toString())) obj[k]=JSON.parse(obj[k])
+              
+              oAux =  Object.assign(oAux, {[k]:obj[k]})
+            }
+            return oAux
+          })
+          
+         }
+        response = { [dto.model]: {items:result, multiple:Array.isArray(element.parseAttrib)} }
       
-  
+     
       return {
         ok: true,
         data: response,

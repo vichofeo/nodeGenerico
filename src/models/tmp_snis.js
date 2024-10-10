@@ -32,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     
     formulario: {type: DataTypes.STRING, allowNull: false}, 
     grupo: {type: DataTypes.STRING, allowNull: false}, 
+    lugar_atencion: {type: DataTypes.STRING, allowNull: false, defaultValue: 'Dentro'}, 
     variable: {type: DataTypes.STRING, allowNull: false}, 
     subvariable: {type: DataTypes.STRING, allowNull: false}, 
     valor: {type: DataTypes.INTEGER, allowNull: false}, 

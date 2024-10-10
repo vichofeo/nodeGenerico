@@ -1,6 +1,5 @@
 'use strict'
 
-const { header } = require("express-validator")
 
 const REPORTS = {
   carmelo: {
@@ -85,24 +84,37 @@ const REPORTS = {
   },
   snis302a: {
     table:'tmp_snis',
-    tables:'tmp_snis',
+    tables:'tmp_snis s, ae_institucion i',
     alias: 'Datos snis - Formularios 302A',    
-    attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
-    campos: `departamento,ente_gestor,establecimiento,gestion,semana,formulario,grupo,variable,subvariable,valor`,
-    headers:['DEPARTAMENTO','ENTE GESTOR','ESTABLECIMIENTO / INSTITUCION', 'GESTION', 'SEMANA EPIDEMIOLOGICA', 'FORMULARIO', 'GRUPO DE VARIABLES', 'VARIABLE', 'SUBVARIABLE', 'VALOR'],
+    //attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
+    attributes:[["formulario", 'periodo'], [`'['||
+string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis s2 WHERE s2.formulario= tmp_snis.formulario AND s2.gestion= tmp_snis.gestion AND s2.semana= tmp_snis.semana)
+||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis s2 WHERE s2.formulario= tmp_snis.formulario AND s2.gestion= tmp_snis.gestion AND s2.semana= tmp_snis.semana)
+||'}' DESC
+)||' ]'`, 'registros']],
+    parseAttrib: ['1'],
+    campos: `departamento, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
+    headers:['DEPARTAMENTO','ENTE GESTOR','ESTABLECIMIENTO / INSTITUCION', 'GESTION', 'SEMANA EPIDEMIOLOGICA', 'FORMULARIO', 'GRUPO DE VARIABLES', 'VARIABLE', 'DENTRO/FUERA','SUBVARIABLE', 'VALOR'],
     tipo: 'Sum',
     camposOcultos: ['VALOR'],
     rows: ['DEPARTAMENTO','FORMULARIO', 'GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: [],    
+    precondicion: ["s.ente_gestor=i.institucion_id"],    
     referer: [],    
     metodo: function (dato=Array()) {
+      //Array(formulario, [semanas "gestion-semana"])
       let sentencia =  ""
-      if(Array.isArray(dato)){
-        if(dato.length==1 && dato[0]=='Todos') sentencia = ['1=1']
-        else sentencia =  dato.map(val=>`gestion||'-'||semana='${val}'`)        
-        sentencia = `( ${sentencia.join(' OR ')} ) `
+      if(dato[0]) sentencia = `s.formulario='${dato[0]}' and ` 
+
+      if(Array.isArray(dato[1])){
+        let sentenciaAux = ""
+        if(dato[1].length==1 && dato[1]=='Todos') sentenciaAux = ['1=1']
+        else sentenciaAux =  dato[1].map(val=>`gestion||'-'||semana='${val}'`)        
+      
+        sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       }else sentencia = '1=2'
       return sentencia
     },

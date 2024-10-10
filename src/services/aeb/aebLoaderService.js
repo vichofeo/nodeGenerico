@@ -121,14 +121,17 @@ const xlsxLoad = async (dto, handleError) => {
 
     
     if(modelos[model].filterByFunc){
+      //console.log("********************** DATA LOAD:", datos[model])
       const metodo =  modelos[model].filterByFunc.alias
       const params = modelos[model].filterByFunc.params
       const result =  loaderUtils[metodo](datos[model], params)
-      if(result.ok) datos[model] =  result.results
+      if(result.ok) datos[model].data =  result.results
+      else throw new Error('Formato de archivo incorrecto')
     }
 
+
     //reEscribe valores a subir
-    datos[model] = datos[model].map((obj) => {
+    datos[model].data = datos[model].data.map((obj) => {
       obj.dni_register = obj_cnf.dni_register
       return obj
     })
@@ -143,12 +146,12 @@ const xlsxLoad = async (dto, handleError) => {
     const param = 1000
     let fin = param
     let sum = 0
-    console.log('\n\n datosss:', datos[model].length, '\n model ::', model)
-    while (inicio <= datos[model].length) {
+    console.log('\n\n datosss:', datos[model].data.length, '\n model ::', model)
+    while (inicio <= datos[model].data.length) {
 
       //console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
 
-      const tmp = datos[model].slice(inicio, fin)
+      const tmp = datos[model].data.slice(inicio, fin)
       inicio = fin
       fin = fin + param
 
@@ -191,6 +194,7 @@ const xlsxLoad = async (dto, handleError) => {
 
         await qUtil.commitTransaction()
       } catch (error) {
+        console.log(error)
         return {
           ok: false,
           message: error.message + mensaje,
@@ -199,7 +203,7 @@ const xlsxLoad = async (dto, handleError) => {
     }
 
     return {
-      ok: true,
+      ok: true,      
       message: 'Procesado Correctamente',
     }
   } catch (error) {

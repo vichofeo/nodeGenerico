@@ -65,24 +65,42 @@ const PARAMETERS = {
         alias:'tmp_snis',
         attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
         //file: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana', 'Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-        file: ['Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],        
-        validate: [1,1,1,1,2,2,1,1,1,0,0],
+        file: ['Grupo de variables', '  Menor de 6 meses|Masculino', '  Menor de 6 meses|Femenino', ' Mayor de 6 meses a menor de 1 año|Masculino', ' Mayor de 6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
+        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],        
+        validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable'],
-        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'cue','gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],
+        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable'],
+        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
-            alias:'filterSnis302A' ,
+            alias:'parserSnis302A' ,
             params: {
-                columnsProcess: [' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-                columnBasic: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana'],
-                columnPivot: 'Grupo de variables',
+                columnsPrincipal: ['  Menor de 6 meses|Masculino', '  Menor de 6 meses|Femenino', ' Mayor de 6 meses a menor de 1 año|Masculino', ' Mayor de 6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
                 dataValid: ['Sospecha diagnóstica', 'INMUNOPREVENIBLES', 'INFECCIONES DE TRANSMISIÓN SEXUAL', 'OTRAS INFECCIONES', 'ENFERMEDADES TRANSMITIDAS POR VECTORES (ETV)', 'TUBERCULOSIS Y LEPRA', 'VIOLENCIA, HECHOS DE TRANSITO Y ACCIDENTES', 'INTOXICACIONES', 'Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO'],
-                dataNoProcess: ['Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO'],
-                table: ['departamento', 'ente_gestor', 'establecimiento', 'cue', 'gestion', 'semana'],        
-
+                dataNoProcess: ['Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO', 'MORTALIDAD PERINATAL, NEONATAL E INFANTIL'],
+                columnsSecundary:{
+                    ['Evento']:{alias: 'REGISTRO DE EVENTOS AMBIENTALES DE NOTIFICACIÓN INMEDIATA',
+                                columns:[[0,13,25,37],[54,67,79,91]],
+                                valuesColumns: ['No. de Eventos', 'No. de personas afectadas', 'No. de personas fallecidas'] },
+                    ['MORTALIDAD MATERNA']:{
+                            columns:[27,31,35,39,43,47,51,55,59,63],
+                            valuesColumns: ['10 - 14 años|Dentro', '10 - 14 años|Fuera', '15 - 19 años|Dentro', '15 - 19 años|Fuera', '20 - 39 años|Dentro', '20 - 39 años|Fuera', '40 - 49 años|Dentro', '40 - 49 años|Fuera', '50 - 59 años|Dentro', '50 - 59 años|Fuera']                        
+                            },
+                    ['MORTALIDAD']:{
+                            columns:[27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 97, 99, 101, 103, 105],
+                            valuesColumns:['  Menor de 6 meses|Dentro|Masculino', '  Menor de 6 meses|Dentro|Femenino', '  Menor de 6 meses|Fuera|Masculino', '  Menor de 6 meses|Fuera|Femenino', ' Mayor de 6 meses a menor de 1 año|Dentro|Masculino', ' Mayor de 6 meses a menor de 1 año|Dentro|Femenino', ' Mayor de 6 meses a menor de 1 año|Fuera|Masculino', ' Mayor de 6 meses a menor de 1 año|Fuera|Femenino', '1 - 4 años|Dentro|Masculino', '1 - 4 años|Dentro|Femenino', '1 - 4 años|Fuera|Masculino', '1 - 4 años|Fuera|Femenino', '5 - 9 años|Dentro|Masculino', '5 - 9 años|Dentro|Femenino', '5 - 9 años|Fuera|Masculino', '5 - 9 años|Fuera|Femenino', '10 - 14 años|Dentro|Masculino', '10 - 14 años|Dentro|Femenino', '10 - 14 años|Fuera|Masculino', '10 - 14 años|Fuera|Femenino', '15 - 19 años|Dentro|Masculino', '15 - 19 años|Dentro|Femenino', '15 - 19 años|Fuera|Masculino', '15 - 19 años|Fuera|Femenino', '20 - 39 años|Dentro|Masculino', '20 - 39 años|Dentro|Femenino', '20 - 39 años|Fuera|Masculino', '20 - 39 años|Fuera|Femenino', '40 - 49 años|Dentro|Masculino', '40 - 49 años|Dentro|Femenino', '40 - 49 años|Fuera|Masculino', '40 - 49 años|Fuera|Femenino', '50 - 59 años|Dentro|Masculino', '50 - 59 años|Dentro|Femenino', '50 - 59 años|Fuera|Masculino', '50 - 59 años|Fuera|Femenino', '60 años y más|Dentro|Masculino', '60 años y más|Dentro|Femenino', '60 años y más|Fuera|Masculino', '60 años y más|Fuera|Femenino']
+                            },
+                    ['SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO']:{
+                            columns:[27, 29, 31, 33],
+                            valuesColumns:[' < 7 días||Masculino', ' < 7 días||Femenino', '7 a 28 días||Masculino', '7 a 28 días||Femenino']
+                            },
+                    ['MORTALIDAD PERINATAL, NEONATAL E INFANTIL']:{
+                            columns:[95, 98, 101, 104],
+                            valuesColumns:['|Dentro|Masculino', '|Dentro|Femenino', '|Fuera|Masculino', '|Fuera|Femenino']
+                    }
+                }
+                
             }
         }
 
