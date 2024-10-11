@@ -4,6 +4,8 @@ const router = express.Router()
 const authMiddleWare = require('./../middlewares/authMiddleware')
 const frmsController = require('../controllers/frms/frmsController')
 
+const frmsReportController =  require('../controllers/frms/frmsReportsController')
+
 
 router.post('/:modelo', authMiddleWare, frmsController.getfrmsConstuct)
 router.get('/:idx', authMiddleWare, frmsController.getFrmsInfo)
@@ -23,5 +25,9 @@ router.put('/eval/finish', authMiddleWare, frmsController.modifyDataEval)
 //para impresion en pdf
 router.post('/evals/theprint', authMiddleWare, frmsController.pdfOptions)
 
+//reportes
+router.post('/report/initialReport', authMiddleWare, frmsReportController.frmsInitialReport)
+router.post('/report/statusReport', authMiddleWare, frmsReportController.frmsStatusReport)
+router.post('/report/dataReport', authMiddleWare, frmsReportController.frmsReport)
 
 module.exports = router

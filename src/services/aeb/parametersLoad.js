@@ -66,11 +66,11 @@ const PARAMETERS = {
         attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
         //file: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana', 'Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
         file: ['Grupo de variables', '  Menor de 6 meses|Masculino', '  Menor de 6 meses|Femenino', ' Mayor de 6 meses a menor de 1 año|Masculino', ' Mayor de 6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable', 'subvariable', 'valor'],        
+        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable'],
+        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
         keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{

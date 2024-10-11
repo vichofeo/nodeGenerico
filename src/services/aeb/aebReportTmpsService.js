@@ -21,7 +21,6 @@ const tmpsInitialReport = (dto, handleError) => {
       const d = {}
       for (const key in data) {
         d[key] = { title: data[key].alias }
-  
       }
   
       return {
@@ -45,6 +44,8 @@ const tmpsInitialReport = (dto, handleError) => {
   
       let response = {}
       
+      if(typeof modelos[dto.model] == 'undefined') throw new Error("Modelo no definido error de diseño")
+
         const element = modelos[dto.model]  
         const attributes =  element.attributes.map(arr=>[qUtil.literal(arr[0]), arr[1]])
         const agroup = element.attributes.map(arr=> qUtil.literal(arr[0]))
