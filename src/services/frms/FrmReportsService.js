@@ -91,6 +91,9 @@ const obj_cnf = frmUtil.getObjSession()
 const modelo = dto.modelo
 const pregunta_id =  dto.condicion.idx
 const periodos =  dto.condicion.registros.map(o=>o.periodo)
+let whereAux = ''
+if(periodos[0]=='Todos') whereAux=''
+else whereAux = `AND r.periodo in ('${periodos.join("','")}')`
     
 
       //VALIDAR USO Y CONDICIONES SEGUN TOKEN //pendiente de patente
@@ -98,7 +101,9 @@ const periodos =  dto.condicion.registros.map(o=>o.periodo)
 
       const datosResult = {}
       const query = `SELECT 
-i.nombre_institucion AS establecimiento, frm.descripcion AS formulario, a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as pregunta,
+i.nombre_institucion AS establecimiento, frm.descripcion AS formulario, 
+TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS periodo,
+a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as pregunta,
 f.atributo AS grupo, c.atributo AS "variable", sc.atributo AS subvariable, ll.texto AS valor
 FROM ae_institucion i ,f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
 LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
@@ -111,6 +116,7 @@ AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enun
 AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
 and r.formulario_id='${modelo}'
 AND ll.enunciado_id = '${pregunta_id}'
+${whereAux}
 ORDER BY 5,6,7`
      
       qUtil.setQuery(query)
