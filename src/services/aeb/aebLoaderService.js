@@ -1,27 +1,27 @@
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
-const LOADERS = require('./parametersLoad')//JSON.parse(JSON.stringify(require('./parametersLoad')))
+const LOADERS = require('./parametersLoad') //JSON.parse(JSON.stringify(require('./parametersLoad')))
 
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
-const loaderUtils =  require('./aebUtilsLoaders')
+const loaderUtils = require('./aebUtilsLoaders')
 
-const egData= async (dto, handleError)=>{
+const egData = async (dto, handleError) => {
   try {
     qUtil.setTableInstance('ae_institucion')
-    qUtil.setAttributes(qUtil.transAttribByComboBox(['institucion_id', 'nombre_corto']))
-    qUtil.setWhere({tipo_institucion_id:'EG'})    
-    qUtil.setOrder(['nombre_corto'])
+    qUtil.setAttributes(
+      qUtil.transAttribByComboBox(['institucion_id', 'nombre_institucion'])
+    )
+    qUtil.setWhere({ tipo_institucion_id: 'EG' })
+    qUtil.setOrder(['nombre_institucion'])
     await qUtil.findTune()
 
-    return{
+    return {
       ok: true,
-      data: qUtil.getResults()
+      data: qUtil.getResults(),
     }
-
-    
   } catch (error) {
     handleError.setMessage('Error de sistema: LOADEGDATASRV')
     handleError.setHttpError(error.message)
@@ -34,8 +34,12 @@ const initialData = (dto, handleError) => {
     const data = LOADERS
     const d = {}
     for (const key in data) {
-      d[key] = { file: data[key].file, table: data[key].table, forFilter: data[key].forFilter, applyFilter: data[key].filterByFunc?  true: false }
-
+      d[key] = {
+        file: data[key].file,
+        table: data[key].table,
+        forFilter: data[key].forFilter,
+        applyFilter: data[key].filterByFunc ? true : false,
+      }
     }
 
     return {
@@ -89,14 +93,15 @@ const vaciarTmps = async (dto, handleError) => {
     const model = Object.entries(data)[0][0]
     const modelos = LOADERS
     //elimina registros con flag swloadend=0
-    const query = `DELETE FROM ${modelos[model].alias} WHERE ${modelos[model]?.metodo(data[model])}` 
+    const query = `DELETE FROM ${modelos[model].alias} WHERE ${modelos[
+      model
+    ]?.metodo(data[model])}`
     qUtil.setQuery(query)
     await qUtil.excuteUpdate()
 
-    return{
+    return {
       ok: true,
-      message:
-        'Vaciado de datos ' + model + ' realizado con exito',
+      message: 'Vaciado de datos ' + model + ' realizado con exito',
     }
   } catch (error) {
     console.log(error)
@@ -119,17 +124,16 @@ const xlsxLoad = async (dto, handleError) => {
 
     const model = Object.entries(datos)[0][0]
 
-    
-    if(modelos[model].filterByFunc){
+    if (modelos[model].filterByFunc) {
       //console.log("********************** DATA LOAD:", datos[model])
-      const metodo =  modelos[model].filterByFunc.alias
+      const metodo = modelos[model].filterByFunc.alias
       const params = modelos[model].filterByFunc.params
-      const result =  loaderUtils[metodo](datos[model], params)
-      if(result.ok) datos[model].data =  result.results
+      const result = loaderUtils[metodo](datos[model], params)
+      if (result.ok) datos[model].data = result.results
       else throw new Error('Formato de archivo incorrecto')
-    }
+    }//en filterByFunc
 
-
+/*** ********* INICIA GUARDADO ********* */
     //reEscribe valores a subir
     datos[model].data = datos[model].data.map((obj) => {
       obj.dni_register = obj_cnf.dni_register
@@ -148,13 +152,11 @@ const xlsxLoad = async (dto, handleError) => {
     let sum = 0
     console.log('\n\n datosss:', datos[model].data.length, '\n model ::', model)
     while (inicio <= datos[model].data.length) {
-
       //console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
 
       const tmp = datos[model].data.slice(inicio, fin)
       inicio = fin
       fin = fin + param
-
 
       //INSERCION MASIVA
       qUtil.setTableInstance(modelos[model].alias)
@@ -162,7 +164,7 @@ const xlsxLoad = async (dto, handleError) => {
       await qUtil.createwLote()
       sum += tmp.length
     }
-    console.log("\n .... SUMA TOTAL:", sum)
+    console.log('\n .... SUMA TOTAL:', sum)
     //finaliza transaccion  de insercion
     await qUtil.commitTransaction()
     //actualiza campos segun configuracion de parametros
@@ -184,7 +186,6 @@ const xlsxLoad = async (dto, handleError) => {
           mensaje += '\n' + modelo.update[key][2]
         }
 
-
         qUtil.setTableInstance(modelos[model].alias)
         qUtil.setDataset(aux)
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
@@ -201,10 +202,13 @@ const xlsxLoad = async (dto, handleError) => {
         }
       }
     }
+      //---------------------------- *0000 ******************************
+      //** *********** fin guardado **** */
 
     return {
-      ok: true,      
+      ok: true,
       message: 'Procesado Correctamente',
+      data : datos[model].data
     }
   } catch (error) {
     await qUtil.rollbackTransaction()
@@ -221,7 +225,8 @@ const xlsxLoad = async (dto, handleError) => {
 
 const xlsxNormalize = async (dto, handleError) => {
   try {
-    const prefijo = (campo, valor) => `La columna "${campo}": no puede ser nulo. Total registros encontrados: ${valor}`
+    const prefijo = (campo, valor) =>
+      `La columna "${campo}": no puede ser nulo. Total registros encontrados: ${valor}`
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
     //datos
@@ -232,7 +237,12 @@ const xlsxNormalize = async (dto, handleError) => {
 
     const results = {}
     const generos = {}
-    const definicionGenero = { definidos: [], no_definidos: [], inexactos: [], arreglo:{idx:[], campo:[]} }
+    const definicionGenero = {
+      definidos: [],
+      no_definidos: [],
+      inexactos: [],
+      arreglo: { idx: [], campo: [] },
+    }
     let sw_genero = false
     //normaliza
     for (const model of name_modelos) {
@@ -260,9 +270,10 @@ const xlsxNormalize = async (dto, handleError) => {
 
           for (const rg of resultGenero) {
             rg.nombre = rg.nombre.toUpperCase()
-            if (!Object.hasOwn(generos, rg.nombre))
-              generos[rg.nombre] = {}
-            generos[rg.nombre] = Object.assign(generos[rg.nombre], { [rg.genero]: rg.genero })
+            if (!Object.hasOwn(generos, rg.nombre)) generos[rg.nombre] = {}
+            generos[rg.nombre] = Object.assign(generos[rg.nombre], {
+              [rg.genero]: rg.genero,
+            })
           }
         }
         const nombre = element.gender[0]
@@ -272,25 +283,29 @@ const xlsxNormalize = async (dto, handleError) => {
         qUtil.setTableInstance(element.alias)
         element.gender.push('idx')
         qUtil.setAttributes(element.gender)
-        qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register, [nombre]: qUtil.notNull() })
+        qUtil.setWhere({
+          swloadend: false,
+          dni_register: obj_cnf.dni_register,
+          [nombre]: qUtil.notNull(),
+        })
         await qUtil.findTune()
 
         const datos = qUtil.getResults()
         for (const d of datos) {
           //parsea nombre completo
-          const nombres = Object.fromEntries(d[nombre].split(" ").map((v,i) => [v.toUpperCase(), v]))
+          const nombres = Object.fromEntries(
+            d[nombre].split(' ').map((v, i) => [v.toUpperCase(), v])
+          )
           let sw_estado = -1
           let key_name = null
           //recorre el parseo de nombres buscando la primera ocurrencia de nombre para adotar el genero
           for (const key in nombres) {
             if (Object.hasOwn(generos, key)) {
-              if (Object.keys(generos[key]).length > 1)
-                sw_estado = 0
-              else
-                sw_estado = 1
+              if (Object.keys(generos[key]).length > 1) sw_estado = 0
+              else sw_estado = 1
 
               key_name = key
-              break;
+              break
             } else {
               sw_estado = -1
             }
@@ -298,60 +313,88 @@ const xlsxNormalize = async (dto, handleError) => {
           //resguarda casos
           switch (sw_estado) {
             case -1:
-              const nmbre =  Object.fromEntries(d[nombre].split(" ").map((v,i) => [`N${i}`, v.toUpperCase()]))
+              const nmbre = Object.fromEntries(
+                d[nombre].split(' ').map((v, i) => [`N${i}`, v.toUpperCase()])
+              )
               //definicionGenero.no_definidos.push({ idx: d.idx, nombre: d[nombre], genero: d[f_genero] })
-              definicionGenero.no_definidos.push({ ...nmbre, genero: d[f_genero] })
-              break;
+              definicionGenero.no_definidos.push({
+                ...nmbre,
+                genero: d[f_genero],
+              })
+              break
             case 0:
-              definicionGenero.inexactos.push({ idx: d.idx, set: generos[key_name], nombre: d[nombre], genero: d[f_genero], name: key_name })
-              break;
+              definicionGenero.inexactos.push({
+                idx: d.idx,
+                set: generos[key_name],
+                nombre: d[nombre],
+                genero: d[f_genero],
+                name: key_name,
+              })
+              break
             case 1:
-              definicionGenero.definidos.push({ idx: d.idx, set: { [genero]: generos[key_name][Object.keys(generos[key_name])[0]] } })
+              definicionGenero.definidos.push({
+                idx: d.idx,
+                set: {
+                  [genero]:
+                    generos[key_name][Object.keys(generos[key_name])[0]],
+                },
+              })
               definicionGenero.arreglo.idx.push(d.idx)
-              definicionGenero.arreglo.campo.push(generos[key_name][Object.keys(generos[key_name])[0]])
+              definicionGenero.arreglo.campo.push(
+                generos[key_name][Object.keys(generos[key_name])[0]]
+              )
               //actualiza genero del registro correcto
               //qUtil.setTableInstance(element.alias)
               //qUtil.setDataset({[genero]: generos[key_name][Object.keys(generos[key_name])[0]]})
               //qUtil.setWhere({idx: d.idx})
               //await qUtil.modify()
-              break;
+              break
             default:
-              break;
+              break
           }
-        }//fin recorrido de datos
+        } //fin recorrido de datos
         // actualizacion e bath
         const query = `update ${element.alias}
                       set ${genero} = tt.campo
-                      from (SELECT UNNEST(array[${definicionGenero.arreglo.idx.join(',')}]) AS id,
-                                  UNNEST(array['${definicionGenero.arreglo.campo.join("','")}']) AS campo
+                      from (SELECT UNNEST(array[${definicionGenero.arreglo.idx.join(
+                        ','
+                      )}]) AS id,
+                                  UNNEST(array['${definicionGenero.arreglo.campo.join(
+                                    "','"
+                                  )}']) AS campo
                              ) as tt
                       where idx= tt.id `
-                      qUtil.setQuery(query)
-        await qUtil.excuteUpdate()              
-             
+        qUtil.setQuery(query)
+        await qUtil.excuteUpdate()
       }
       //fin genero
       //------0-----
       //--fin rutina genero
       // ---
-      
+
       /**APLICA VALIDACIONES SEGUN PARAMETROS */
       //1.- Verifica campos abligatorios
       qUtil.setTableInstance(element.alias)
       for (const index of validates) {
-        let whereNull = index>1 ?  qUtil.orWhere([{ [element.table[index]]: null }]) 
-                        :qUtil.orWhere([{ [element.table[index]]: null }, { [element.table[index]]: '' }]) 
-        qUtil.setAttributes([[qUtil.literal("count(*)"), 'conteo']])
-        qUtil.setWhere({ swloadend: false, 
-            dni_register: obj_cnf.dni_register, 
-            ...whereNull
-            })
+        let whereNull =
+          index > 1
+            ? qUtil.orWhere([{ [element.table[index]]: null }])
+            : qUtil.orWhere([
+                { [element.table[index]]: null },
+                { [element.table[index]]: '' },
+              ])
+        qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+        qUtil.setWhere({
+          swloadend: false,
+          dni_register: obj_cnf.dni_register,
+          ...whereNull,
+        })
         await qUtil.findTune()
 
         const r = qUtil.getResults()
         if (r[0].conteo > 0)
           results[model].push(prefijo(element.file[index], r[0].conteo))
-      }//end for validates
+      } //end for validates
 
       //2.- Verifica unidad de registros
       const keyString = qUtil.literal(`md5(${element.key.join('||')})`)
@@ -368,7 +411,6 @@ const xlsxNormalize = async (dto, handleError) => {
         qUtil.setDataset({ hash: keyString })
         await qUtil.modify()
         await qUtil.commitTransaction()
-
       } catch (error) {
         await qUtil.rollbackTransaction()
         //obtiene los registros duplicados
@@ -377,36 +419,41 @@ const xlsxNormalize = async (dto, handleError) => {
         qUtil.setAttributes(campoHash)
         //qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
         qUtil.setGroupBy(campoHash)
-        qUtil.setHaving(qUtil.literal("count(*)>1"))
+        qUtil.setHaving(qUtil.literal('count(*)>1'))
         await qUtil.findTune()
-        results[model].push("Existen " + qUtil.getResults().length + ", registros duplicados O que ya existen en Base de datos.")
+        results[model].push(
+          'Existen ' +
+            qUtil.getResults().length +
+            ', registros duplicados O que ya existen en Base de datos.'
+        )
         //obtiene los registros duplicados
-        const hashsers = qUtil.getResults().map(obj => obj.hasher)
+        const hashsers = qUtil.getResults().map((obj) => obj.hasher)
         qUtil.setTableInstance(element.alias)
         qUtil.setAttributes(element.keyAux)
-        qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register, hasher: hashsers })
+        qUtil.setWhere({
+          swloadend: false,
+          dni_register: obj_cnf.dni_register,
+          hasher: hashsers,
+        })
         qUtil.setOrder([element.keyAux[0], element.keyAux[1]])
         await qUtil.findTune()
 
         results[model].push(qUtil.getResults())
-
       }
     }
 
-
-
-    //termina actulizacion - si no hay observaciones se concluye procesamiento 
+    //termina actulizacion - si no hay observaciones se concluye procesamiento
     //-> si existe observacion se elimina todos los datos.
     const sw = {}
     for (const model in results) {
       const modelo = modelos[model]
       const element = results[model]
-      console.log("tabla:::", modelo.alias)
+      console.log('tabla:::', modelo.alias)
       qUtil.setTableInstance(modelo.alias)
       sw[model] = {}
       if (element.length > 0) {
         sw[model].process = false
-        //elimina registros malos        
+        //elimina registros malos
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
         await qUtil.deleting()
       } else {
@@ -422,7 +469,7 @@ const xlsxNormalize = async (dto, handleError) => {
       data: results,
       genero: definicionGenero,
       sws: sw,
-      message: 'Datos procesados. Ver Registro de procesamiento'
+      message: 'Datos procesados. Ver Registro de procesamiento',
     }
   } catch (error) {
     handleError.setMessage('Error de sistema: XLSXNORMALIZESRV')
@@ -436,5 +483,5 @@ module.exports = {
   vaciarTmps,
   xlsxLoad,
   xlsxNormalize,
-  egData
+  egData,
 }

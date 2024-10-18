@@ -49,14 +49,53 @@ const getDataTree = async (parent_id = '-1', root, resultado = [], module="ssepi
 
     return resultado
 }
+const getDataGeoreferencia = async (module="ssepi", component="sssscp") => {
 
+    await frmUtil.getGroupIdsInstitucion()
+    const ids = frmUtil.getResults()
+    const institucion_where = ids.length>0? {institucion_id: ids} : null
+    
+    
+
+    console.log("\n\n #### IDS*****:", ids,"\n\n")
+    qUtil.setTableInstance('ae_institucion')
+    qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
+    let cnf = {
+        //required: false,
+        association: 'dpto',
+        attributes: qUtil.transAttribByComboBox([qUtil.literal("'/"+module+"/"+component+"/'||dpto.cod_dpto"), 'nombre_dpto'])
+    }
+    qUtil.setInclude(cnf)
+    qUtil.setWhere({ tipo_institucion_id: 'EESS',  ...institucion_where})    
+    qUtil.setGroupBy(['atributo','valor', qUtil.col('dpto.cod_pais'), qUtil.col('dpto.cod_dpto'), qUtil.col('dpto.nombre_dpto')])
+    qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
+    
+    await qUtil.findTune()
+    
+    const result = qUtil.getResults()
+    console.log("\n\n ****** results:", result,"\n\n")
+    qUtil.setResetVars()
+    const resultado ={}
+    for (const i in result) {
+        const tmp = result[i].dpto
+        if (tmp) {
+            resultado[tmp.text] = { value: tmp.value, text: tmp.text, atributo: result[i].atributo, valor: result[i].valor, }
+        }
+    }
+
+
+    return resultado
+}
 const menuGeoreferencia = async (token, handleError=HandleErrors) => {
     try {
-        const datos = handleToken.filterHeaderTokenVerify(token)
+        frmUtil.setToken(token)
+        const obj_cnf =  frmUtil.getObjSession()
+        
+        //const datos = handleToken.filterHeaderTokenVerify(token)
 
         qUtil.setTableInstance('ae_institucion')
         
-        qUtil.setWhere({institucion_id: datos.inst})
+        qUtil.setWhere({institucion_id: obj_cnf.institucion_id})
         let cnf = {
             association: 'appis',
             attributes:['nombre_aplicacion', 'nombre_comercial'],
@@ -130,29 +169,8 @@ const menuGeoreferencia = async (token, handleError=HandleErrors) => {
 
         let result2 = null
 
-        if (result.tipo_institucion_id == 'ASUSS'){
-            result2 = Object.values(await getDataTree(result.institucion_id, result.institucion_root))
-            console.log("\n\n\n ---------------------------------------------------\nluego de ejecutar recursivo", result2)
-        }else {
-            
-            qUtil.setTableInstance('ae_institucion')
-            qUtil.setAttributes([[qUtil.literal("'sepi'"), 'atributo'], ['cod_dpto', 'valor']])
-            cnf = {
-                association: 'dpto',
-                attributes: qUtil.transAttribByComboBox([qUtil.literal("'/ssepi/sssscp/'||dpto.cod_dpto"), 'nombre_dpto'])
-            }
-            qUtil.setInclude(cnf)
-            
-            qUtil.setWhere(whereAux)
-            qUtil.setOrder([qUtil.col('dpto.nombre_dpto')])
-                        
-            await qUtil.findTune()
-            result2 = qUtil.getResults()   
-            
-            qUtil.setResetVars()
-            result2 = result2.map(obj => ({ ...obj.dpto, atributo: obj.atributo, valor: obj.valor }))
-        }
-
+        result2 = Object.values(await getDataGeoreferencia())
+       
         //procesando Results
         let result3 = result2
         if (result2.length > 1) {

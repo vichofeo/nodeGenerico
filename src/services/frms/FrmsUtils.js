@@ -275,7 +275,7 @@ module.exports = class FrmsUtils {
   }
 
   getResults() {
-    console.log('results:', this.#results)
+    //console.log('results:', this.#results)
     return this.#results
   }
   /**
@@ -438,6 +438,7 @@ module.exports = class FrmsUtils {
     obj.institucion_id = this.#dataSession?.inst
     obj.dni_register = this.#dataSession?.dni
     obj.aplicacion_id = this.#dataSession?.app
+    obj.tipo_institucion = this.#dataSession?.type
     obj.create_date = new Date()
 
     obj.login =  this.#dataSession?.usr
@@ -616,7 +617,10 @@ module.exports = class FrmsUtils {
     }
   }
 
-  //obtiene flag de rol
+  /**
+   * Metodo: Obtiene configuracion del rol del usuario logueado
+   * @returns {rol, name_rol, primal}
+   */
  async getRoleSession(){
   const obj_cnf = this.getObjSession()
   this.#qUtils.setTableInstance('apu_credencial_rol')
@@ -634,4 +638,74 @@ module.exports = class FrmsUtils {
     primal: result[0].app_rolex.primal,
   }
  } 
+
+ getGroupIdsInstitucion = async() =>{
+  try {
+    const obj_cnf = this.getObjSession()
+    const tipo_institucion =  obj_cnf.tipo_institucion
+    //si tipo_insitucion ==EG, obtener ids de eess
+    //si tipo_institucion == EESS, enviar id de institucion
+    //si tipo_institucion == ASUSS verificar si es UNIDAD, DEPARTAMENTAL O REGIONAL
+    //console.log("\n\n TIPO INSTITUCION::.", tipo_institucion)
+    //console.log("\n\n DATOS SESION::.", obj_cnf)
+    let results = []
+    switch (tipo_institucion) {
+      case 'EESS':
+        results.push(obj_cnf.institucion_id)
+        break;
+    case 'EG':
+      this.#qUtils.setTableInstance("ae_institucion")
+      this.#qUtils.setAttributes(['institucion_id'])
+      this.#qUtils.setWhere({institucion_root: obj_cnf.institucion_id})
+      await this.#qUtils.findTune()
+      results =  this.#qUtils.getResults().map(o=>o.institucion_id)
+    break;
+    case 'ASUSS':
+      this.#qUtils.setTableInstance("ae_institucion")      
+      await this.#qUtils.findID(obj_cnf.institucion_id)
+      const r =  this.#qUtils.getResults()
+      //pregunta si es ASUSS UNIDA
+  if(r.es_unidad || r.institucion_root=='-1' ){
+    //es asuss -> envia result nulo para mostrar todo
+    results = []
+  }else{
+    
+    let paso=true
+    let ids = [obj_cnf.institucion_id]
+    let root = [obj_cnf.institucion_id]
+    while(paso){
+      console.log("\n\n", "######EN TRANCE CON LA COSAS########", "\n\n")
+      this.#qUtils.setTableInstance("ae_institucion")
+      this.#qUtils.setAttributes(['institucion_id'])
+      this.#qUtils.setWhere({es_unidad: false, tipo_institucion_id: 'ASUSS', parent_grp_id: root})
+      await this.#qUtils.findTune()
+      const r = this.#qUtils.getResults()      
+      
+      if(r.length<=0) paso=false
+      else{
+        root = r.map(o=>o.institucion_id)
+        ids.push(...root)
+      }
+    }//end While
+
+    //obtiene ID's de EESS por ids de while
+    this.#qUtils.setTableInstance("ae_institucion")
+    this.#qUtils.setAttributes(['institucion_id'])
+    this.#qUtils.setWhere({tipo_institucion_id: 'EESS', parent_grp_id: ids})
+    await this.#qUtils.findTune()
+    results = this.#qUtils.getResults().map(o=>o.institucion_id)     
+  }//end else
+    
+    break;
+      default:
+        results = ['vichofeoERROR']
+        break;
+    }
+
+    this.#results =  results
+    
+  } catch (error) {
+    
+  }
+ }
 }

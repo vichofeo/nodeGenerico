@@ -62,10 +62,10 @@ const PARAMETERS = {
         gender: ['apellidos_nombres', 'genero','f_genero']
     },
     snis_302a:{
-        alias:'tmp_snis',
+        alias:'tmp_snis302a',
         attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
         //file: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana', 'Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-        file: ['Grupo de variables', '  Menor de 6 meses|Masculino', '  Menor de 6 meses|Femenino', ' Mayor de 6 meses a menor de 1 año|Masculino', ' Mayor de 6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
+        file: [[[1,26],['frm','NOTIFICACIÓN PARA LA VIGILANCIA EPIDEMIOLÓGICA']], [[4,3], 'departamento'], [[], 'ente_gestor'], [[5,6], 'establecimiento'], [[5,35], 'gestion'], [[2,87],'semana'], [[4,28], 'red'], [[4,59], 'municipio'],[[5,57], 'sub_sector']],
         table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
@@ -99,6 +99,153 @@ const PARAMETERS = {
                             columns:[95, 98, 101, 104],
                             valuesColumns:['|Dentro|Masculino', '|Dentro|Femenino', '|Fuera|Masculino', '|Fuera|Femenino']
                     }
+                }
+                
+            }
+        }
+
+    },
+    snis_301a:{
+        alias:'tmp_snis301a',
+        attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
+        file: [[[0,0],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS']], [[3,3], 'departamento'], [[], 'ente_gestor'], [[4,8], 'establecimiento'], [[4,44], 'gestion'], [[4,36],'mes'], [[3,21], 'red'], [[3,40], 'municipio'],[[2,40], 'sub_sector']],
+        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
+        validate: [1,1,1,2,2,1,1,0,0,2],
+        forFilter:  null,//[ array de campos fecha a validar],        
+        update:[],
+        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        //gender: ['nombre', 'genero','f_genero']
+        filterByFunc:{
+            alias:'parserSnis301A' ,
+            params: {                
+                sections: ['CONSULTA  EXTERNA', 'REFERENCIAS Y CONTRAREFERENCIAS', 'ATENCIÓN ODONTOLÓGICA', 'CONSULTAS PRENATALES', 'ATENCIÓN DE PARTO Y PUERPERIO EN SERVICIO Y DOMICILIO, OTRO TIPO DE ATENCIONES LIGADAS AL PARTO',
+                    'INTERRUPCION LEGAL DEL EMBARAZO', 'ANTICONCEPCIÓN, PREVENCIÓN DE CÁNCER DE CUELLO UTERINO Y MAMA', 'RECIÉN NACIDOS EN SERVICIO Y DOMICILIO', 'CONTROL DE CRECIMIENTO INFANTIL', 'INTERNACIONES', 'VACUNACIONES EN MENORES DE 5 AÑOS', 
+                    'OTRAS VACUNACIONES', 'MALARIA Número de tratamientos específicos entregados al paciente confirmado', 'RABIA', 'CHAGAS', 'ACCIDENTES POR OFIDIOS Y ANIMALES PONZOÑOSOS',
+                    'TELESALUD', 'TELEEDUCACIÓN' 
+                ],               
+                sectionsCol2:['MICRONUTRIENTES Y LACTANCIA MATERNA', 'OTRAS ACTIVIDADES  DE ENFERMERÍA', 'CIRUGIAS Y ANESTESIAS', 'ENFERMEDADES CONGÉNITAS DEL METABOLISMO',
+                    'ACTIVIDADES  DEL ESTABLECIMIENTO Y CON LA  COMUNIDAD','VIH - SIFILIS', 'LEISHMANIASIS', 'TUBERCULOSIS Y LEPRA'
+                ],
+                dataNoProcess: ['Continua de pag N°1  Anticoncepción,Prevención de cáncer….','M','F'],
+                sectionsColumns:{
+                    ['CONSULTA  EXTERNA']:{
+                                columns:[11,14,17,20,23,26],
+                                valuesColumns: [' PRIMERA||Masculino', ' PRIMERA||Femenino', 'NUEVA||Masculino', 'NUEVA||Femenino', 'REPETIDA||Masculino', 'REPETIDA||Femenino'] },
+                    ['REFERENCIAS Y CONTRAREFERENCIAS']:{
+                            columns:[23],
+                            valuesColumns: ['NÚMERO']                        
+                            },
+                    ['ATENCIÓN ODONTOLÓGICA']:{
+                            columns:[23,26,29,32,35,38,41,44,47,50,53,56],
+                            valuesColumns:[' < de 5 Años||Masculino', ' < de 5 Años||Femenino', '5 a 13 Años||Masculino', '5 a 13 Años||Femenino', '14 a 19 Años||Masculino', '14 a 19 Años||Femenino', '20 a 59 Años||Masculino', '20 a 59 Años||Femenino', '60 Años y Mas||Masculino', '61 Años y Mas||Femenino', 'Emba-razada', 'Post-Parto']
+                            },
+                    ['CONSULTAS PRENATALES']:{
+                            columns:[23,26,29,32,35,38,41,44,47,50,53,56],
+                            valuesColumns:[' < a 10|Dentro', ' < a 10|Fuera', '10 a 14|Dentro', '10 a 14|Fuera', '15 a 19|Dentro', '15 a 19|Fuera', '20 a 34|Dentro', '20 a 34|Fuera', '35 a 49|Dentro', '35 a 49|Fuera', '50 y +|Dentro', '50 y +|Fuera']
+                            },
+                    ['ATENCIÓN DE PARTO Y PUERPERIO EN SERVICIO Y DOMICILIO, OTRO TIPO DE ATENCIONES LIGADAS AL PARTO']:{
+                            columns:[23,26,29,32,35,38,41,44,47,50,53,56],
+                            valuesColumns:[' < a 10|Servicio', ' < a 10|Domicilio', '10 a 14|Servicio', '10 a 14|Domicilio', '15 a 19|Servicio', '15 a 19|Domicilio', '20 a 34|Servicio', '20 a 34|Domicilio', '35 a 49|Servicio', '35 a 49|Domicilio', '50 y +|Servicio', '50 y +|Domicilio']
+                    },
+                    ['INTERRUPCION LEGAL DEL EMBARAZO']:{
+                        columns:[35,39,43,47,51,55],
+                        valuesColumns:[' < a 10', '10 a 14', '15 a 19', '20 a 34', '35 a 49', '50 y +']
+                    },
+                    ['ANTICONCEPCIÓN, PREVENCIÓN DE CÁNCER DE CUELLO UTERINO Y MAMA']:{
+                        columns:[23,29,35,41,47,53],
+                        valuesColumns:[' < a 10','10 a 14','15 a 19','20 a 34','35 a 49','50 y +']
+                    },
+                    ['RECIÉN NACIDOS EN SERVICIO Y DOMICILIO']:{
+                        columns:[21,25],
+                        valuesColumns:['|Servicio','|Domicilio']
+                    },
+                    ['CONTROL DE CRECIMIENTO INFANTIL']:{
+                        columns:[21,23,25,27],
+                        valuesColumns:['NUEVOS||Masculino', 'NUEVOS||Femenino', 'REPETIDOS||Masculino', 'REPETIDOS||Femenino']
+                    },
+                    ['INTERNACIONES']:{
+                        columns:[21,25], 
+                        valuesColumns:['||Masculino', '||Femenino'],
+                        exception:{filasItem:['7.  Días camas ocupadas maternidad', '8.  Días camas ocupadas otros servicios', '9. Dias camas disponibles maternidad', '10. Días camas disponibles otros servicios'], 
+                                    atributos:[['variable','No.']]}
+                    },
+                    ['VACUNACIONES EN MENORES DE 5 AÑOS']:{
+                        columns:[19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57],
+                        valuesColumns:[' Menor de  1 año|Dentro|Masculino', ' Menor de  1 año|Dentro|Femenino', ' Menor de  1 año|Fuera|Masculino', ' Menor de  1 año|Fuera|Femenino', '- 12 a 23 meses|Dentro|Masculino', '- 12 a 23 meses|Dentro|Femenino', '- 12 a 23 meses|Fuera|Masculino', '- 12 a 23 meses|Fuera|Femenino', '2 años|Dentro|Masculino', '2 años|Dentro|Femenino', '2 años|Fuera|Masculino', '2 años|Fuera|Femenino', '3 años|Dentro|Masculino', '3 años|Dentro|Femenino', '3 años|Fuera|Masculino', '3 años|Fuera|Femenino', '4 años|Dentro|Masculino', '4 años|Dentro|Femenino', '4 años|Fuera|Masculino', '4 años|Fuera|Femenino'],                        
+                    }, 
+                    ['OTRAS VACUNACIONES']:{
+                        columns:[11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57],
+                        valuesColumns:['5 a 9 años|Dentro|Masculino', '5 a 9 años|Dentro|Femenino', '5 a 9 años|Fuera|Masculino', '5 a 9 años|Fuera|Femenino', '10 años|Dentro|Masculino', '10 años|Dentro|Femenino', '10 años|Fuera|Masculino', '10 años|Fuera|Femenino', '11 años|Dentro|Masculino', '11 años|Dentro|Femenino', '11 años|Fuera|Masculino', '11 años|Fuera|Femenino', '12 a 20 años|Dentro|Masculino', '12 a 20 años|Dentro|Femenino', '12 a 20 años|Fuera|Masculino', '12 a 20 años|Fuera|Femenino', '21 a 59 años|Dentro|Masculino', '21 a 59 años|Dentro|Femenino', '21 a 59 años|Fuera|Masculino', '21 a 59 años|Fuera|Femenino', '60 y +|Dentro|Masculino', '60 y +|Dentro|Femenino', '60 y +|Fuera|Masculino', '60 y +|Fuera|Femenino']
+                    },
+                    ['MALARIA Número de tratamientos específicos entregados al paciente confirmado']:{
+                        columns:[21,23,25,27],
+                        valuesColumns:[' Vivax||Masculino', ' Vivax||Femenino', 'Falciparum||Masculino', 'Falciparum||Femenino']
+                    },
+                    ['RABIA']:{ 
+                        columns:[21,25], 
+                        valuesColumns:['||Masculino','||Femenino'],
+                        exception:{filasItem:['5.  N° de perros y gatos con vacuna antirrábica'], 
+                                    atributos:[['variable','No.']]}   
+                    },
+                    ['CHAGAS']:{
+                        columns:[21,23,25,27], 
+                        valuesColumns:['INICIADO||Masculino', 'INICIADO||Femenino', 'CONCLUIDO||Masculino', 'CONCLUIDO||Femenino'],
+                        exception:{filasItem:['6. Viviendas Evaluadas', '7. Viviendas Positivas', '8. Viviendas Rociadas'], 
+                            atributos:[['variable','No.']]}   
+                    }, 
+                    ['ACCIDENTES POR OFIDIOS Y ANIMALES PONZOÑOSOS']:{
+                        columns:[21,25],
+                        valuesColumns:['||Masculino','||Femenino']
+                    },
+                    //['TELESALUD']:{columns:[], valuesColumns:[]}, 
+                    ['TELEEDUCACIÓN']:{
+                        columns:[15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57],
+                        valuesColumns:['MEDICOS||Masculino', 'MEDICOS||Femenino', 'ENFERMERA||Masculino', 'ENFERMERA||Femenino', 'AUX. ENF.||Masculino', 'AUX. ENF.||Femenino', 'ODONTO.||Masculino', 'ODONTO.||Femenino', 'OTRO PERSONAL||Masculino"', '"OTRO PERSONAL||Femenino"', 'ESCOLAR||Masculino', 'ESCOLAR||Femenino', 'JOVENES||Masculino', 'JOVENES||Femenino', 'ADULTOS||Masculino', 'ADULTOS||Femenino', 'DIRIGENTE||Masculino', 'DIRIGENTE||Femenino', 'PROMOTORES||Masculino', 'PROMOTORES||Femenino', 'OTROS||Masculino', 'OTROS||Femenino']
+                    },
+
+                    //columna secundarias con ´pivot 30
+                    ['MICRONUTRIENTES Y LACTANCIA MATERNA']:{
+                        columns:[55],
+                        valuesColumns:['CANTIDAD']
+                    },
+                    ['OTRAS ACTIVIDADES  DE ENFERMERÍA']:{
+                        columns:[51],
+                        valuesColumns:['CANTIDAD']
+                    },
+                    ['CIRUGIAS Y ANESTESIAS']:{
+                        columns:[51,55],
+                        valuesColumns:['||Masculino','||Femenino']
+                    },
+                    ['ENFERMEDADES CONGÉNITAS DEL METABOLISMO']:{
+                        columns:[51,55],
+                        valuesColumns:['||Masculino','||Femenino']
+                    },
+                    ['ACTIVIDADES  DEL ESTABLECIMIENTO Y CON LA  COMUNIDAD']:{
+                        columns:[55],
+                        valuesColumns:['No.']
+                    },
+                    ['VIH - SIFILIS']:{
+                        columns:[51,55],
+                        valuesColumns:['||Masculino','||Femenino']
+                    },
+                    ['LEISHMANIASIS']:{
+                        columns:[51,53,55,57],
+                        valuesColumns:['INICIADO||Masculino', 'INICIADO||Femenino', 'CONCLUIDO||Masculino', 'CONCLUIDO||Femenino']
+                    },
+                    ['TUBERCULOSIS Y LEPRA']:{
+                        columns:[51,55],
+                        valuesColumns:['||Masculino','||Femenino']
+                    }
+
+                },
+                exeptionColumns:{
+                    ['TELESALUD']:{
+                        pivots:[0,6,7],
+                        filas:[1,2,3,4,5,6,7,8,9,10,11,12],
+                        columns:[19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57], 
+                        valuesColumns:[' < 6 meses||Masculino', ' < 6 meses||Femenino', '- 6 meses < 1 año||Masculino', '- 6 meses < 1 año||Femenino', '1 a 4 años||Masculino', '1 a 4 años||Femenino', '5 a 9 años||Masculino', '5 a 9 años||Femenino', '10 a 14 años||Masculino', '10 a 14 años||Femenino', '15 a 19 años||Masculino', '15 a 19 años||Femenino', '20 a 39 años||Masculino', '20 a 39 años||Femenino', '40 a 49 años||Masculino', '40 a 49 años||Femenino', '50 a 59 años||Masculino', '50 a 59 años||Femenino', '60 años +||Masculino', '60 años +||Femenino']
+                    },
                 }
                 
             }

@@ -132,8 +132,8 @@ const REPORTS = {
     },
   },
   snis302a: {
-    table: 'tmp_snis',
-    tables: 'tmp_snis s, ae_institucion i',
+    table: 'tmp_snis302a',
+    tables: 'tmp_snis302a s, ae_institucion i',
     alias: 'Datos snis - Formularios 302A',
     //attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
     attributes: [
@@ -141,9 +141,9 @@ const REPORTS = {
       [
         `'['||
 string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis s2 WHERE s2.formulario= tmp_snis.formulario AND s2.gestion= tmp_snis.gestion AND s2.semana= tmp_snis.semana)
+(SELECT COUNT(*) FROM tmp_snis302a s2 WHERE s2.formulario= tmp_snis302a.formulario AND s2.gestion= tmp_snis302a.gestion AND s2.semana= tmp_snis302a.semana)
 ||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis s2 WHERE s2.formulario= tmp_snis.formulario AND s2.gestion= tmp_snis.gestion AND s2.semana= tmp_snis.semana)
+(SELECT COUNT(*) FROM tmp_snis302a s2 WHERE s2.formulario= tmp_snis302a.formulario AND s2.gestion= tmp_snis302a.gestion AND s2.semana= tmp_snis302a.semana)
 ||'}' DESC
 )||' ]'`,
         'registros',
@@ -183,6 +183,64 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
         if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
         else
           sentenciaAux = dato.registros.map((val) => `gestion||'-'||semana='${val}'`)
+
+        sentencia += `( ${sentenciaAux.join(' OR ')} ) `
+      } else sentencia = '1=2'
+      return sentencia
+    },
+  },
+  snis301a: {
+    table: 'tmp_snis301a',
+    tables: 'tmp_snis301a s, ae_institucion i',
+    alias: 'Datos snis - Formularios 301A',
+    //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
+    attributes: [
+      ['formulario', 'periodo'],
+      [
+        `'['||
+string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis301a s2 WHERE s2.formulario= tmp_snis301a.formulario AND s2.gestion= tmp_snis301a.gestion AND s2.mes= tmp_snis301a.mes)
+||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis301a s2 WHERE s2.formulario= tmp_snis301a.formulario AND s2.gestion= tmp_snis301a.gestion AND s2.mes= tmp_snis301a.mes)
+||'}' DESC
+)||' ]'`,
+        'registros',
+      ],
+    ],
+    parseAttrib: ['1'],
+    campos: `departamento, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
+    headers: [
+      'DEPARTAMENTO',
+      'ENTE GESTOR',
+      'ESTABLECIMIENTO / INSTITUCION',
+      'GESTION',
+      'MES',
+      'FORMULARIO',
+      'GRUPO DE VARIABLES',
+      'VARIABLE',
+      'DENTRO/FUERA',
+      'SUBVARIABLE',
+      'VALOR',
+    ],
+    tipo: 'Sum',
+    camposOcultos: ['VALOR'],
+    rows: ['DEPARTAMENTO', 'FORMULARIO', 'GRUPO DE VARIABLES'],
+    cols: ['VARIABLE', 'SUBVARIABLE'],
+    mdi: 'mdi-seat-flat-angled',
+    precondicion: ['s.ente_gestor=i.institucion_id'],
+    referer: [],
+    metodo: function (dato = {}) {
+      //Array(formulario, [mess "gestion-mes"])
+      let sentencia = ''
+      if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
+
+      if (Array.isArray(dato.registros)) {
+        dato.registros =  dato.registros.map(o=>o.periodo)
+        console.log("\n ::::::::::::::", dato.registros)
+        let sentenciaAux = ''
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        else
+          sentenciaAux = dato.registros.map((val) => `gestion||'-'||mes='${val}'`)
 
         sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       } else sentencia = '1=2'

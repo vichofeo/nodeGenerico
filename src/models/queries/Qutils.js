@@ -23,6 +23,7 @@ module.exports = class Qutils {
 
   #transac
 
+
   constructor() {
     if (Qutils.instance) return Qutils.instance
 
@@ -154,6 +155,7 @@ module.exports = class Qutils {
       group: this.#groupBy,
       having: this.#having,
       include: this.#include,
+      
     })
     this.#transformResultToArray()
   }

@@ -5,7 +5,7 @@ const handleError  = new HandleErrors()
 const menuGeoreferencia = async (req, res) => {
   try {
     handleError.setRes(res)
-    const token = req.headers.authorization
+    const token = req.headers.authorization    
     const result = await menuGeoRef.menuGeoreferencia(token, handleError)
     res.json(result)
    //handleError.handleResponse(result)  

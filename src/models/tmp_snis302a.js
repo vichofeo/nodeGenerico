@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class tmp_snis extends Model {
+  class tmp_snis302a extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  tmp_snis.init(
+  tmp_snis302a.init(
     {
       idx: { type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement:true },
             
@@ -44,12 +44,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'tmp_snis',
+      modelName: 'tmp_snis302a',
       timestamps: false,
       freezeTableName: true,
-      tableName: 'tmp_snis',
+      tableName: 'tmp_snis302a',
       classMethods: {},
     }
   )
-  return tmp_snis
+  return tmp_snis302a
 }

@@ -8,7 +8,7 @@ const frmsInitialReport = async (dto, handleError) => {
   try {
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
-
+    //obtiene formularios segun aplicacion
     qUtil.setTableInstance('f_formulario')
     qUtil.setInclude({
       association: 'grupo',
@@ -37,6 +37,14 @@ const frmsInitialReport = async (dto, handleError) => {
 
 const frmsStatusReport = async (dto, handleError) => {
   try {
+    frmUtil.setToken(dto.token)
+    //ids de establecimientos permitidos
+    await frmUtil.getGroupIdsInstitucion()
+    const ids_institucion = frmUtil.getResults().join("','")
+    let whereAux = ''
+    if (ids_institucion)
+      whereAux = `AND r.institucion_id IN ('${ids_institucion}')`
+
     //colocar aki restriccion por estblecimiento segun rol
     const formulario_id = dto.model
     const query = `SELECT 
@@ -53,7 +61,7 @@ WHERE
 r.registro_id= ll.registro_id  
 AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
 AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
-and r.formulario_id='${formulario_id}'
+and r.formulario_id='${formulario_id}' ${whereAux}
 GROUP BY 1,2
 ORDER BY 2`
     qUtil.setQuery(query)
@@ -85,22 +93,26 @@ ORDER BY 2`
 
 const frmsReport = async (dto, handleError) => {
   try {
-//datos de session
-frmUtil.setToken(dto.token)
-const obj_cnf = frmUtil.getObjSession()
-const modelo = dto.modelo
-const pregunta_id =  dto.condicion.idx
-const periodos =  dto.condicion.registros.map(o=>o.periodo)
-let whereAux = ''
-if(periodos[0]=='Todos') whereAux=''
-else whereAux = `AND r.periodo in ('${periodos.join("','")}')`
-    
+    //datos de session
+    frmUtil.setToken(dto.token)
+    //const obj_cnf = frmUtil.getObjSession()
 
-      //VALIDAR USO Y CONDICIONES SEGUN TOKEN //pendiente de patente
-      //dondicion extra por lugar
+    const modelo = dto.modelo
+    const pregunta_id = dto.condicion.idx
+    const periodos = dto.condicion.registros.map((o) => o.periodo)
+    let whereAux = ''
+    if (periodos[0] == 'Todos') whereAux = ''
+    else whereAux = `AND r.periodo in ('${periodos.join("','")}')`
 
-      const datosResult = {}
-      const query = `SELECT 
+    //VALIDAR USO Y CONDICIONES SEGUN TOKEN
+    //ids de establecimientos permitidos
+    await frmUtil.getGroupIdsInstitucion()
+    const ids_institucion = frmUtil.getResults().join("','")
+    if (ids_institucion)
+      whereAux = ` ${whereAux} AND r.institucion_id IN ('${ids_institucion}')`
+
+    const datosResult = {}
+    const query = `SELECT 
 i.nombre_institucion AS establecimiento, frm.descripcion AS formulario, 
 TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS periodo,
 a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as pregunta,
@@ -118,49 +130,47 @@ and r.formulario_id='${modelo}'
 AND ll.enunciado_id = '${pregunta_id}'
 ${whereAux}
 ORDER BY 5,6,7`
-     
-      qUtil.setQuery(query)
-      await qUtil.excuteSelect()
 
-      let result = qUtil.getResults()
-      let headers = []
-      //convierte en array resultados
-      if (result.length > 0) {
-          headers = Object.keys(result[0])
-          result = result.map((obj, index) => Object.values(obj))
-          result.unshift(headers)
-      }
+    qUtil.setQuery(query)
+    await qUtil.excuteSelect()
 
-      //construye datos de configuracion para reporte dinamico
-      const cnf = {
-          tipo_agregacion: "Sum",
-          campos_ocultos: ['valor'],
-          diferencia: headers.filter(x => ['valor'].indexOf(x) === -1),
-          rows: ['grupo'],
-          cols: ['variable', 'subvariable'],
-          vals: ['valor'],
-          mdi: 'mdi-seat-flat-angled'
-      }
-      datosResult[modelo] = { values: result, headers: headers, cnf }
+    let result = qUtil.getResults()
+    let headers = []
+    //convierte en array resultados
+    if (result.length > 0) {
+      headers = Object.keys(result[0])
+      result = result.map((obj, index) => Object.values(obj))
+      result.unshift(headers)
+    }
 
-      return {
-          ok: true,
-          data: { ...datosResult, model: modelo, titulo: "Datos de formulario" },            
-          message: 'Resultado exitoso. Parametros obtenidos'
-      }
+    //construye datos de configuracion para reporte dinamico
+    const cnf = {
+      tipo_agregacion: 'Sum',
+      campos_ocultos: ['valor'],
+      diferencia: headers.filter((x) => ['valor'].indexOf(x) === -1),
+      rows: ['grupo'],
+      cols: ['variable', 'subvariable'],
+      vals: ['valor'],
+      mdi: 'mdi-seat-flat-angled',
+    }
+    datosResult[modelo] = { values: result, headers: headers, cnf }
 
+    return {
+      ok: true,
+      data: { ...datosResult, model: modelo, titulo: 'Datos de formulario' },
+      message: 'Resultado exitoso. Parametros obtenidos',
+    }
   } catch (error) {
-      console.log(error);
-      return {
-          ok: false,
-          message: "Error de sistema: RPTGRALSRV",
-          error: error.message
-      }
-  };
-
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: RPTGRALSRV',
+      error: error.message,
+    }
+  }
 }
 module.exports = {
   frmsInitialReport,
   frmsStatusReport,
-  frmsReport
+  frmsReport,
 }

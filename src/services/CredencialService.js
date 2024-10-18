@@ -86,7 +86,12 @@ const login = async (usr, handleError) => {
     } else {
       const aux = await handleJwt.compare(usr.password, result.hash)      
       if (aux) {
+        //obtiene el tipo de insitucion
+        const eess =  new QueriesUtils(eessModel)
+        const resultInst =  await eess.findID(result.dataValues.institucion_id)
+        result.tipo_institucion =  resultInst.tipo_institucion_id   
         
+        //genera token
         const  token = await handleToken.tokenSign(result)
 
         //obtiene informacion del rol y sus componentes

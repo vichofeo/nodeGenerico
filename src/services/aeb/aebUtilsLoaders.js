@@ -1,76 +1,4 @@
 const aebUtils = {
-    filterSnis302A: function (objDatosJson , params) {
-        try {
-            const datosJson = objDatosJson.data
-            const resultado = []
-            const resultadoOriginal = []
-            if (typeof datosJson[0] != 'undefined') {
-                //verifica q la primera fial contenga informacion basica para el procesamiento
-              let datos_basicos = objDatosJson.dataBasic
-              datos_basicos.ente_gestor = objDatosJson.eg.value
-                                
-              //recorre contenido del json excel
-              let tmp = {}
-              let pivotLocal = null
-              for (const element of datosJson) {
-    
-                if (params.dataValid.includes(element[params.columnPivot])) {
-                  if(!params.dataNoProcess.includes(element[params.columnPivot])){
-                    tmp[element[params.columnPivot]] = []
-                    pivotLocal = element[params.columnPivot]
-                  }else pivotLocal = 'NoDefined'
-                  
-                } else {
-    
-                  if (Array.isArray(tmp[pivotLocal]) && Object.hasOwn(element, params.columnPivot)) {
-                    const keys = Object.keys(element)
-                    
-                    const keysValidos = keys.filter(valor => params.columnsProcess.includes(valor))
-                    //console.log("###3", element)
-                    if (keysValidos.length > 0) {
-                      //let aux = { formulario: pivotLocal, [params.columnPivot]: element[params.columnPivot], ...datos_basicos }
-                      let aux = { formulario: pivotLocal, grupo: element[params.columnPivot], ...datos_basicos }
-                      let aux1 = JSON.parse(JSON.stringify(aux))
-                      keysValidos.forEach(valor => {
-                        aux = Object.assign(aux, { [valor]: element[valor] })
-                        //construye resultado
-                        const [variable, subvariable] = valor.split("|")
-                        //console.log(pivotLocal, " v= ", valor, ":::", { variable: variable, subvariable: subvariable })
-    
-                        resultado.push({ ...aux1, variable: variable, subvariable: subvariable, valor: element[valor] })
-    
-                      })
-                      tmp[pivotLocal].push(aux)
-                      resultadoOriginal.push(aux)
-                    }
-    
-                  }
-    
-                }
-              }
-              //console.log("******************TMP:", tmp)
-              //filtra  solo resultados
-              /*for (const key in tmp) {
-                const element = tmp[key]
-                if(element.length>0)
-                resultado.push(...element)
-              }*/
-            }
-            //console.log("******************RESULADO:", resultado)
-            
-            return {
-                ok: true,
-                results : resultado
-            }
-
-          } catch (error) {
-            console.log(error)
-            return {
-                ok: true,
-                message: error.message
-            }
-          }
-    }, 
     parserSnis302A: function(dataArray, params){
       try {
 
@@ -157,15 +85,15 @@ const aebUtils = {
         resTemp.secundarios[dataNoProcess[0]]= tmpData
 
         //2.2. secundario MORATALIDAD MATERNA index=1
-        resTemp.secundarios[dataNoProcess[1]]= parserMaterna_SaludSex(json_base ,pivot,secundaryColumns[dataNoProcess[1]], resTemp.secundarios[dataNoProcess[1]], dataNoProcess[1])
+        resTemp.secundarios[dataNoProcess[1]]= parserSectionVarLatcnSvar(json_base ,pivot,secundaryColumns[dataNoProcess[1]], resTemp.secundarios[dataNoProcess[1]], dataNoProcess[1])
         //2.2. secundario SALUD SEXUAL REPRODUCTIVA index=2
-        resTemp.secundarios[dataNoProcess[2]]= parserMaterna_SaludSex(json_base ,pivot,secundaryColumns[dataNoProcess[1]], resTemp.secundarios[dataNoProcess[2]], dataNoProcess[2])
+        resTemp.secundarios[dataNoProcess[2]]= parserSectionVarLatcnSvar(json_base ,pivot,secundaryColumns[dataNoProcess[1]], resTemp.secundarios[dataNoProcess[2]], dataNoProcess[2])
         //2.3. secundario MORTALIDAD index=3
-        resTemp.secundarios[dataNoProcess[3]]= parserMaterna_SaludSex(json_base ,pivot,secundaryColumns[dataNoProcess[3]], resTemp.secundarios[dataNoProcess[3]], dataNoProcess[3])
+        resTemp.secundarios[dataNoProcess[3]]= parserSectionVarLatcnSvar(json_base ,pivot,secundaryColumns[dataNoProcess[3]], resTemp.secundarios[dataNoProcess[3]], dataNoProcess[3])
         //2.4  secundario SOSPECA DE ENFERMEDAD CONGENITAS index = 4
-        resTemp.secundarios[dataNoProcess[4]]= parserMaterna_SaludSex(json_base ,pivot,secundaryColumns[dataNoProcess[4]], resTemp.secundarios[dataNoProcess[4]], dataNoProcess[4])        
+        resTemp.secundarios[dataNoProcess[4]]= parserSectionVarLatcnSvar(json_base ,pivot,secundaryColumns[dataNoProcess[4]], resTemp.secundarios[dataNoProcess[4]], dataNoProcess[4])        
         //2.5 secundario caso especial MORTALIDAD PERINATAL, NEONATAL E INFANTIL index=5
-        resTemp.secundarios[dataNoProcess[5]]= parserMaterna_SaludSex(json_base ,67,secundaryColumns[dataNoProcess[5]], auxIndex5, dataNoProcess[5])
+        resTemp.secundarios[dataNoProcess[5]]= parserSectionVarLatcnSvar(json_base ,67,secundaryColumns[dataNoProcess[5]], auxIndex5, dataNoProcess[5])
         
         const results = []
         for (const k in resTemp) {
@@ -188,30 +116,171 @@ const aebUtils = {
             results: error.message
         }
     }
+  }, 
+  parserSnis301A: function(dataArray, params){
+    try {
+      
+      //const secundaryColumns =  params.columnsSecundary
+
+      const json_base =  dataArray.dataBasic
+      json_base.ente_gestor =  dataArray.eg.value
+
+      const sections = params.sections.map(v=>v.trim())
+      const dataNoProcess =  params.dataNoProcess  //Object.keys(params.sectionsCol2).map(v=>v.trim())
+      const sectionsComplement = params.sectionsCol2
+      const sectionsColumns =  params.sectionsColumns
+
+      
+      const resTemp = {principales:{}, secundarios:{}}
+      
+      const datosArray = dataArray.data
+      const pivot = 0
+      const pivotSecundary=30
+      let pivotPricipal = null
+      let pivotSecundario =  null
+
+      
+      //recorrre matriz de datos para columnas primaries
+      for (const data of datosArray) {
+        data[pivot] = data[pivot]? data[pivot].trim().replace(/(\r\n|\n|\r)/gm, ""): data[pivot]
+        //***principal
+        if(sections.includes(data[pivot])){
+          if(!dataNoProcess.includes(data[pivot])){
+            resTemp.principales[data[pivot]] = []
+            pivotPricipal = data[pivot]
+          }else pivotPricipal= 'Nodefined'            
+        }else if(Array.isArray(resTemp.principales[pivotPricipal]) && Object.hasOwn(data, pivot) && data[pivot] ){
+          if(data.length>1 && !dataNoProcess.includes(data[pivot])){              
+            resTemp.principales[pivotPricipal].push(data)            
+          }          
+        }
+        
+        //***secundario
+        if(sectionsComplement.includes(data[pivotSecundary])){
+          if(!dataNoProcess.includes(data[pivotSecundary])){
+            resTemp.secundarios[data[pivotSecundary]] = []
+            pivotSecundario = data[pivotSecundary]
+          }else pivotSecundario= 'Nodefined'            
+        }else if(Array.isArray(resTemp.secundarios[pivotSecundario]) && Object.hasOwn(data, pivotSecundary) && data[pivotSecundary] ){
+          if(data.length>1 && !dataNoProcess.includes(data[pivotSecundary])){              
+            resTemp.secundarios[pivotSecundario].push(data)            
+          }          
+        }
+      }
+      
+      //bucle de parseo por sectiosn primaria
+      for (const section of sections) {
+        if(sectionsColumns[section]){
+          const datos = resTemp.principales[section]
+          resTemp.principales[section] = parserSectionVarLatcnSvar(json_base ,pivot, sectionsColumns[section], datos, section)
+        }
+      }
+
+       //bucle de parseo por sectiosn SECUNDARIO O COUMNAS DDE LA DERECHA
+       for (const section of sectionsComplement) {
+        if(sectionsColumns[section]){
+          const datos = resTemp.secundarios[section]
+          resTemp.secundarios[section] = parserSectionVarLatcnSvar(json_base ,pivotSecundary, sectionsColumns[section], datos, section)
+        }
+      }
+
+      //procesa Segmentos con excepcion "exeptionColumns"
+      const excepciones =  Object.keys(params.exeptionColumns)
+      const auxiliarRes = {}
+      let pivotAuxiliar = '-99'
+      for (const data of datosArray) {
+        data[pivot] = data[pivot]? data[pivot].trim().replace(/(\r\n|\n|\r)/gm, ""): data[pivot]
+        //***excepcional
+        if(excepciones.includes(data[pivot])){
+          if(!dataNoProcess.includes(data[pivot])){
+            auxiliarRes[data[pivot]] = []
+            pivotAuxiliar = data[pivot]
+          }else pivotAuxiliar= 'Nodefined'            
+        }else if(Array.isArray(auxiliarRes[pivotAuxiliar])){
+          if(!dataNoProcess.includes(data[pivot])){              
+            auxiliarRes[pivotAuxiliar].push(data)            
+          }          
+        }
+      }
+      //filtra excepciones
+      for (const excepcion of excepciones) {
+        const tmp =  []
+        let grupo = JSON.parse(JSON.stringify(params.exeptionColumns[excepcion].pivots)).map(v=>null)
+        for(fila of params.exeptionColumns[excepcion].filas){
+          //por fila recorre pivots si es nulo ='' 
+          //concatena nuevo grupo
+          let neogrupo = []
+          for (const i in params.exeptionColumns[excepcion].pivots) {
+            const colIndex = params.exeptionColumns[excepcion].pivots[i]
+            const dataIndex =  auxiliarRes[excepcion][fila][colIndex] ? auxiliarRes[excepcion][fila][colIndex]: grupo[i]
+            //console.log(fila,",", colIndex, "::>", dataIndex)
+            if(grupo[i]!=dataIndex) grupo[i] = dataIndex
+          }
+          //console.log("fila::",fila, grupo )
+          auxiliarRes[excepcion][fila][pivot] = grupo.join(': ')
+          tmp.push(auxiliarRes[excepcion][fila])
+        }        
+        //manda a filtrado de columnas
+        resTemp.principales[excepcion] = parserSectionVarLatcnSvar(json_base ,pivot, params.exeptionColumns[excepcion], tmp, excepcion)
+      }
+
+
+      const results = []
+      for (const k in resTemp) {
+        for (const key in resTemp[k]) {
+          const element = resTemp[k][key]
+          if(element.length>0)
+            results.push(...element)
+        }          
+      }
+      
+
+      return {
+        ok: true,
+        results : results
+    }
+    } catch (error) {
+      console.log(error)
+      return {
+          ok: true,
+          results: error.message
+      }
   }
+}
 }
 //data_basic
 //pivot
-//secundaryColumns[dataNoProcess[1]]
-//resTemp.secundarios[dataNoProcess[1]]
+//cnf:columns, valuesColumns
+//DatosArray
 //dataNoProcess[1]
-const parserMaterna_SaludSex = (objData, pivot, objColumn, dataArray, frm)=>{
+const parserSectionVarLatcnSvar = (objData, pivot, objColumn, dataArray, frm)=>{
   const tmpData = []
   let colAux =  objColumn.valuesColumns.map(v=>v.split('|'))
+  const exceptions =  objColumn?.exception
   if(dataArray)
         for (const data of dataArray) {
+          let newVars = []
+          if(exceptions && exceptions.filasItem.includes(data[pivot].trim())) newVars = exceptions.atributos  
+               
           for (const i in objColumn.columns) {
             const index =  objColumn.columns[i]
             data[index] = data[index]!=null || data[index]!=undefined ? data[index].toString().trim():data[index]
-            if(data[index] && data[pivot]){
+            if(data[index] && data[pivot] && Number(data[index]) && data[index]>0){
               const obj = {...objData,
                 formulario: frm,
-                grupo: data[pivot],
+                grupo: data[pivot].trim(),
                 valor: data[index]
               }
-              if(colAux[i][0]) obj.variable = colAux[i][0]
-              if(colAux[i][1]) obj.lugar_atencion = colAux[i][1]
-              if(colAux[i][2]) obj.subvariable= colAux[i][2] 
+              if(newVars.length<=0){
+                if(colAux[i][0]) obj.variable = colAux[i][0]
+                if(colAux[i][1]) obj.lugar_atencion = colAux[i][1]
+                if(colAux[i][2]) obj.subvariable= colAux[i][2] 
+              }else{
+                for (const element of newVars) {
+                  obj[element[0]] =  element[1]
+                }
+              }
+              
 
               tmpData.push(obj)
             }
