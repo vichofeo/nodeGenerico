@@ -150,9 +150,9 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
       ],
     ],
     parseAttrib: ['1'],
-    campos: `departamento, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
+    campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO',
+      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -166,8 +166,8 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
     ],
     tipo: 'Sum',
     camposOcultos: ['VALOR'],
-    rows: ['DEPARTAMENTO', 'FORMULARIO', 'GRUPO DE VARIABLES'],
-    cols: ['VARIABLE', 'SUBVARIABLE'],
+    rows: ['GRUPO DE VARIABLES'],
+    cols: ['VARIABLE','DENTRO/FUERA', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
     precondicion: ['s.ente_gestor=i.institucion_id'],
     referer: [],
@@ -208,9 +208,9 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
       ],
     ],
     parseAttrib: ['1'],
-    campos: `departamento, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
+    campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO',
+      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -224,7 +224,65 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     ],
     tipo: 'Sum',
     camposOcultos: ['VALOR'],
-    rows: ['DEPARTAMENTO', 'FORMULARIO', 'GRUPO DE VARIABLES'],
+    rows: ['GRUPO DE VARIABLES'],
+    cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
+    mdi: 'mdi-seat-flat-angled',
+    precondicion: ['s.ente_gestor=i.institucion_id'],
+    referer: [],
+    metodo: function (dato = {}) {
+      //Array(formulario, [mess "gestion-mes"])
+      let sentencia = ''
+      if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
+
+      if (Array.isArray(dato.registros)) {
+        dato.registros =  dato.registros.map(o=>o.periodo)
+        console.log("\n ::::::::::::::", dato.registros)
+        let sentenciaAux = ''
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        else
+          sentenciaAux = dato.registros.map((val) => `gestion||'-'||mes='${val}'`)
+
+        sentencia += `( ${sentenciaAux.join(' OR ')} ) `
+      } else sentencia = '1=2'
+      return sentencia
+    },
+  },
+  snis301b: {
+    table: 'tmp_snis301b',
+    tables: 'tmp_snis301b s, ae_institucion i',
+    alias: 'Datos SNIS - Formularios 301B',
+    //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
+    attributes: [
+      ['formulario', 'periodo'],
+      [
+        `'['||
+string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis301b s2 WHERE s2.formulario= tmp_snis301b.formulario AND s2.gestion= tmp_snis301b.gestion AND s2.mes= tmp_snis301b.mes)
+||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
+(SELECT COUNT(*) FROM tmp_snis301b s2 WHERE s2.formulario= tmp_snis301b.formulario AND s2.gestion= tmp_snis301b.gestion AND s2.mes= tmp_snis301b.mes)
+||'}' DESC
+)||' ]'`,
+        'registros',
+      ],
+    ],
+    parseAttrib: ['1'],
+    campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
+    headers: [
+      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
+      'ENTE GESTOR',
+      'ESTABLECIMIENTO / INSTITUCION',
+      'GESTION',
+      'MES',
+      'FORMULARIO',
+      'GRUPO DE VARIABLES',
+      'VARIABLE',
+      'TIPO VARIABLE',
+      'SUBVARIABLE',
+      'VALOR',
+    ],
+    tipo: 'Sum',
+    camposOcultos: ['VALOR'],
+    rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
     precondicion: ['s.ente_gestor=i.institucion_id'],
