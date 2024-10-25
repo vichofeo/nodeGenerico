@@ -134,7 +134,7 @@ const xlsxLoad = async (dto, handleError) => {
     }//en filterByFunc
 
 /*** ********* INICIA GUARDADO ********* */
-/*
+
     //reEscribe valores a subir
     datos[model].data = datos[model].data.map((obj) => {
       obj.dni_register = obj_cnf.dni_register
@@ -203,7 +203,7 @@ const xlsxLoad = async (dto, handleError) => {
         }
       }
     }
-    */
+    
       //---------------------------- *0000 ******************************
       //** *********** fin guardado **** */
 

@@ -199,6 +199,7 @@ const PARAMETROS = {
 
         ],
         key: ['eval.formulario_id'],
+        keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
         precondicion: ['f.formulario_id = cnf.formulario_id',
             'cnf.formulario_id = eval.formulario_id ', 'cnf.institucion_id=eval.institucion_id',
             'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',

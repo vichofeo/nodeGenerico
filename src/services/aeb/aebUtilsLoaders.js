@@ -314,10 +314,10 @@ const aebUtils = {
       const json_base = dataArray.dataBasic
       json_base.ente_gestor = dataArray.eg.value
 
-      const pivot = { primero: [1], segundo: [14], tercero: [35] }
+      const pivot = { primero: [1], segundo: [43,33], tercero: [35] }
       const cnf = [
         { pivot: pivot.primero, secciones: params.sections.map(v => v.trim()), destino: 'principales' },
-        //{pivot:pivot.segundo, secciones: params.sectionsCol2.map(v=>v.trim()), destino:'secundarios' },      
+        {pivot:pivot.segundo, secciones: params.sectionsCol2.map(v=>v.trim()), destino:'secundarios' },      
       ]
       //secciona datos segun modelo excel    
       const resTemp = seccionadorDataArray(dataArray.data, params.dataNoProcess, cnf)//{principales:{}, secundarios:{}}
@@ -346,7 +346,7 @@ const aebUtils = {
 
       return {
         ok: true,
-        results: resTemp//results
+        results: results
       }
     } catch (error) {
       console.log(error)
@@ -393,11 +393,12 @@ const parserSectionVarLatcnSvar = (objData, pivot, objColumn, dataArray, frm, ti
         if (data[index] && data[pivot] && Number(data[index]) && data[index] > 0) {
           let obj = {
             ...objData,
-            formulario: frm,
+            formulario: objColumn.alias? objColumn.alias:frm,
             grupo: data[pivot].trim(),
             valor: data[index]
           }
           if (newVars.length <= 0) {
+            //console.log(colAux[i])
             obj =  {...obj, ...__parseSubTitles(colAux[i], tipoColTres)}
           } else {
             for (const element of newVars) {

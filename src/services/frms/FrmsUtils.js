@@ -74,6 +74,22 @@ module.exports = class FrmsUtils {
     this.#results = datosResult
     
   }
+
+  #analizaKeyWhere =  async (objModel, idx)=>{
+    let where = '1=1'
+    if(objModel.key.length>0)
+        where = `${objModel.key[0]} = '${idx}'`
+
+    if(objModel.keySession){
+      if(objModel.keySession.replaceKey) where = '1=1'
+      //obtiene ids de instituciones
+      await this.getGroupIdsInstitucion()
+      const ids =  this.getResults()
+      if(ids.length>0) where += ` AND ${objModel.keySession.campo} IN ('${ids.join("','")}') `
+    }
+    return where
+  }
+
   #getDataParamN = async (nameModeloFromParam, idx) => {
     //tabla de datos
     const objModel = this.#parametros[nameModeloFromParam]
@@ -84,7 +100,8 @@ module.exports = class FrmsUtils {
     )
     let campos = objModel.campos
     let from = objModel.table
-    let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
+    //let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
+    let where = await this.#analizaKeyWhere(objModel, idx)
     let groupOrder =  objModel.groupOrder ? objModel.groupOrder : '' 
 
     let leftjoin = ''

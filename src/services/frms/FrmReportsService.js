@@ -8,19 +8,25 @@ const frmsInitialReport = async (dto, handleError) => {
   try {
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
-    //obtiene formularios segun aplicacion
-    qUtil.setTableInstance('f_formulario')
-    qUtil.setInclude({
-      association: 'grupo',
-      required: true,
-      attibutes: ['nombre_grupo_formulario'],
-      where: { aplicacion_id: obj_cnf.aplicacion_id },
+    
+    //ids de establecimientos permitidos
+    await frmUtil.getGroupIdsInstitucion()
+    const ids_institucion = frmUtil.getResults()
+    //busca formularios a partir de la configuracion de autorizacion por caracterizacion de institucion
+    qUtil.setTableInstance("f_formulario_institucion_cnf")
+    qUtil.setAttributes(['formulario_id'])
+    qUtil.setInclude({association:'frms', required: true,
+      attributes:['formulario_id','descripcion']
     })
+    if(ids_institucion.length>0) qUtil.setWhere({institucion_id:ids_institucion})
+    qUtil.setGroupBy([qUtil.literal(1),qUtil.literal(2),qUtil.literal(3)])
+    qUtil.setOrder([qUtil.literal(2),qUtil.literal(3)])
     await qUtil.findTune()
     const results = qUtil.getResults()
+
     const d = {}
-    for (const key in results) {
-      d[results[key].formulario_id] = { title: results[key].descripcion }
+    for (const obj of results) {
+      d[obj.frms.formulario_id] = { title: obj.frms.descripcion, ids_institucion }
     }
 
     return {

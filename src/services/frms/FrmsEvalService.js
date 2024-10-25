@@ -55,7 +55,7 @@ const getEvalForms = async (dto) => {
   try {
     const paramLocalModelo = !dto.swModel ? 'evaluacionn' : 'evaluacion_todes'
     dto.modelos = [paramLocalModelo]
-console.log("\n\n\n&&&&&&&&&&&& MODELO: ",dto ," &&&&&&&&&&&&\n\n\n")
+console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ",dto ," &&&&&&&&&&&&\n\n\n")
     frmUtil.setParametros(PARAMETROS)
     await frmUtil.getDataParams(dto)
     const result = frmUtil.getResults()
