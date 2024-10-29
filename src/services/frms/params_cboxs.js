@@ -30,6 +30,29 @@ const PDEPENDENCIES = {
             { ref: 'f_formulario_institucion_cnf', apropiacion: 'institucion_id', campos: ['institucion_id', 'formulario_id'],  campoForeign: 'formulario_id', condicion: {activo:'Y'}, condicional: null},
             
         ],
+    },
+    monFrms:{
+        alias: 'cboxs_evals',                
+        campos: {
+            forms: ['Formularios', true, true, 'C'],            
+            periodos: ['Periodos', true, true, 'C']
+            
+        }, 
+        ilogic: {
+            forms:`SELECT distinct f.formulario_id AS value,f.codigo_formulario ||'-'|| f.nombre_formulario||'-'||  f.descripcion AS text
+            FROM f_formulario_registro fr, f_formulario f
+            WHERE  $keySession
+            AND fr.formulario_id=f.formulario_id
+            ORDER BY 2`,
+            periodos:`SELECT distinct fr.periodo AS VALUE,
+            to_char(TO_DATE(fr.periodo, 'YYYYMM'), 'YYYY - Mon') AS text
+            FROM f_formulario_registro fr
+            WHERE  $keySession
+            AND fr.formulario_id = '$forms' 
+            ORDER BY 1 DESC`
+        },
+        keySession:{replaceKey:false, campo:'fr.institucion_id'},
+        referer: [],
     }
 }
 module.exports = PDEPENDENCIES

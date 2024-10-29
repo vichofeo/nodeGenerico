@@ -3,6 +3,7 @@ const Qutils = require('../../models/queries/Qutils')
 //const tk = require('./../../services/utilService')
 const handleToken =  require('./../../utils/handleToken')
 const { v4: uuidv4 } = require('uuid');
+const { Query } = require('pg');
 module.exports = class FrmsUtils {
   #parametros
   #qUtils
@@ -10,6 +11,7 @@ module.exports = class FrmsUtils {
   #results
   #dataSession
   #_token
+  #_groupIdsInstitucion
   constructor() {
     if (FrmsUtils.instance) return FrmsUtils.instance
     this.#qUtils = new Qutils()
@@ -17,6 +19,7 @@ module.exports = class FrmsUtils {
     this.#results = null
     this.#dataSession = null
     this.#_token =  null
+    this.#_groupIdsInstitucion= null
 
     FrmsUtils.instance = this
   }
@@ -34,6 +37,9 @@ module.exports = class FrmsUtils {
   }
   setParametros(parametrosJson) {
     this.#parametros = parametrosJson
+  }
+  setGroupIdsInstitucion(groupIdsInstitucion=Array()){
+    this.#_groupIdsInstitucion =  groupIdsInstitucion
   }
   //entrga de datos segun parametros por peticion de modelo
   getDataParams = async (dto) => {
@@ -66,7 +72,7 @@ module.exports = class FrmsUtils {
       } else {
         //>-- FIN CARDINALIDAD ==1
         //cardinalidad n
-        datosResult[this.#parametros[modelo].alias] = await this.#getDataParamN(modelo, idx)
+        datosResult[this.#parametros[modelo].alias] = await this.#getDataParamN(modelo, idx, dto)
         //console.log("PASONNN*****",datosResult[this.#parametros[modelo].alias])
       }
     }
@@ -77,27 +83,25 @@ module.exports = class FrmsUtils {
 
   #analizaKeyWhere =  async (objModel, idx)=>{
     let where = '1=1'
-    if(objModel.key.length>0)
+    if(objModel.key?.length>0)
         where = `${objModel.key[0]} = '${idx}'`
 
     if(objModel.keySession){
       if(objModel.keySession.replaceKey) where = '1=1'
       //obtiene ids de instituciones
-      await this.getGroupIdsInstitucion()
-      const ids =  this.getResults()
+      
+      const ids =  await  this.getGroupIdsInstitucion()
       if(ids.length>0) where += ` AND ${objModel.keySession.campo} IN ('${ids.join("','")}') `
     }
     return where
   }
 
-  #getDataParamN = async (nameModeloFromParam, idx) => {
+  #getDataParamN = async (nameModeloFromParam, idx, dto) => {
     //tabla de datos
     const objModel = this.#parametros[nameModeloFromParam]
     //CONSTRUYE SENTENCIA SELECT
-    console.log(
-      '*****************************************::::::::::::::',
-      objModel.referer.length
-    )
+    console.log('\n\n\n*****************************************::::::::::::::', objModel.referer.length)
+    
     let campos = objModel.campos
     let from = objModel.table
     //let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
@@ -125,7 +129,7 @@ module.exports = class FrmsUtils {
 
     //reemplaza query con variables de session si lo ubiera
     query =  this.#replaceStringByDataSession(query)
-
+    query =  this.#replaceStringByDataParamDoms(dto, objModel ,query)
 
     this.#qUtils.setQuery(query)
     await this.#qUtils.excuteSelect()
@@ -411,6 +415,7 @@ module.exports = class FrmsUtils {
         queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
         queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
         queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
+        queryIlogic = await this.#replaceKeysSessionInQILogic(queryIlogic, objParamModel, '-1')
                 
         //complementa condicion en caso q haya existido condicion PRIMAL
         queryIlogic = queryIlogic.replaceAll(swhere, CONDITION_PRIMAL)
@@ -442,12 +447,33 @@ module.exports = class FrmsUtils {
 
     return stringSepararedByComa
   }
+  #replaceStringByDataParamDoms(paramDomsIn, objModel, query){
+    const stringReplace = '$paramDoms'
+    if(objModel.paramDoms && paramDomsIn.paramDoms && objModel.paramDoms.length>0 && paramDomsIn.paramDoms.length>0){
+      let cadenaWhere = []
+      for (const element of objModel.paramDoms) {
+        cadenaWhere.push(`${element[0]}='${paramDomsIn.paramDoms[element[1]]}'`)
+      }
+      cadenaWhere = cadenaWhere.join(" AND ")
+      query =  query.replaceAll(stringReplace, cadenaWhere)
+    }else query =  query.replaceAll(stringReplace, " 1=1 ")
+    return query
+  }
   #replaceStringForQIlogic(query, valores) {    
     
     for (const key in valores)   {
     //console.log("\n\n *********************************/REEEMPLAZO QLOGIC:::", valores,"\n\n")    
       query =  query.replaceAll('$'+key, valores[key].selected.value)}
     
+    return query
+  }
+  async #replaceKeysSessionInQILogic(query, objModel, idx){
+    console.log("\n\n\n  QUERY:::", query ," \n\n\n")
+    if(objModel?.keySession){
+      const condicionWhere =  await this.#analizaKeyWhere(objModel,idx)
+      const varSession =  '$keySession'
+      query =  query.replaceAll(varSession, condicionWhere)
+    }
     return query
   }
   #seteaObjWithDataSession() {
@@ -655,8 +681,20 @@ module.exports = class FrmsUtils {
     primal: result[0].app_rolex.primal,
   }
  } 
-
- getGroupIdsInstitucion = async() =>{
+ async getGroupIdsInstitucion() {
+  /**if(this.#_groupIdsInstitucion && Array.isArray(this.#_groupIdsInstitucion))
+    return this.#_groupIdsInstitucion
+  else{
+    await this.#__getGroupIdsInstitucion()
+    return  this.#_groupIdsInstitucion
+  }*/
+    await this.#__getGroupIdsInstitucion()
+    return  this.#_groupIdsInstitucion
+ }
+/**
+ *getGroupIdsInstitucion 
+ */
+ #__getGroupIdsInstitucion = async() =>{
   try {
     const obj_cnf = this.getObjSession()
     const tipo_institucion =  obj_cnf.tipo_institucion
@@ -719,10 +757,13 @@ module.exports = class FrmsUtils {
         break;
     }
 
-    this.#results =  results
-    
+    //console.log("\n\n\n ************************************** INGRESO A LA OPCION DE IDS INSTRITIIOCN ***********************************\n\n\n")
+    //console.log(results)
+    //this.#results =  results
+    this.setGroupIdsInstitucion(results)
+    //console.log("\n\n\n ****************************************saliendo***************************** \n\n\n")
   } catch (error) {
-    
+    throw new Error("Falla en el proceso de obtencion de IDS")
   }
  }
 }

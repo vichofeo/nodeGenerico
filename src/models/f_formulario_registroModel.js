@@ -44,8 +44,26 @@ module.exports = (sequelize, DataTypes) => {
         formulario_id: { type: DataTypes.UUID(), allowNull: false },
 
         periodo: { type: DataTypes.STRING(6), allowNull: false }, 
+
+        dni_concluido: { type: DataTypes.STRING(25), allowNull: true },
         concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
-        firma: { type: DataTypes.TEXT, allowNull: true },
+        fecha_concluido: { type: DataTypes.DATEONLY, allowNull: true },
+        fecha_climite: { type: DataTypes.DATEONLY, allowNull: true },
+        
+        
+        dni_revisado: { type: DataTypes.STRING(25), allowNull: true },
+        revisado: { type: DataTypes.STRING(2), allowNull: true  },
+        fecha_revisado: { type: DataTypes.DATEONLY, allowNull: true },
+        fecha_rlimite: { type: DataTypes.DATEONLY, allowNull: true },
+        
+        opening: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue:true },
+
+        dni_plus: { type: DataTypes.STRING(25), allowNull: true },        
+        modify_date_plus: { type: DataTypes.DATE, allowNull: true },
+        type_plus: { type: DataTypes.INTEGER, allowNull: true  },
+        flimite_plus: { type: DataTypes.DATEONLY, allowNull: true },
+        frevisado_plus: { type: DataTypes.DATEONLY, allowNull: true },
+        
     
     },
     {

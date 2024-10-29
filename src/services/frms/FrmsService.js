@@ -38,6 +38,26 @@ const getfrmsConstuct = async (dto) => {
     }
   }
 }
+const getDataCboxLigado = async (dto, handleError) => {
+  try {
+      dto.modelos = [dto.modelo]
+      frmUtil.setParametros(PCBOXS)
+      await frmUtil.makerDataComboDependency(dto)
+      const result = frmUtil.getResults()
+      return {
+          ok: true,
+          data: result,
+          message: "Requerimiento Exitoso. Parametros Obtenidos"
+      }
+
+  } catch (error) {
+      console.log("\n\n ?????????????????????????????????********error en COMBOX LIGADO *******?????????????????????? \n\n");
+      console.log(error);
+      handleError.setMessage("Error de sistema: UFAMDATCBOXSRV")
+      handleError.setHttpError(error.message)
+  };
+
+}
 
 const getFrmsInfo = async (dto) => {
   try {
@@ -342,7 +362,7 @@ await qUtil.excuteUpdate()
   
 }
 
-module.exports = {
+module.exports = {getDataCboxLigado, 
   getfrmsConstuct,
   getFrmsInfo, getCnfForms, 
   saveCnfForms, saveFormsRes,

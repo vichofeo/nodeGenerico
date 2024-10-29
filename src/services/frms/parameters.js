@@ -184,7 +184,8 @@ const PARAMETROS = {
         eval.concluido, eval.activo,
 
         CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
-        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , atr1.atributo as conclusion, atr1.color 
+        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , atr1.atributo as conclusion, atr1.color,
+        eval.revisado as revision_estado
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
@@ -192,24 +193,24 @@ const PARAMETROS = {
         { value: "evaluador", text: "Evaluador" },
         { value: "frm", text: "FORM." },
         { value: "ver", text: "Accion" },
-
-        { value: "creacion", text: "Creacion" },
-        //{value:'creador', text:'Creado Por'},
+        { value: "creacion", text: "Creacion" },        
         { value: "concluido", text: " " },
+        { value: "revisado", text: " " },
 
         ],
         key: ['eval.formulario_id'],
         keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
+        paramDoms:[['eval.periodo',0]],
         precondicion: ['f.formulario_id = cnf.formulario_id',
             'cnf.formulario_id = eval.formulario_id ', 'cnf.institucion_id=eval.institucion_id',
             'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',
             'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
-            'i.institucion_root =  eg.institucion_id'],
+            'i.institucion_root =  eg.institucion_id', '$paramDoms'], //$paramDoms variable
         groupOrder: ` ORDER BY  eval.create_date desc `,//null string    
         update: [],
-        referer: [ {
-                ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido',
-            }
+        referer: [ 
+                {ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido'},
+                {ref: 'u_is_atributo as atr2', campos: 'atr2.atributo as revisado, atr2.color as color_revisado', camporef: 'atr2.atributo_id', camporefForeign: 'eval.revisado'}
         ],
     },
     fregis: {

@@ -22,6 +22,15 @@ const getFrmsInfo = async(req, res)=>{
     res.json(result)
 }  
 
+const getDataCboxLigado = async (req, res) =>{    
+  const modelo =  req.body.modelo
+  const token =  req.headers.authorization
+console.log("555555555555555555 entre",modelo )
+  const result =  await frmService.getDataCboxLigado({modelo:modelo, token:token, ...req.body}, handleError) 
+  handleError.setResponse(result)
+  res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 const getCnfForms = async(req, res)=>{
   const modelo = req.params.modelo
   const token =  req.headers.authorization
@@ -61,7 +70,8 @@ const getEvalForms = async(req, res)=>{
   //const idx = req.params.idx
   const token =  req.headers.authorization
   const data =  req.body
-  const result = await frmEvalService.getEvalForms({idx:data.idx, token: token, swModel:data.swAll})
+  const paramDoms =  data?.paramDoms ?  data?.paramDoms : undefined
+  const result = await frmEvalService.getEvalForms({paramDoms ,idx:data.idx, token: token, swModel:data.swAll})
   res.json(result)
 }
 const saveEvalForm = async(req, res)=>{
@@ -109,6 +119,7 @@ const pdfOptions = async(req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 module.exports = {
+  getDataCboxLigado,
   getfrmsConstuct, getFrmsInfo,
   getCnfForms, getCnfFormswIdx, saveCnfForms, saveFormsRes,
 

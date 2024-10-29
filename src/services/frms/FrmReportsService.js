@@ -10,8 +10,7 @@ const frmsInitialReport = async (dto, handleError) => {
     const obj_cnf = frmUtil.getObjSession()
     
     //ids de establecimientos permitidos
-    await frmUtil.getGroupIdsInstitucion()
-    const ids_institucion = frmUtil.getResults()
+    const ids_institucion = await frmUtil.getGroupIdsInstitucion()//frmUtil.getResults()
     //busca formularios a partir de la configuracion de autorizacion por caracterizacion de institucion
     qUtil.setTableInstance("f_formulario_institucion_cnf")
     qUtil.setAttributes(['formulario_id'])
@@ -44,9 +43,10 @@ const frmsInitialReport = async (dto, handleError) => {
 const frmsStatusReport = async (dto, handleError) => {
   try {
     frmUtil.setToken(dto.token)
-    //ids de establecimientos permitidos
-    await frmUtil.getGroupIdsInstitucion()
-    const ids_institucion = frmUtil.getResults().join("','")
+    //ids de establecimientos permitidos    
+    const resp =  await frmUtil.getGroupIdsInstitucion() 
+    
+    const ids_institucion = resp.join("','") //frmUtil.getResults().join("','")
     let whereAux = ''
     if (ids_institucion)
       whereAux = `AND r.institucion_id IN ('${ids_institucion}')`
@@ -112,8 +112,8 @@ const frmsReport = async (dto, handleError) => {
 
     //VALIDAR USO Y CONDICIONES SEGUN TOKEN
     //ids de establecimientos permitidos
-    await frmUtil.getGroupIdsInstitucion()
-    const ids_institucion = frmUtil.getResults().join("','")
+    const resp =  await frmUtil.getGroupIdsInstitucion()
+    const ids_institucion = resp.join("','")
     if (ids_institucion)
       whereAux = ` ${whereAux} AND r.institucion_id IN ('${ids_institucion}')`
 

@@ -16,6 +16,7 @@ const { v4: uuidv4 } = require('uuid')
 
 const servicesBasics = require('./FrmsService')
 const { where } = require('sequelize')
+const { now } = require('sequelize/lib/utils')
 
 const estado_conclusion='7'
 
@@ -53,6 +54,7 @@ const verificaPrimal = async (f_id) => {
 
 const getEvalForms = async (dto) => {
   try {
+    
     const paramLocalModelo = !dto.swModel ? 'evaluacionn' : 'evaluacion_todes'
     dto.modelos = [paramLocalModelo]
 console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ",dto ," &&&&&&&&&&&&\n\n\n")
@@ -82,6 +84,11 @@ const saveEvalForm = async (dto, handleError) => {
     await qUtil.startTransaction()
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession() //await frmUtil.getRoleSession()
+
+    //obtiene fechas limite de conclusion y revision
+    qUtil.setTableInstance('f_formulario_institucion_cnf')
+    qUtil.setAttributes([[qUtil.literal(`to_date('${dto.periodo}','YYYYMM') + CAST(limite_dia-1 ||'days' AS INTERVAL)`), 'climite']])
+
 
     qUtil.setTableInstance('f_formulario_registro')
     qUtil.setDataset(Object.assign(dto.data, obj_cnf))
@@ -643,7 +650,11 @@ const modifyDataEval = async (dto, handleError)=>{
     //actuliza estados
 
 qUtil.setTableInstance('f_formulario_registro')
-qUtil.setDataset({concluido:estado_conclusion, ...obj_cnf})
+qUtil.setDataset({revisado: Number(estado_conclusion) + 1, 
+  dni_concluido: obj_cnf.dni_register,
+  concluido:estado_conclusion, 
+  fecha_concluido: new Date(), 
+  ...obj_cnf})
 qUtil.setWhere({registro_id:reg})
 await qUtil.modify()
 

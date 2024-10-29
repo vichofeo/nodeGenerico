@@ -50,9 +50,8 @@ const getDataTree = async (parent_id = '-1', root, resultado = [], module="ssepi
     return resultado
 }
 const getDataGeoreferencia = async (module="ssepi", component="sssscp") => {
-
-    await frmUtil.getGroupIdsInstitucion()
-    const ids = frmUtil.getResults()
+    
+    const ids = await frmUtil.getGroupIdsInstitucion() //frmUtil.getResults()
     const institucion_where = ids.length>0? {institucion_id: ids} : null
     
     

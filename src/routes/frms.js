@@ -9,6 +9,7 @@ const frmsReportController =  require('../controllers/frms/frmsReportsController
 
 router.post('/:modelo', authMiddleWare, frmsController.getfrmsConstuct)
 router.get('/:idx', authMiddleWare, frmsController.getFrmsInfo)
+router.post('/cnf/cbox', authMiddleWare, frmsController.getDataCboxLigado)
 router.get('/cnf/:modelo', authMiddleWare, frmsController.getCnfForms)
 router.get('/cnf/:idx/:modelo', authMiddleWare, frmsController.getCnfFormswIdx)
 router.post('', authMiddleWare, frmsController.saveCnfForms)
