@@ -62,18 +62,18 @@ const verificaPrimalEnExistencia =  async (f_id) =>{
   const obj_session = frmUtil.getObjSession()
   
   qUtil.setTableInstance('f_formulario_registro')
-  qUtil.setAttributes([[qUtil.literal(`CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<7`), 'primal'], 
+  qUtil.setAttributes([[qUtil.literal(`CURRENT_DATE<= fecha_climite and ${obj_cnf.primal} AND concluido::DECIMAL<${estado_conclusion}`), 'primal'], 
   [qUtil.literal('CURRENT_DATE'), 'fecha']])
   qUtil.setWhere({
     formulario_id:f_id, institucion_id:obj_session.institucion_id, 
     periodo: qUtil.literal("periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')") })
   //await qUtil.findTune()
-  const query =  ` SELECT CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<${estado_conclusion} as primal, CURRENT_DATE, CURRENT_TIMESTAMP, now(), CURRENT_TIME
+  /*const query =  ` SELECT CURRENT_DATE<= fecha_climite and TRUE AND concluido::DECIMAL<${estado_conclusion} as primal, CURRENT_DATE, CURRENT_TIMESTAMP, now(), CURRENT_TIME
           FROM f_formulario_registro
           WHERE formulario_id='${f_id}' AND institucion_id='${obj_session.institucion_id}' 
           AND periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM')`
   qUtil.setQuery(query)
-  await qUtil.excuteSelect()
+  await qUtil.excuteSelect()*/
   const r =  qUtil.getResults()
   console.log("\n\n PRIMAL:::::::", r ,"::::::::::::::\n")
   if(r.length>0){

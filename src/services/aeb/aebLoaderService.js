@@ -457,7 +457,7 @@ const xlsxNormalize = async (dto, handleError) => {
         sw[model].process = false
         //elimina registros malos
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
-        await qUtil.deleting()
+        //await qUtil.deleting()
       } else {
         sw[model].process = true
         //se procesan los archivos sin observacion ->swLoadend =  true

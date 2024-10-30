@@ -138,10 +138,13 @@ const PARAMETROS = {
         p.primer_apellido AS evaluador,
 
         f.nombre_formulario as frm, eval.periodo,
-        eval.concluido, eval.activo,
+        
+        eval.concluido AS concluido_estado, eval.revisado as revision_estado,
+        eval.activo,
 
         CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
-        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , atr1.atributo as conclusion, atr1.color 
+        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , 
+        atr1.atributo as conclusion, atr1.color 
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
@@ -152,7 +155,8 @@ const PARAMETROS = {
 
         { value: "creacion", text: "Creacion" },
         //{value:'creador', text:'Creado Por'},
-        { value: "concluido", text: " " },
+        { value: "conclusion", text: " " },
+        { value: "revisado", text: " " },
 
         ],
         key: ['eval.formulario_id'],
@@ -164,28 +168,52 @@ const PARAMETROS = {
             "eval.institucion_id='$inst'"],
         groupOrder: ` ORDER BY  eval.create_date desc `,//null string    
         update: [],
-        referer: [ {
-                ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido',
-            }
+        referer: [ 
+            {ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color as conclusion_color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido'},
+            {ref: 'u_is_atributo as atr2', campos: 'atr2.atributo as revisado, atr2.color as revisado_color', camporef: 'atr2.atributo_id', camporefForeign: 'eval.revisado'}
         ],
     },
     evaluacion_todes: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, f_formulario f ,f_formulario_institucion_cnf cnf, f_formulario_registro eval ',
+        table: `ae_institucion i, al_departamento d, ae_institucion eg, 
+        f_formulario f , 
+        f_formulario_institucion_cnf cnf
+                    LEFT JOIN (SELECT eval.registro_id as idx,
+                eval.institucion_id, eval.formulario_id, eval.periodo,
+                p.primer_apellido AS evaluador, 
+                eval.concluido, eval.activo,
+                CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
+                TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 
+                eval.concluido AS concluido_estado, eval.revisado as revision_estado,
+                atr1.atributo as conclusion, atr1.color AS conclusion_color,
+                atr2.atributo as revisado, atr2.color AS revisado_color,
+                eval.create_date
+                FROM  au_persona p, f_formulario_registro eval
+                LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
+                LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
+                WHERE 
+                p.dni_persona =  eval.dni_register) AS eval ON (
+                eval.institucion_id =  cnf.institucion_id AND eval.formulario_id=cnf.formulario_id 
+                AND ($paramDoms)
+            )` ,
         alias: 'evaluacionn',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `eval.registro_id as idx, 'evaluacion' as linked,
+        campos: `eval.idx, 'evaluacion' as linked,
 
         d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
-        p.primer_apellido AS evaluador,
-
-        f.nombre_formulario as frm, eval.periodo,
+        
+        f.nombre_formulario as frm,
+        eval.evaluador, eval.periodo, 
         eval.concluido, eval.activo,
+        eval.ver,
 
-        CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
-        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion , atr1.atributo as conclusion, atr1.color,
-        eval.revisado as revision_estado
+        eval.creacion, 
+        eval.concluido_estado, eval.revision_estado,
+
+        eval.conclusion, eval.conclusion_color , 
+        eval.revisado, eval.revisado_color
+        
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
@@ -194,24 +222,20 @@ const PARAMETROS = {
         { value: "frm", text: "FORM." },
         { value: "ver", text: "Accion" },
         { value: "creacion", text: "Creacion" },        
-        { value: "concluido", text: " " },
+        { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
 
         ],
-        key: ['eval.formulario_id'],
+        key: ['f.formulario_id'],
         keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
         paramDoms:[['eval.periodo',0]],
         precondicion: ['f.formulario_id = cnf.formulario_id',
-            'cnf.formulario_id = eval.formulario_id ', 'cnf.institucion_id=eval.institucion_id',
-            'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',
+             'cnf.institucion_id =  i.institucion_id',            
             'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
-            'i.institucion_root =  eg.institucion_id', '$paramDoms'], //$paramDoms variable
-        groupOrder: ` ORDER BY  eval.create_date desc `,//null string    
+            'i.institucion_root =  eg.institucion_id'], //$paramDoms variable
+        groupOrder: ` ORDER BY  eval.create_date `,//null string    
         update: [],
-        referer: [ 
-                {ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido'},
-                {ref: 'u_is_atributo as atr2', campos: 'atr2.atributo as revisado, atr2.color as color_revisado', camporef: 'atr2.atributo_id', camporefForeign: 'eval.revisado'}
-        ],
+        referer: [],
     },
     fregis: {
         table: 'f_formulario',

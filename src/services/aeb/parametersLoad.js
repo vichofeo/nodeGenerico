@@ -16,7 +16,7 @@ const PARAMETERS = {
     carmelo: {
         alias:'tmp_carmelo',
         attributes:[["to_char(fecha_dispensacion, 'YYYY-MM')", 'periodo'], ['count(*)', 'registros']],
-        file: ['No.','ENTE GESTOR','Departamento','Regional/Distrital','Nombre el Establecimiento','Nivel de atención','Fecha de dispensacion  (dd/mm/año)','Nombre del paciente ','N° de Matrícula Asegurado/Beneficiario','Sexo','EDAD','Cantidad dispensada ','N° de receta ','Especialidad ','Diagnóstico','Observaciones'],
+        file: ['No.','ENTE GESTOR','Departamento','Regional/Distrital','Nombre el Establecimiento','Nivel de atención','Fecha de dispensacion  (dd/mm/año)','Nombre del paciente ','N° de Matrícula Asegurado/Beneficiario','Sexo','Edad','Cantidad dispensada ','N° de receta ','Especialidad ','Diagnóstico','Observaciones'],
         table: ['nro','ente_gestor_name','departamento','regional','establecimiento','nivel_atencion','f_dispensacion','paciente','matricula','f_genero','f_edad','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
         validate: [0,1,1,0,1,1,1,1,1,1,0,1,0,1,0],
         forFilter:['Fecha de dispensacion  (dd/mm/año)'],        
@@ -43,7 +43,7 @@ const PARAMETERS = {
                 
 
             ],
-        key:['fecha_dispensacion','paciente','ente_gestor_name','departamento','establecimiento','nivel_atencion', 'matricula'],
+        key:['fecha_dispensacion','paciente','ente_gestor_name','departamento','establecimiento','nivel_atencion', 'matricula', "COALESCE(no_receta,'-1')"],
         //keyAux:['fecha_dispensacion','paciente', 'matricula','genero', 'edad','ente_gestor','departamento','establecimiento','nivel_atencion','matricula','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
         keyAux: ['ente_gestor_name','departamento','regional','establecimiento','nivel_atencion','f_dispensacion','paciente','matricula','f_genero','f_edad','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
         gender: ['paciente', 'genero','f_genero']
