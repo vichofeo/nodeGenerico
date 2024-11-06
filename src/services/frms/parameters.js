@@ -142,8 +142,25 @@ const PARAMETROS = {
         eval.concluido AS concluido_estado, eval.revisado as revision_estado,
         eval.activo,
 
-        CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
-        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion 
+        CASE WHEN strpos(eval.dni_register,'$dni')>0 or eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
+        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 0 as hab_conclusion, 0 as hab_revision,
+CASE 
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.fecha_climite )) THEN  atr1.atributo       
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus <> 'c0' )) THEN  atr1.atributo ||'\n'|| atr3.atributo     
+
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun'
+WHEN (eval.concluido::DECIMAL<7 AND CURRENT_DATE>  eval.flimite_plus) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun. En demora indefinida'
+
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) THEN 'Formulario debidamente llenado para revision departamental.'
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) THEN 'Formulario debidamente llenado con demora en la verificacion.'
+WHEN (eval.revisado::DECIMAL=8 AND CURRENT_DATE> eval.frevisado_plus ) THEN 'Formulario debidamente llenado. En demora indefinida'
+
+WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class="teal--text">El formulario esta llenado de forma completa. El consolidado departamental se ha enviado/entregado satisfactoriamente  </span>'
+|| CASE WHEN eval.ctype_plus<> 'c0' THEN '\n Obs.: '||atr3.atributo ELSE '' END
+|| CASE WHEN eval.rtype_plus<> 'r0' THEN '\n Obs.: '||atr4.atributo ELSE '' END
+ELSE case when eval.concluido::DECIMAL<7 then '' else 
+'<span class="error">!!Estado de registro no Declarado.</span>' end
+END AS glosa
         
         `,
 
@@ -157,7 +174,7 @@ const PARAMETROS = {
         //{value:'creador', text:'Creado Por'},
         { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
-        { value: "cglosa", text: "Glosa" },
+        { value: "glosa", text: "Glosa" },
 
         ],
         key: ['eval.formulario_id'],
@@ -172,7 +189,8 @@ const PARAMETROS = {
         referer: [ 
             {ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color as conclusion_color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido'},
             {ref: 'u_is_atributo as atr2', campos: 'atr2.atributo as revisado, atr2.color as revisado_color', camporef: 'atr2.atributo_id', camporefForeign: 'eval.revisado'},
-            {ref: 'u_is_atributo as atr3', campos: 'atr3.atributo as cglosa', camporef: 'atr3.atributo_id', camporefForeign: 'eval.ctype_plus'}
+            {ref: 'u_is_atributo as atr3', campos: 'atr3.atributo as cglosa', camporef: 'atr3.atributo_id', camporefForeign: 'eval.ctype_plus'},
+            {ref: 'u_is_atributo as atr4', campos: 'atr4.atributo as rglosa', camporef: 'atr4.atributo_id', camporefForeign: 'eval.rtype_plus'}
         ],
     },
     evaluacion_todes: {
@@ -192,10 +210,33 @@ const PARAMETROS = {
                 eval.create_date, 
         (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) AS cdemora,
         (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) as prevision,
-        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) as hab_revision
+        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) as hab_revision,
+  
+        CASE
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.fecha_climite )) THEN  atr1.atributo       
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus <> 'c0' )) THEN  atr1.atributo ||'\n'|| atr3.atributo     
+
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun.'
+WHEN (eval.concluido::DECIMAL<7 AND CURRENT_DATE>  eval.flimite_plus) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun. En demora indefinida'
+
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) THEN 'El formulario esta llenado de forma completa, para revision departamental.' ||'\n'|| atr3.atributo
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) THEN 'El formulario esta llenado de forma completa, con demora en la verificacion.'
+WHEN (eval.revisado::DECIMAL=8 AND CURRENT_DATE> eval.frevisado_plus ) THEN 'El formulario debidamente llenado, pero no ha sido verificado por el departamental. En demora indefinida'
+
+WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class="teal--text">Formulario debidamente llenado y consolidado departamental, se ha enviado/entregado satisfactoriamente .</span>'
+|| CASE WHEN eval.ctype_plus<> 'c0' THEN '
+ Obs.: '||atr3.atributo ELSE '' END
+|| CASE WHEN eval.rtype_plus<> 'r0' THEN '
+ Obs.: '||atr4.atributo ELSE '' END
+ELSE '<span class="error">!!Estado de registro no Declarado.</span>'
+END AS glosa
+
                 FROM  au_persona p, f_formulario_registro eval
                 LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
                 LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
+            
+            LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
+            LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
                 WHERE 
                 p.dni_persona =  eval.dni_register) AS eval ON (
                 eval.institucion_id =  cnf.institucion_id AND eval.formulario_id=cnf.formulario_id 
@@ -228,10 +269,11 @@ CASE
         FROM ae_institucion i2
         WHERE i2.institucion_id='$inst') THEN 1
  WHEN eval.cdemora AND (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
- THEN 2  ELSE 0 END AS hab_conclusion, 
+ THEN 2  
+ ELSE 0 END AS hab_conclusion, 
 
  CASE WHEN $primal AND hab_revision AND (SELECT COUNT(*) FROM ae_institucion i2 WHERE i2.institucion_id='$inst' AND i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL) >0
-THEN 1 ELSE 0 END  AS hab_revision
+THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
@@ -242,6 +284,7 @@ THEN 1 ELSE 0 END  AS hab_revision
         { value: "creacion", text: "Creacion" },        
         { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
+        { value: "glosa", text: "Glosa" },
 
         ],
         key: ['f.formulario_id'],

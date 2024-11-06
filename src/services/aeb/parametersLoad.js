@@ -5,10 +5,11 @@ const PARAMETERS = {
         attributes:[["to_char(fecha_vacunacion, 'YYYY-MM')", 'periodo'], ['count(*)', 'registros']],
         file: ['No.','Fecha de Vacunación','Estrategia','Carnet de Identidad','Nombre Completo','Celular Paciente','Fecha de Nacimiento','Edad (Años)','Sexo','Nacionalidad','Codigo Departamento','Departamento','Codigo Municipio','Municipio','Codigo Establecimiento','Establecimiento','Subsector','Institucion','Ente Gestor','Empresa','Matricula','Nombre Vacuna','Nro. de Dosis','Proveedor','Lote Vacuna','Usuario','Celular Usuario','Estado Validación','Embarazo','Fecha Registro','Fecha Modificación','Jeringa de Administración','Lote Diluyente','Jeringa de Dilusión'],
         table: ['nro','f_vacunacion','estrategia','ci','nombre','celular','f_nacimiento','f_edad','f_genero','nacionalidad','cod_dpto','departamento','cod_mun','municipio','cod_rues','establecimiento','subsector','ente_gestor_name','ente_gestor','empresa','matricula','vacuna','nro_dosis','proveedor','lote_vacuna','usuario','cel_usr','validacion','embarazo','fecha_registro','fecha_modificacion','jeringa_administracion','lote_diluyente','jeringa_dilusion'],        
-        validate: [0,1,0,1,1,0,1,1,1,0,1,1,1,1,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0],
+        validate: [0,1,0,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0],
         forFilter:['Fecha de Vacunación','Fecha de Nacimiento'],        
         update:[['fecha_nacimiento',"TO_DATE(f_nacimiento, 'DD/MM/YYYY')",'Verifique el formato de fecha Nacimiento DD/MM/YYYY'], ['fecha_vacunacion',"TO_DATE(f_vacunacion, 'DD/MM/YYYY')", 'Verifique el formato fecha vacunacion DD/MM/YYYY'], ['edad', 'CAST(f_edad AS NUMERIC )', 'Verifique campo Edad que sea numerico y que no este vacio']],
-        key:['fecha_vacunacion', "COALESCE(ci,'-1')",  'fecha_nacimiento', "COALESCE(nombre,'-1')", "COALESCE(edad, '-1')", 'f_genero', 'vacuna'],
+        //key:['fecha_vacunacion', "COALESCE(ci,'-1')",  'fecha_nacimiento', "COALESCE(nombre,'-1')", "COALESCE(edad, '-1')", 'f_genero', 'vacuna'],
+        key:['fecha_vacunacion', "COALESCE(ci,'-1')",  'fecha_nacimiento', "COALESCE(nombre,'-1')", "COALESCE(edad, '-1')", 'f_genero', 'vacuna', 'lote_vacuna', "COALESCE(matricula, '-1')", 'idx'],
         keyAux:['fecha_vacunacion', "ci", 'fecha_nacimiento',  "nombre", "edad", 'genero', 'vacuna', 'nro_dosis','departamento', 'ente_gestor_name', 'establecimiento'],
         //gender: ['nombre', 'genero','f_genero']
         
@@ -16,8 +17,8 @@ const PARAMETERS = {
     carmelo: {
         alias:'tmp_carmelo',
         attributes:[["to_char(fecha_dispensacion, 'YYYY-MM')", 'periodo'], ['count(*)', 'registros']],
-        file: ['No.','ENTE GESTOR','Departamento','Regional/Distrital','Nombre el Establecimiento','Nivel de atención','Fecha de dispensacion  (dd/mm/año)','Nombre del paciente ','N° de Matrícula Asegurado/Beneficiario','Sexo','Edad','Cantidad dispensada ','N° de receta ','Especialidad ','Diagnóstico','Observaciones'],
-        table: ['nro','ente_gestor_name','departamento','regional','establecimiento','nivel_atencion','f_dispensacion','paciente','matricula','f_genero','f_edad','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
+        file: ['ENTE GESTOR','Departamento','Regional/Distrital','Nombre el Establecimiento','Nivel de atención','Fecha de dispensacion  (dd/mm/año)','Nombre del paciente ','N° de Matrícula Asegurado/Beneficiario','Sexo','Edad','Cantidad dispensada ','N° de receta ','Especialidad ','Diagnóstico','Observaciones'],
+        table: ['ente_gestor_name','departamento','regional','establecimiento','nivel_atencion','f_dispensacion','paciente','matricula','f_genero','f_edad','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
         validate: [0,1,1,0,1,1,1,1,1,1,0,1,0,1,0],
         forFilter:['Fecha de dispensacion  (dd/mm/año)'],        
         update:[['fecha_dispensacion',"COALESCE(CASE  WHEN  textregexeq(f_dispensacion,'^[[:digit:]]+(\.[[:digit:]]+)?$') THEN TO_TIMESTAMP(trunc(f_dispensacion::NUMERIC - (25567 + 2)) * 86400) ELSE TO_DATE(f_dispensacion, 'DD/MM/YYYY') END,'1900-01-01') ",'Verifique el formato de fecha Dispensacion DD/MM/YYYY, que no sea vacio o nulo'],
@@ -46,7 +47,7 @@ const PARAMETERS = {
         key:['fecha_dispensacion','paciente','ente_gestor_name','departamento','establecimiento','nivel_atencion', 'matricula', "COALESCE(no_receta,'-1')"],
         //keyAux:['fecha_dispensacion','paciente', 'matricula','genero', 'edad','ente_gestor','departamento','establecimiento','nivel_atencion','matricula','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
         keyAux: ['ente_gestor_name','departamento','regional','establecimiento','nivel_atencion','f_dispensacion','paciente','matricula','f_genero','f_edad','cantidad_dispensada','no_receta','especialidad','diagnostico','observacion'],
-        gender: ['paciente', 'genero','f_genero']
+        gender: null//['paciente', 'genero','f_genero']
     }, 
     pacientes_oncologicos: {
         alias:'tmp_cancer',

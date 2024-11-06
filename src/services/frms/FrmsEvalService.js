@@ -194,12 +194,18 @@ const editEvalForm = async (dto, handleError) => {
     let neoData = null
     //analiza ifnormacion
     if(dto.data.idx && dto.data.estado==2){
-      console.log("\n ******************INGRESANDO PARA MODIFICAR REGISTRO\n")
+      console.log("\n ******************INGRESANDO PARA MODIFICAR REGISTRO HABILITACION DE CONCLUSION POR DEMORA\n")
       //es registro para habilitar conclusion con demora
       qUtil.setTableInstance('f_formulario_registro')
       qUtil.setDataset(estado)
       qUtil.setWhere({registro_id:dto.data.idx})
       await qUtil.modify()
+      //obtiene datos de nuevo estado
+      qUtil.setTableInstance('u_is_atributo')
+      qUtil.setAttributes([['atributo', 'revisado'], ['color','revisado_color'], ['atributo_id','revision_estado']])
+      qUtil.setWhere({atributo_id: 'c'+dto.data.estado})
+      await qUtil.findTune()
+      neoData = qUtil.getResults()[0]
     }else if(dto.data.idx && dto.data.prevision) {
       console.log("\n ******************INGRESANDO PARA CAMBIAR ESTADO DE VERIFICACION  DE CONCLUSION\n")
       //es registro para VERIFICAR
