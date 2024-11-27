@@ -878,11 +878,14 @@ const weUsersget = async (dto) => {
 
         if (dto.swAll) {
             //obtiene los usuarios del establecimiento
-            let query = `SELECT ai.nombre_institucion, p.dni_persona ,p.primer_apellido, p.nombres, 
+            let query = `SELECT dpto.nombre_dpto, 
+            ai.nombre_institucion, p.dni_persona ,p.primer_apellido, p.nombres, 
             cre.login, arol.role||': '||approl.name_role as rol
-            FROM ae_institucion ai, ape_aplicacion_institucion app, 
+            FROM ape_aplicacion_institucion app, 
             aep_institucion_personal ape, au_persona p, apu_credencial cre, 
-                    apu_credencial_rol arol, ap_aplicacion_role approl
+                    apu_credencial_rol arol, ap_aplicacion_role approl,
+            ae_institucion ai
+            left join al_departamento dpto on (dpto.cod_dpto=ai.cod_dpto)
             WHERE 
             ai.institucion_id =app.institucion_id
             and ai.institucion_id = ape.institucion_id
@@ -939,32 +942,47 @@ const weUsersget = async (dto) => {
                     result.data[modeloAlias].mensaje = `El usuario ${result.data[modeloAlias].valores.dni_persona} :: Ya se encuentra habilitado en otra institucion`
                 } else {
                     //obtine datos de institucion
-                    const eess = new QueriesUtils(eessModel)
+                    qUtil.setTableInstance("ae_institucion")
+                    qUtil.setAttributes(qUtil.transAttribByComboBox(['institucion_id', qUtil.literal("CASE WHEN dpto.nombre_dpto IS NOT NULL THEN upper(dpto.nombre_dpto) ||' - ' ELSE '' END || nombre_institucion")]))
+                    qUtil.setInclude({association: 'dpto', required: false,
+                        attributes: ['nombre_dpto'],
+                        })
+                    qUtil.setOrder([qUtil.literal(3)])
+                    /*const eess = new QueriesUtils(eessModel)
                     cnf = {
                         attributes: eess.transAttribByComboBox('institucion_id,nombre_institucion'),
                         order: ['nombre_institucion']
-                    }
+                    }*/
 
                     switch (institucionLogeada.tipo_institucion_id) {
                         case 'ASUSS':
-                            cnf.where = { parent_grp_id: institucionLogeada.institucion_id }
-                            if(institucionLogeada.es_unidad)
-                                cnf.where = {[eess.OpOr()]: [{institucion_id: institucionLogeada.institucion_id}, {institucion_root:institucionLogeada.institucion_id}]
+                            //cnf.where = { parent_grp_id: institucionLogeada.institucion_id }
+                            qUtil.setWhere({parent_grp_id: institucionLogeada.institucion_id})
+                            if(institucionLogeada.es_unidad){
+                                //cnf.where = {[eess.OpOr()]: [{institucion_id: institucionLogeada.institucion_id}, {institucion_root:institucionLogeada.institucion_id}]}
+                                const orCondition = qUtil.orWhere([{institucion_id: institucionLogeada.institucion_id}, {institucion_root:institucionLogeada.institucion_id}])
+                                qUtil.setWhere({...orCondition})
                             }
-                             
+
                             break;
                         case 'EG':
-                            cnf.where = { institucion_root: institucionLogeada.institucion_id }
+                            //cnf.where = { institucion_root: institucionLogeada.institucion_id }
+                            qUtil.setWhere({ institucion_root: institucionLogeada.institucion_id })
                             break
                         case 'EESS':
-                            cnf.where = { institucion_id: institucionLogeada.institucion_id }
+                            //cnf.where = { institucion_id: institucionLogeada.institucion_id }
+                            qUtil.setWhere({ institucion_id: institucionLogeada.institucion_id })
                             break;
                         default:
                             break;
                     }
 
                     //obtiene instituciones para combo 
-                    let datos = await eess.findTune(cnf)
+                    //let datos = await eess.findTune(cnf)
+                    //console.log("\n\n\n aki el query de combo***********")                    
+                    await qUtil.findTune()
+                    //console.log("\n\n\n aki el query de combo***********")
+                    let datos =  qUtil.getResults()
 
                     if (institucionLogeada.tipo_institucion_id == 'ASUSS' && institucionLogeada.institucion_root == '-1') {
                         //obtiene entes gestores
