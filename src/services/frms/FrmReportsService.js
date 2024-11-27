@@ -118,16 +118,25 @@ const frmsReport = async (dto, handleError) => {
       whereAux = ` ${whereAux} AND r.institucion_id IN ('${ids_institucion}')`
 
     const datosResult = {}
-    const query = `SELECT 
-i.nombre_institucion AS establecimiento, frm.descripcion AS formulario, 
-TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS periodo,
-a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as pregunta,
-f.atributo AS grupo, c.atributo AS "variable", sc.atributo AS subvariable, ll.texto AS valor
-FROM ae_institucion i ,f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+    const query = `SELECT eg.nombre_institucion AS "Ente Gestor",
+i.nombre_institucion AS "Establecimiento Salud", 
+dpto.nombre_dpto AS "Departamento",
+frm.descripcion AS Formulario, 
+TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS Periodo,
+a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as Pregunta,
+
+CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+THEN f.orden||'. ' ELSE  '' END  ||f.atributo AS Grupo, 
+c.atributo AS "variable", sc.atributo AS subvariable, ll.texto AS Valor
+FROM ae_institucion eg,
+f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
 LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
 LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
-LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll)
-WHERE a.atributo_id =  r.concluido
+LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
+ae_institucion i 
+LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+WHERE eg.institucion_id =  i.institucion_root
+AND a.atributo_id =  r.concluido
 AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
 and r.registro_id= ll.registro_id
 AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
