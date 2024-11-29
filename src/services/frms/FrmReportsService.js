@@ -184,8 +184,57 @@ ORDER BY 5,6,7`
     }
   }
 }
+const frmsConsolidado = async (dto, handleError) => {
+  try {
+    //datos de session
+    frmUtil.setToken(dto.token)
+    const resp =  await frmUtil.getGroupIdsInstitucion()
+    const data = dto.data
+    
+    //instituciones visibles por acceso o permiso
+    qUtil.setTableInstance("f_frm_enunciado")
+    qUtil.setAttributes(['subfrm_id', 'enunciado_id', 'alldetail'])
+    qUtil.setWhere({formulario_id: data.forms})
+    qUtil.setOrder(['codigo', 'orden'])
+    await qUtil.findTune()
+    let enunciados =  qUtil.getResults()
+
+    //establecimientos de salud q cumplen con la condicion
+    qUtil.setTableInstance('ae_institucion')
+    qUtil.setAttributes(['nombre_institucion'])
+    qUtil.setInclude({
+      association: 'children', required: true,
+      attributes:['nombre_institucion'],
+      where :{institucion_id: resp}
+    })
+    await qUtil.findTune()
+    let establecimientos = qUtil.getResults()
+
+    //construye atributos para query de salida 
+    const atributosEstablecimiento =  []
+    for (const eess of establecimientos) {
+      const nombre =  eess.nombre_institucion
+      atributosEstablecimiento.push(...eess.children.map(o=>nombre+'|'+o.nombre_institucion))
+    }
+
+
+    return {
+      ok: true,
+      data: atributosEstablecimiento,//{ ...datosResult, model: modelo, titulo: 'Datos de formulario' },
+      message: 'Resultado exitoso. Parametros obtenidos',
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: RPTGRALSRV',
+      error: error.message,
+    }
+  }
+}
 module.exports = {
   frmsInitialReport,
   frmsStatusReport,
   frmsReport,
+  frmsConsolidado
 }

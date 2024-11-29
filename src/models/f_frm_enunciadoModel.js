@@ -76,6 +76,7 @@ module.exports = (sequelize, DataTypes) => {
       repeat_row:{type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false} ,
       repeat:{type: DataTypes.STRING(64), allowNull: true, defaultValue:0},
       
+      alldetail: {type: DataTypes.BOOLEAN, allowNull: true, defaultValue: true}
       
         
     },

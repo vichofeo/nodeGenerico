@@ -31,5 +31,6 @@ router.post('/evals/theprint', authMiddleWare, frmsController.pdfOptions)
 router.post('/report/initialReport', authMiddleWare, frmsReportController.frmsInitialReport)
 router.post('/report/statusReport', authMiddleWare, frmsReportController.frmsStatusReport)
 router.post('/report/dataReport', authMiddleWare, frmsReportController.frmsReport)
+router.post('/report/consolidate', authMiddleWare, frmsReportController.frmsConsolidado)
 
 module.exports = router
