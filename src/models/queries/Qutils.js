@@ -428,6 +428,7 @@ module.exports = class Qutils {
   andWhere(ObjOrArrayObj) {
     return { [Op.and]: ObjOrArrayObj }
   }
+  
   /**
    * Sentencia ILike, no distingue mayus or Minus, value estring %value%
    * @param {String} value
@@ -440,7 +441,12 @@ module.exports = class Qutils {
     return { [Op.notILike]: value }
   }
   /** operadores de comparacion */
-  cMayorIgualQue(valueInteger){
-    return {[Op.gte]: valueInteger}
+  /**
+   * Senetencia mayor igual que
+   * @param {*} numberValue 
+   * @returns 
+   */
+  cMayorIgualQue(numberValue){
+    return {[Op.gte]: numberValue}
   }
 }

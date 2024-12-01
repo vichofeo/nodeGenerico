@@ -38,7 +38,12 @@ module.exports = (sequelize, DataTypes) => {
       ae_institucion.hasMany(models.cr_actividad, {
         as: 'actividad',
         foreignKey: 'institucion_id'
-      })
+      }),
+      //link fr_registro
+      ae_institucion.hasMany(models.f_formulario_registro, {
+        as: 'frmreg',
+        foreignKey: 'institucion_id'
+      })      
     }
   }
   ae_institucion.init(
