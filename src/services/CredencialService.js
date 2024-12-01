@@ -6,7 +6,7 @@ const qUtil =  new QUtils()
 
 const credencialModel = require('./../models/queries/auCredencialQueries')
 
-const tk = require('./../services/utilService')
+//const tk = require('./../services/utilService')
 
 const handleJwt =  require("./../utils/handleJwt")
 const handleToken = require("./../utils/handleToken")
@@ -19,7 +19,7 @@ const listar = async () => await credencialModel.list()
 
 const getLogin = async (dto) => {
   try {
-    const datos = tk.getCnfApp(dto.token)
+    const datos = handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
     const app = new QueriesUtils(eessModel)
     const institucion = await app.findID(datos.inst)
     const usr = new QueriesUtils(userModel)
@@ -164,8 +164,8 @@ const login = async (usr, handleError) => {
 const modify = async (dto) => {
 
   try {
-    const datos = tk.getCnfApp(dto.token)
-    const hash = await tk.genPass(datos.usr, dto.pass)
+    const datos = handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
+    const hash = await handleJwt.encrypt(dto.pass)//await tk.genPass(datos.usr, dto.pass)
 
     const payload = {
       set: {

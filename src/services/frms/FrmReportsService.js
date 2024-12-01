@@ -188,8 +188,9 @@ const frmsConsolidado = async (dto, handleError) => {
   try {
     //datos de session
     frmUtil.setToken(dto.token)
+    
     const resp =  await frmUtil.getGroupIdsInstitucion()
-    const thewhere = resp.length>0 ? {where :{institucion_id: resp}} : {wheres :'nones'}
+    const thewhere = resp.length>0 ? {where :{institucion_id: resp}} : {wheres :'nones'}    
     const whereBase = resp.length>0 ? ` AND i.institucion_id in ('${resp.join("','")}')` : ''
     const data = dto.data
 
@@ -289,12 +290,17 @@ ORDER BY 1
       results.push(...qUtil.getResults())
     }
 
+    //llama datos de comprobacion
+    const resultComprobacion = await frmsComprobate(dto, handleError)
+    if(resultComprobacion.ok == false) throw new Error("Datos mal obtenidos de comprobacion")
+
 
     return {
       ok: true,
+      
       data: {titles: titlesEstablecimientos, 
         items:results,
-        frm: {abrev: frmResult.nombre_formulario, nombre: frmResult.descripcion}
+        frm: {abrev: frmResult.nombre_formulario, nombre: frmResult.descripcion, info: resultComprobacion.data}
       },//{ ...datosResult, model: modelo, titulo: 'Datos de formulario' },
       message: 'Resultado exitoso. Parametros obtenidos',
     }
@@ -307,9 +313,74 @@ ORDER BY 1
     }
   }
 }
+const frmsComprobate = async(dto, handleError)=>{
+  try {
+    //datos de session
+    const data = dto.data
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+    const resp =  await frmUtil.getGroupIdsInstitucion()    
+    const whereInst = resp.length>0 ? {institucion_id: resp} : {}
+
+    //queries para validez de botona reporte
+    const resultComprobacion = {}
+    qUtil.setTableInstance("f_formulario_institucion_cnf")
+    qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+    qUtil.setWhere({...whereInst, formulario_id: data.forms})
+    await qUtil.findTune()
+    resultComprobacion.frm_inst = qUtil.getResults()[0].conteo
+
+    qUtil.setTableInstance("f_formulario_registro")
+    qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+    qUtil.setWhere({...whereInst, formulario_id: data.forms, periodo: data.periodos, concluido:qUtil.cMayorIgualQue('7'), revisado:qUtil.cMayorIgualQue('15')})
+    await qUtil.findTune()
+    resultComprobacion.frm_regs = qUtil.getResults()[0].conteo
+
+    qUtil.setTableInstance("ae_institucion")
+    qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+    qUtil.setWhere({es_unidad: true, tipo_institucion_id: 'ASUSS', parent_grp_id: null, root: null, institucion_id: obj_cnf.institucion_id  })
+    await qUtil.findTune()
+    resultComprobacion.r_master = qUtil.getResults()[0].conteo
+
+    qUtil.setTableInstance("ae_institucion")
+    qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+    qUtil.setWhere({tipo_institucion_id: 'EESS', parent_grp_id: obj_cnf.institucion_id  })
+    await qUtil.findTune()
+    resultComprobacion.r_slave = qUtil.getResults()[0].conteo
+
+    //obtiene departamento de slave si existe
+    resultComprobacion.dpto = 'Nacional'
+    resultComprobacion.dptal = false
+    if(resultComprobacion.r_slave>0){
+      qUtil.setTableInstance("ae_institucion")
+      qUtil.setInclude({association: 'dpto', required: true,
+        attributes: ['nombre_dpto']      
+      })
+      await qUtil.findID(obj_cnf.institucion_id)
+      resultComprobacion.dpto = qUtil.getResults().dpto.nombre_dpto    
+      resultComprobacion.dptal = true
+    }
+    delete resultComprobacion.r_master
+    delete resultComprobacion.r_slave
+
+    return {
+      ok: true,      
+      data: resultComprobacion,
+      message: 'Resultado exitoso. Parametros obtenidos',
+    }
+
+  } catch (error) {
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: RPTCMPBTESRV',
+      error: error.message,
+    }
+  }
+}
 module.exports = {
   frmsInitialReport,
   frmsStatusReport,
   frmsReport,
-  frmsConsolidado
+  frmsConsolidado, frmsComprobate
 }

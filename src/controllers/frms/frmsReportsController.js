@@ -41,8 +41,18 @@ const frmsConsolidado = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
     
 }
+const frmsComprobate = async (req, res) =>{
+    //handleError.setRes(res)    ???
+    const body =  req.body
+    const token =  req.headers.authorization
+
+    const result =  await service.frmsComprobate({token:token, data:body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+    
+}
 module.exports = {   
     frmsInitialReport, frmsStatusReport, 
     frmsReport,
-    frmsConsolidado
+    frmsConsolidado, frmsComprobate
 }

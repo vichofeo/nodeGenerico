@@ -32,5 +32,6 @@ router.post('/report/initialReport', authMiddleWare, frmsReportController.frmsIn
 router.post('/report/statusReport', authMiddleWare, frmsReportController.frmsStatusReport)
 router.post('/report/dataReport', authMiddleWare, frmsReportController.frmsReport)
 router.post('/report/consolidate', authMiddleWare, frmsReportController.frmsConsolidado)
+router.post('/report/comprobate', authMiddleWare, frmsReportController.frmsComprobate)
 
 module.exports = router
