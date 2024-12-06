@@ -3,11 +3,13 @@ const credencialService = require('./../../services/CredencialService')
 
 const HandleErrors = require('./../../utils/handleErrors')
 const handleError = new HandleErrors()
+//const requestIp = require('request-ip')
 
 const login = async (req, res) => {
   handleError.setRes(res)
   const body =  matchedData(req)
   const usrDTO = body//req.body
+  //usrDTO.ip = requestIp.getClientIp(req)
   
   const user = await credencialService.login(usrDTO, handleError)
   handleError.handleResponse(user)
@@ -25,9 +27,18 @@ const getLogin = async (req, res) => {
   handleError.setRes(res)
   const token = req.headers.authorization
   const usrDTO = { token: token }
-  const user = await credencialService.getLogin(usrDTO, handleError)
+  const user = await credencialService.getLogin(usrDTO, handleError)  
+  handleError.handleResponse(user)
+  //res.json(user)
+}
 
-  res.json(user)
+const getLoginApp = async (req, res) => {
+  handleError.setRes(res)
+  const token = req.headers.authorization
+  const usrDTO = { token: token }
+  const user = await credencialService.getLoginApp(usrDTO, handleError)  
+  handleError.handleResponse(user)
+  //res.json(user)
 }
 
 const listar = async (req, res) => {
@@ -41,8 +52,9 @@ const listar = async (req, res) => {
 const modify = async (req, res) => {
   const token = req.headers.authorization
   const usrDto = { token: token, ...req.body }
-  const result = await credencialService.modify(usrDto)
-  res.json(result)
+  const result = await credencialService.modify(usrDto, handleError)
+  handleError.handleResponse(result)
+  //res.json(result)
 }
 
 module.exports = {
@@ -51,4 +63,5 @@ module.exports = {
   listar,
   guardar,
   modify,
+  getLoginApp
 }

@@ -4,6 +4,10 @@ const QueriesUtils = require('./../models/queries/QueriesUtils')
 const QUtils =  require('./../models/queries/Qutils')
 const qUtil =  new QUtils()
 
+const FrmUtils = require('./frms/FrmsUtils')
+const frmUtil = new FrmUtils()
+
+
 const credencialModel = require('./../models/queries/auCredencialQueries')
 
 //const tk = require('./../services/utilService')
@@ -17,19 +21,31 @@ const appModel =  db.ap_aplicacion
 
 const listar = async () => await credencialModel.list()
 
-const getLogin = async (dto) => {
+const getLogin = async (dto,handleError) => {
   try {
-    const datos = handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
-    const app = new QueriesUtils(eessModel)
-    const institucion = await app.findID(datos.inst)
-    const usr = new QueriesUtils(userModel)
-    const user = await usr.findID(datos.dni)
-    const ap =  new QueriesUtils(appModel)
-    const appp =  await ap.findID(datos.app)
-    const credencial = await credencialModel.findDataOne({ login: datos.usr })
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()//handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
+    
+    qUtil.setTableInstance('ae_institucion')    
+    await qUtil.findID(obj_cnf.institucion_id)
+    const institucion = qUtil.getResults()
+
+    qUtil.setTableInstance('au_persona')
+    await qUtil.findID(obj_cnf.dni_register)    
+    const user = qUtil.getResults()
+
+    qUtil.setTableInstance("ap_aplicacion")
+    await qUtil.findID(obj_cnf.aplicacion_id)    
+    const appp =  qUtil.getResults()
+
+    
+    const credencial = obj_cnf//await credencialModel.findDataOne({ login: datos.usr })
 
     return {
       ok: true,
+      dates: Intl.DateTimeFormat().resolvedOptions().timeZone,//
+      hora: new Date().toString(),
+      hh: new Date().toLocaleString("en-US", { timeZone: "UTC" }),
       institucion: institucion,
       usr: user,
       data: credencial,
@@ -38,13 +54,12 @@ const getLogin = async (dto) => {
     }
 
   } catch (error) {
-    console.log(error);
-    return {
-      ok: false,
-      message: "Error de sistema: GLGNSRV",
-      error: error.message
-    }
-  };
+ console.log("\n\n ******************:::", error)
+    handleError.setMessage("Error de sistema: GLGNSRV")
+    handleError.setHttpError(error.message)
+}
+
+  
 
 
 }
@@ -136,7 +151,15 @@ const login = async (usr, handleError) => {
 
         }
         
-        
+        //realiza registro log DB de acceso
+        qUtil.setTableInstance("apu_usuario_log")
+        qUtil.setDataset({  date_in: qUtil.literal('CURRENT_TIMESTAMP'),
+          //ip_in:usr.ip,          
+          login: result.login,
+          institucion_id:result.institucion_id,
+          dni_persona:result.dni_persona,
+          aplicacion_id:result.aplicacion_id})
+        //await qUtil.create()  
 
 
         return {
@@ -152,7 +175,8 @@ const login = async (usr, handleError) => {
         return { message: 'Contraseña incorrecto', ok: false }
       }
     }
-  } catch (error) {        
+  } catch (error) { 
+    console.log("\n\n", error)       
         handleError.setMessage("Error de sistema: CRESRV")
         handleError.handleHttpError(error.message)    
   };
@@ -161,44 +185,56 @@ const login = async (usr, handleError) => {
 
 
 
-const modify = async (dto) => {
+const modify = async (dto, handleError) => {
 
   try {
-    const datos = handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
+    frmUtil.setToken(dto.token)
+    const datos = frmUtil.getObjSessionForModify()//handleToken.verifyToken(dto.token)//tk.getCnfApp(dto.token)
     const hash = await handleJwt.encrypt(dto.pass)//await tk.genPass(datos.usr, dto.pass)
 
-    const payload = {
-      set: {
-        password: "",
-        hash: hash,
-        last_modify_date_time: new Date(),
-        dni_register: datos.dni
-      },
-      where: {
-        institucion_id: datos.inst,
-        aplicacion_id: datos.app,
-        dni_persona: datos.dni,
-        login: datos.usr,
-      }
-    }
-    console.log("paload:::", payload)
-     await credencialModel.ModifyLogin(payload)
+    qUtil.setTableInstance("apu_credencial")
+    qUtil.setDataset({
+      password: Number(new Date()),
+      hash: hash,
+      last_modify_date_time: new Date(),
+      dni_register: datos.dni_register
+    })
+    qUtil.setWhere({ login: datos.login })
 
+    await qUtil.modify()
+
+    if(qUtil.getResults()[0])
     return {
-      ok: true,      
+      ok: true,           
       message: 'Usuario: Password modificado exitosamente. Por favor Vuelva a Autentificarse',
+    }
+    else return{
+      ok:false,
+      message:"No se pudo Modificar."
     }
   } catch (error) {
     console.log("errir", error)
-    return {
-      ok: false,
-      message: error,
-    }
+    console.log("\n\n ******************:::", error)
+    handleError.setMessage("Error de sistema: LGNMDFYNSRV")
+    handleError.setHttpError(error.message)    
   }
 
+}
+
+const getLoginApp =  async (dto, handleError) => {
+  try {
+    frmUtil.setToken(dto.token)
+    const ids = frmUtil.getGroupIdsInstitucion()
+
+    const query = ``
+
+  } catch (error) {
+    handleError.setMessage("Error de sistema: LGNLOGSRV")
+    handleError.setHttpError(error.message)    
+  }
 }
 module.exports = {
   listar, getLogin,
   login,
-  guardar, modify
+  guardar, modify, getLoginApp
 }

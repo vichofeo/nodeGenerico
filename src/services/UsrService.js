@@ -49,7 +49,7 @@ const guardar = async (usr) => {
     return { ok: false, mensaje: 'El usuario Introducido ya esta registrado' }
   } else {
     try {
-      const BCRYPT_SALT_ROUNDS = 12
+      const BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS)
       usr.password = await bcrypt.hash(usr.password, BCRYPT_SALT_ROUNDS)
 
       const user = await usrModel.Create(usr)

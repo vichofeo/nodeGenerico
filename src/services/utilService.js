@@ -24,8 +24,8 @@ const getCnfApp = (token) => {
  */
 const genPass = async (login, pass) => {
 
-    const passs = pass //login + pass
-    const BCRYPT_SALT_ROUNDS = 12
+    const passs = pass //login + pass    
+    const BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS)
     const hash = await bcrypt.hash(passs, BCRYPT_SALT_ROUNDS)
     return hash
 }

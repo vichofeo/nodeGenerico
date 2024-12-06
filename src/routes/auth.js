@@ -10,6 +10,7 @@ const  credencialController = require('./../controllers/auth/credencialControlle
    //inicio de session
    router.post('/login', validations.validateLogin, credencialController.login)
    router.post('/getUsrLgn',authMiddleWare , credencialController.getLogin )
+   router.post('/getRegisterLgn',authMiddleWare , credencialController.getLoginApp )
 
    // ****opciones para prototipo de control de usuario, deprecated
    //usrOptions

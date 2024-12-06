@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs")
 const encrypt = async (stringText)=>{
     const hash =  await bcrypt.hash(
         stringText,
-        process.env.BCRYPT_SALT_ROUNDS
+        Number(process.env.BCRYPT_SALT_ROUNDS)
     )
     return hash
 }

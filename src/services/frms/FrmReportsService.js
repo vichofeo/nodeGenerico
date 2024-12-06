@@ -121,13 +121,15 @@ const frmsReport = async (dto, handleError) => {
     const query = `SELECT eg.nombre_institucion AS "Ente Gestor",
 i.nombre_institucion AS "Establecimiento Salud", 
 dpto.nombre_dpto AS "Departamento",
-frm.descripcion AS Formulario, 
-TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS Periodo,
-a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as Pregunta,
+frm.descripcion AS formulario, 
+TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Mon') AS periodo,
+a.atributo AS estado, s.nombre_subfrm AS seccion ,p.codigo ||'.- '|| p.enunciado as pregunta,
 
 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
-THEN f.orden||'. ' ELSE  '' END  ||f.atributo AS Grupo, 
-c.atributo AS "variable", sc.atributo AS subvariable, ll.texto AS Valor
+THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
+COALESCE(c.atributo,'') AS "variable", 
+COALESCE(sc.atributo,'') AS subvariable, 
+ll.texto AS valor
 FROM ae_institucion eg,
 f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
 LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
@@ -193,6 +195,17 @@ const frmsConsolidado = async (dto, handleError) => {
     const thewhere = resp.length>0 ? {where :{institucion_id: resp}} : {wheres :'nones'}    
     const whereBase = resp.length>0 ? ` AND i.institucion_id in ('${resp.join("','")}')` : ''
     const data = dto.data
+    //construye condicion para ver solo concluidos o bien concluidos y verificados
+    const whereFlagConVeri = []
+    if(data.flag){
+      //concluido y verificado
+      whereFlagConVeri[0] = [qUtil.literal('concluido::decimal>=7'), qUtil.literal('revisado::decimal>=15')]
+      whereFlagConVeri[1] = "r.concluido::decimal>=7 AND r.revisado::decimal>=15"
+    }else{
+      //solo concluido
+      whereFlagConVeri[0] = [qUtil.literal('concluido::decimal>=7')]
+      whereFlagConVeri[1] = "r.concluido::decimal>=7"
+    }
 
     //informacion de formulario
     qUtil.setTableInstance("f_formulario")
@@ -207,6 +220,7 @@ const frmsConsolidado = async (dto, handleError) => {
     await qUtil.findTune()
     let enunciados =  qUtil.getResults()
 
+    console.log("\n\n ****************************************############***********")
     //establecimientos de salud q cumplen con la condicion
     qUtil.setTableInstance('ae_institucion')
     qUtil.setAttributes(['institucion_id','nombre_institucion'])
@@ -216,11 +230,14 @@ const frmsConsolidado = async (dto, handleError) => {
       ...thewhere,
       include:[{association: 'frmreg', required: true,
         attributes:['registro_id'],
-        where :{formulario_id:data.forms, periodo:data.periodos, concluido: qUtil.cMayorIgualQue('7'), revisado: qUtil.cMayorIgualQue('15') }
+        where :{formulario_id:data.forms, periodo:data.periodos,           
+          ...qUtil.andWhere(whereFlagConVeri[0])
+        }
       }]
     })
     await qUtil.findTune()
     let establecimientos = qUtil.getResults()
+    console.log("\n\n ****************************************############***********")
 
     //construye atributos para query de salida 
     const atributosEstablecimiento =  []
@@ -262,7 +279,8 @@ const frmsConsolidado = async (dto, handleError) => {
         query_base += ` '${enunciado.codigo} ${enunciado.enunciado}' as variable, ` 
       }
 
-      query_base += atributosEstablecimiento.join(",\n") + ', SUM(CASE WHEN (c.sw_sg=TRUE OR c.sw_sg IS NULL) THEN ll.texto::decimal ELSE 0 END) AS "total"'
+      
+      query_base +=  `${atributosEstablecimiento.length>0 ? atributosEstablecimiento.join(",\n") +',':''} SUM(CASE WHEN (c.sw_sg=TRUE OR c.sw_sg IS NULL) THEN ll.texto::decimal ELSE 0 END) AS "total"`
       query_base += `
       FROM ae_institucion eg,
 f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
@@ -279,7 +297,8 @@ AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enun
 AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
 and r.formulario_id='${data.forms}' 
 AND ll.subfrm_id ='${enunciado.subfrm_id}' AND ll.enunciado_id = '${enunciado.enunciado_id}'
-AND r.periodo ='${data.periodos}' ${whereBase}
+AND r.periodo ='${data.periodos}'  AND (${whereFlagConVeri[1]})
+${whereBase}
 GROUP BY 1
 ORDER BY 1
     `
@@ -297,7 +316,7 @@ ORDER BY 1
 
     return {
       ok: true,
-      
+      xx: establecimientos,
       data: {titles: titlesEstablecimientos, 
         items:results,
         frm: {abrev: frmResult.nombre_formulario, nombre: frmResult.descripcion, info: resultComprobacion.data}

@@ -152,7 +152,7 @@ async function creGuardar(data) {
   } else {
     try {
 
-      let BCRYPT_SALT_ROUNDS = 12;
+      let BCRYPT_SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS)
       const pass_real = await bcrypt.hash(pass, BCRYPT_SALT_ROUNDS);
 
       const app_id = data.app.value
