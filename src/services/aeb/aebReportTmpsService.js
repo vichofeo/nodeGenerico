@@ -1,6 +1,8 @@
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
+const PARAMETERS = require("./parameters")
+
 const REPORTS = require('./parametersReports')//JSON.parse(JSON.stringify(require('./parametersReports')))
 const REPORTSUCASS = require('../acrehab/parametersReports')
 
@@ -89,7 +91,7 @@ const tmpsInitialReport = (dto, handleError) => {
         message: 'Requerimiento atendido exitosamente',
       }
     } catch (error) {
-      console.log(error)
+      //console.log(error)
       handleError.setMessage('Error de sistema: STATUSINITIALSRV')
       handleError.setHttpError(error.message)
       console.log('error:::', error)
@@ -177,8 +179,21 @@ const tmpsInitialReport = (dto, handleError) => {
 
 }
 
+const tmpsReportSnis =  async (dto, handleError)=>{
+  try {
+    return{
+      ok:true,
+      message: "Solicitud ejecutada exitosamente",
+      data: PARAMETERS['opciones']
+    }
+  } catch (error) {
+    handleError.setMessage('Error de sistema: STATUSSNISSRV')
+      handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
     tmpsInitialReport,
     tmpsStatus,
-    tmpsReport
+    tmpsReport, 
+    tmpsReportSnis
 }

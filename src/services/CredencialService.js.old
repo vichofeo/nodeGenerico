@@ -150,23 +150,16 @@ const login = async (usr, handleError) => {
           qUtil.setResetVars()
 
         }
-        try {
-            await qUtil.startTransaction()
-          //realiza registro log DB de acceso
-          qUtil.setTableInstance("apu_usuario_log")
-          qUtil.setDataset({  date_in: new Date(),
-            ip_in:usr.ip,          
-            login: result.login,
-            institucion_id:result.institucion_id,
-            dni_persona:result.dni_persona,
-            aplicacion_id:result.aplicacion_id})
-          await qUtil.create()  
-
-          await qUtil.commitTransaction()          
-        } catch (error) {
-          await qUtil.rollbackTransaction()
-        }
         
+        //realiza registro log DB de acceso
+        qUtil.setTableInstance("apu_usuario_log")
+        qUtil.setDataset({  date_in: new Date(),
+          ip_in:usr.ip,          
+          login: result.login,
+          institucion_id:result.institucion_id,
+          dni_persona:result.dni_persona,
+          aplicacion_id:result.aplicacion_id})
+        await qUtil.create()  
 
 
         return {
@@ -177,7 +170,6 @@ const login = async (usr, handleError) => {
           routes: routes
         }
       } else {
-        
         handleError.setMessage("PASSWORD_INVALID")
         handleError.setCode(402)
         return { message: 'Contraseña incorrecto', ok: false }

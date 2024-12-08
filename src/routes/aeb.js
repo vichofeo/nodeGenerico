@@ -34,6 +34,9 @@ router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialR
 router.post('/xlsx/statusReport', authMiddleWare, reportController.tmpsStatus)
 router.post('/xlsx/dataReport', authMiddleWare, reportController.tmpsReport)
 
+//reporte de snis que cargaron
+router.post('/xlsx/statusFrmsSnis', authMiddleWare, reportController.tmpsReportSnis)
+
 
 
 

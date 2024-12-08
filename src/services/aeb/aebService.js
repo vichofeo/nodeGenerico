@@ -37,7 +37,7 @@ const getDataModelN = async (dto, handleError) => {
             message: "Requerimiento Exitoso"
         }
     } catch (error) {
-        //console.log(error)
+        console.log(error)
         console.log("\n\nerror::: EN SERVICES\n")
         handleError.setMessage("Error de sistema: UFAMDATNSRV")
         handleError.setHttpError(error.message)

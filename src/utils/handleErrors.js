@@ -54,10 +54,10 @@ module.exports = class HandleErrors {
         try {
             if(payload){
                 if(payload?.ok){
-                    console.log("\n\n************************POR ENVIAR*************************\n\n", payload.data)
+                    //console.log("\n\n************************POR ENVIAR*************************\n\n", payload.data)
 
                     this.#_res.json(payload)
-                    console.log("\n\n************************ENVIADO*************************\n\n")
+                    //console.log("\n\n************************ENVIADO*************************\n\n")
                     return;
                 }else{
                     console.log("\n\n  QUERIENDO ENVIAR ALGO \n\n")
