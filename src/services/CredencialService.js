@@ -151,20 +151,28 @@ const login = async (usr, handleError) => {
 
         }
         try {
-            await qUtil.startTransaction()
+            //await qUtil.startTransaction()
           //realiza registro log DB de acceso
-          qUtil.setTableInstance("apu_usuario_log")
+          /*qUtil.setTableInstance("apu_usuario_log")
           qUtil.setDataset({  date_in: new Date(),
             ip_in:usr.ip,          
             login: result.login,
             institucion_id:result.institucion_id,
             dni_persona:result.dni_persona,
             aplicacion_id:result.aplicacion_id})
-          await qUtil.create()  
+          await qUtil.create()  */
+          console.log("\n\n oooooooooooooooooooooooooooooooooooooo \n\n")
+          const query = `INSERT INTO apu_usuario_log (date_in, ip_in, login, institucion_id, dni_persona, aplicacion_id) 
+VALUES (CURRENT_TIMESTAMP,'????','${result.login}','${result.institucion_id}', '${result.dni_persona}','${result.aplicacion_id}') `
+          qUtil.setQuery(query)
+          await qUtil.excuteUpdate()
 
-          await qUtil.commitTransaction()          
+          //await qUtil.commitTransaction()          
         } catch (error) {
-          await qUtil.rollbackTransaction()
+          console.log("\n\n EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE \n\n")
+          console.log(error)
+          console.log("\n\n EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE \n\n")
+          //await qUtil.rollbackTransaction()
         }
         
 
@@ -239,9 +247,12 @@ const getLoginApp =  async (dto, handleError) => {
       ids.push(obj_cnf.institucion_id)
       whereAux = `lg.institucion_id in ('${ids.join("', '")}') AND `
     }
-    
-    const query = `SELECT 
-to_char(lg.date_in at time zone '${process.env.TZ}', 'YYYY-MM-DD hh24:mi:ss') as ingreso, eg.nombre_institucion as ente, i.nombre_institucion as institucion,
+
+    //to_char(lg.date_in at time zone '${process.env.TZ}', 'YYYY-MM-DD hh24:mi:ss') as ingreso, 
+    const query = `SELECT     
+to_char(lg.date_in at time zone '${process.env.TZ}', 'YYYY-MM-DD hh24:mi:ss') as ingreso, 
+ip_in as ip,
+eg.nombre_institucion as ente, i.nombre_institucion as institucion,
 ap.nombre_aplicacion as aplicacion, 
 lg.login AS usuario,
 p.primer_apellido||' '||p.nombres AS nombre

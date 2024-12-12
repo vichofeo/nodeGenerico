@@ -3,13 +3,13 @@ const credencialService = require('./../../services/CredencialService')
 
 const HandleErrors = require('./../../utils/handleErrors')
 const handleError = new HandleErrors()
-const requestIp = require('request-ip')
+//const requestIp = require('request-ip')
 
 const login = async (req, res) => {
   handleError.setRes(res)
   const body =  matchedData(req)
   const usrDTO = body//req.body
-  usrDTO.ip = requestIp.getClientIp(req).toString()
+  //usrDTO.ip = requestIp.getClientIp(req).toString()
   
   const user = await credencialService.login(usrDTO, handleError)
   handleError.handleResponse(user)

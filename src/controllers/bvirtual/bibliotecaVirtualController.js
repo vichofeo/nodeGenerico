@@ -47,14 +47,13 @@ const getDataCboxLigado = async (req, res) =>{
 
 
 
-
 module.exports = {
     
     
     getDataModel1, 
     getDataModelN, getDataModelNew, 
     getDataCboxLigado,
-
+    
 
 
 }

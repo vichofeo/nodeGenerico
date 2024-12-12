@@ -40,8 +40,8 @@ app.use(express.static('public'))
 app.use(morgan('dev'))
 
 //habilitando peticiones JSON y parseado
-app.use(express.json({limit: '550mb'}))
-app.use(express.urlencoded({limit: '550mb', extended: true}))
+app.use(express.json({limit: '300mb'}))
+app.use(express.urlencoded({limit: '300mb', extended: true}))
 
 //CORS
 /*app.use(function (req, res, next){

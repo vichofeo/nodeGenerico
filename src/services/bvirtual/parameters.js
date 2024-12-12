@@ -65,16 +65,16 @@ const PARAMETROS = {
         },
         key: ['file_id'],
         ilogic: {
-            anio_publicacion: `SELECT distinct anio_publicacion  as value, anio_publicacion||' ('||count(*)||')' as text FROM bv_files WHERE anio_publicacion is not null group by 1 order by 1 desc`,
-            tipo_documento:`SELECT distinct tipo_documento  as value, tipo_documento||' ('||count(*)||')' as text FROM bv_files WHERE tipo_documento is not null group by 1 order by 1`,
-            tipo_componente:`SELECT distinct tipo_componente  as value, tipo_componente||' ('||count(*)||')' as text FROM bv_files WHERE tipo_componente is not null group by 1 order by 1`,
+            anio_publicacion: `SELECT distinct anio_publicacion  as value, anio_publicacion||' ('||count(*)||')' as text FROM |table| bv_files WHERE anio_publicacion is not null |where| group by 1 order by 1 desc`,
+            tipo_documento:`SELECT distinct tipo_documento  as value, tipo_documento||' ('||count(*)||')' as text FROM |table| bv_files WHERE tipo_documento is not null |where| group by 1 order by 1`,
+            tipo_componente:`SELECT distinct tipo_componente  as value, tipo_componente||' ('||count(*)||')' as text FROM |table| bv_files WHERE tipo_componente is not null |where| group by 1 order by 1`,
             ambito_aplicacion: `SELECT DISTINCT f.ambito_aplicacion  as VALUE, a.atributo ||' ('||count(f.*)||')' as text FROM bv_files f, f_is_atributo a WHERE f.ambito_aplicacion is not NULL 
-                                AND f.ambito_aplicacion =  a.atributo_id group by f.ambito_aplicacion,a.atributo order BY 2`,
-            organismo_emisor: `SELECT 'asuss' AS VALUE, 'ASUSS ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor ILIKE '%asuss%')||')' AS TEXT
+                                AND f.ambito_aplicacion =  a.atributo_id |where| group by f.ambito_aplicacion,a.atributo order BY 2`,
+            organismo_emisor: `SELECT 'asuss' AS VALUE, 'ASUSS ('||(SELECT COUNT(*) FROM |table| bv_files WHERE organismo_emisor ILIKE '%asuss%' |where|)||')' AS TEXT
                                 UNION
-                                SELECT 'ministerio' AS VALUE, 'MSyD ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor ILIKE '%ministerio%')||')' AS TEXT
+                                SELECT 'ministerio' AS VALUE, 'MSyD ('||(SELECT COUNT(*) FROM |table| bv_files WHERE organismo_emisor ILIKE '%ministerio%' |where|)||')' AS TEXT
                                 UNION 
-                                SELECT 'otros_b' AS VALUE, 'OTROS ('||(SELECT COUNT(*) FROM bv_files WHERE organismo_emisor not ILIKE '%asuss%' and organismo_emisor not ILIKE '%ministerio%')||')' AS TEXT
+                                SELECT 'otros_b' AS VALUE, 'OTROS ('||(SELECT COUNT(*) FROM |table| bv_files WHERE organismo_emisor not ILIKE '%asuss%' and organismo_emisor not ILIKE '%ministerio%' |where|)||')' AS TEXT
                                 ORDER BY 1`                    
         },//null
         //keyRoot: 'enunciado_root',

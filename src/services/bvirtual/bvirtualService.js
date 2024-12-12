@@ -319,7 +319,7 @@ const uploadFile = async (dto, handleError) => {
 
       //verifica existencia de archivo en folder
       qUtil.setWhere({
-        folder_id: dto.data.folder_id,
+        //folder_id: dto.data.folder_id,
         file_md5: dto.data.file_md5,
       })
       await qUtil.findTune()
@@ -356,7 +356,9 @@ const uploadFile = async (dto, handleError) => {
     const {unlink} = require('fs/promises')
     const file = process.env.UPLOADS + '/'+dto.file.filename
     await unlink(file)
-    console.log('\n\nerror::: EN SERVICES SAVE\n', error)
+    console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
+    console.log('\n\nerror::: EN SERVICES UPLOAD SAVE\n', error)
+    console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!*************************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
     handleError.setMessage('Error de sistema: BVIRTSAVEFOLDERSRV')
     handleError.setHttpError(error.message)
   }

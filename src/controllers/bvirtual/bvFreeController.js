@@ -26,6 +26,17 @@ const getFrFile = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const getDataCortina = async (req, res)=>{
+    
+    const idx='-1'    
+    const token = req.headers?.authorization
+    const data =  req.body
+    const result = await service.getDataCortina({idx:idx, token:token, ...data},handleError)    
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 module.exports={
-    getFrFiles, getFrFile
+    getFrFiles, getFrFile,
+    getDataCortina
 }

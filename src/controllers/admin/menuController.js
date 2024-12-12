@@ -15,7 +15,7 @@ const menuGeoreferencia = async (req, res) => {
   
 }
 const menuOpsRole = async (req, res)=>{
-  
+  handleError.setRes(res)
     const token = req.headers.authorization
 
     const result = await menuGeoRef.getMenuOpsRole({token:token}, handleError)
