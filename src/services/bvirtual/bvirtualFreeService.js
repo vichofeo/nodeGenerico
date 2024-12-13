@@ -240,22 +240,25 @@ const getDataCortina = async (dto, handleError) => {
       dto.modelos = [modelLocal]
       //------------------modifica opciones de busqueda de parametros
       let tablaPluss = ""
-      let wherePluss = `and ${dto.searchs.atributo} ILIKE '%${dto.searchs.valor}%'`
-      if(dto.searchs.atributo == 'ambito_aplicacion'){
-        tablaPluss =  "f_is_atributo, "
-        wherePluss = `and bv_files.ambito_aplicacion = f_is_atributo.atributo_id AND f_is_atributo.atributo ILIKE '%${dto.searchs.valor}%'`
+      let wherePluss = ""
+      if(dto?.searchs?.atributo && dto?.searchs?.valor){
+        tablaPluss = ""
+        wherePluss = `and ${dto.searchs.atributo} ILIKE '%${dto.searchs.valor}%'`
+        if(dto.searchs.atributo == 'ambito_aplicacion'){
+          tablaPluss =  "f_is_atributo a, "
+          wherePluss = `and ambito_aplicacion = a.atributo_id AND a.atributo ILIKE '%${dto.searchs.valor}%'`
+        }
       }
-
-      const parametrosAux =  JSON.parse(JSON.stringify(PARAMETROS))
-      const tmp =  PARAMETROS[modelLocal].ilogic
-      delete PARAMETROS[modelLocal].ilogic
-      for (const key in tmp) {
-        tmp[key] = tmp[key].replaceAll('|table|', tablaPluss)
-        tmp[key] = tmp[key].replaceAll('|where|', wherePluss)
+            
+      const tmp =  JSON.parse(JSON.stringify(PARAMETROS))
+      
+      for (const key in tmp[modelLocal].ilogic) {
+        tmp[modelLocal].ilogic[key] = tmp[modelLocal].ilogic[key].replaceAll('|table|', tablaPluss)
+        tmp[modelLocal].ilogic[key] = tmp[modelLocal].ilogic[key].replaceAll('|where|', wherePluss)
       }
-      PARAMETROS[modelLocal].ilogic =  JSON.parse(JSON.stringify(tmp))
+      
       //---------------FIN MDIFICACION PARAMTEROS
-      frmUtil.setParametros(PARAMETROS)
+      frmUtil.setParametros(tmp)
       await frmUtil.getDataParams(dto)
       const result = frmUtil.getResults()
 
@@ -271,7 +274,7 @@ const getDataCortina = async (dto, handleError) => {
 
       return {
           ok: true,
-          data: result,
+          data: result[modelLocal],
           message: "Requerimiento Exitoso. Parametros Obtenidos"
       }
 
