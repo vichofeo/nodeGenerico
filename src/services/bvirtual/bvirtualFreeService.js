@@ -249,7 +249,55 @@ const getDataCortina = async (dto, handleError) => {
           wherePluss = `and ambito_aplicacion = a.atributo_id AND a.atributo ILIKE '%${dto.searchs.valor}%'`
         }
       }
+      /**
+     * ************* PARA APLICAR FILTROS ***************
+     */
+    //condicion por busqueda: Orden filtro
+    
+    if (dto?.filters && Object.keys(dto?.filters).length> 0) {
+      
+      const payload = dto.filters
+      let w = []
+      let w2 = ""
+      for (const key in payload) {
+        //console.log("\n\n lenght:", key, ":::", payload[key].length, "\n", payload[key])
+        if (payload[key].length > 0) {
+          if (key == 'organismo_emisor') {
+            w2 ="("
+            //pregunta si en arrayu existe la opcion otros_b
+            let tmp = payload[key]
+            let auxOr = ""
+            if (payload[key].includes('otros_b')) {
+              auxOr = " OR "
+              w2 +=  ` (${key} NOT ILIKE '%asuss%' AND ${key} NOT LIKE '%ministerio%') `              
+              //filtra la opcion 
+              tmp = payload[key].filter(op => op != 'otros_b')
+            }
+            if (tmp.length >= 1) {
+              const t = []
+              for (const opcion of tmp)
+                t.push (` ${key} ILIKE '%${opcion}%' `)                
+
+              w2 += `${auxOr} ( ${t.join(" or ")} )`               
+            }
+            w2 +=')'
+          } else
+            w.push(`${key} in ('${payload[key].join("' ,'")}')`)
+        }
+      }
+      
+      const filtersWhere = []
+      if (w.length > 0 || w2.length >0){
+        if(w.length > 0) filtersWhere.push(w.join(" AND "))
+        if(w2.length >0) filtersWhere.push(w2)
+      }
+    //pregunta si ya hay dato con search
+     wherePluss += ` and ${filtersWhere.join(' AND ')}`
+    
+    }//end filters
             
+      //----------------------- fin contruye opcines adcionales
+
       const tmp =  JSON.parse(JSON.stringify(PARAMETROS))
       
       for (const key in tmp[modelLocal].ilogic) {
