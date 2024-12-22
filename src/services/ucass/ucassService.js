@@ -77,6 +77,33 @@ const getDataModelNew = async (dto, handleError) => {
 
 }
 
+const saveModel = async (dto, handleError)=>{
+    try {
+      dto.modelos = [dto.modelo]
+      console.log("\n\n\n---------------------------GUARDANDO... MODELO:", dto.modelo,"\n\n\n")
+      frmUtil.setParametros(PARAMETROS)
+      await frmUtil.saveDataParams(dto)
+      const result = frmUtil.getResults()
+  
+      if(result)
+      return {
+        ok: true,     
+        r:result, 
+        message: 'Resultado exitoso. Parametros Guardados',
+      }
+      else return {
+        ok: false,
+        rr:result,       
+        message: 'La Transaccion ha fallado. vuelva a intentarlo o comuniquese con su administrador',
+      }
+    } catch (error) {
+      console.log(error)
+        handleError.setMessage("Error de sistema: OBJSAVEMODELCNF")
+        handleError.setHttpError(error.message)
+      
+    }
+  }
+
 const getDataCboxLigado = async (dto, handleError) => {
     try {
         dto.modelos = [dto.modelo]
@@ -102,6 +129,7 @@ const getDataCboxLigado = async (dto, handleError) => {
 module.exports = {
     getDataModelN,
     getDataModelNew,
+    saveModel,
     getDataCboxLigado,
  
 }

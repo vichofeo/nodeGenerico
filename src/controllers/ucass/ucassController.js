@@ -44,7 +44,14 @@ const getDataCboxLigado = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
-
+const saveModel = async (req, res)=>{
+    //const modelo = req.params.modelo
+    const token =  req.headers.authorization  
+    
+    const result = await service.saveModel({token: token, ...req.body}, handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+  }
 
 
 module.exports = {
@@ -53,7 +60,5 @@ module.exports = {
     getDataModel1, 
     getDataModelN, getDataModelNew, 
     getDataCboxLigado,
-    
-
-
+    saveModel
 }

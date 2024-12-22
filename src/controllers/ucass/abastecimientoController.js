@@ -12,6 +12,25 @@ const getControlAbastecimiento = async(req, res)=>{
   res.json(result)
 }
 
+const saveRegCtrlAbas = async(req, res)=>{  
+  const token =  req.headers.authorization
+  const result = await service.saveRegCtrlAbas({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
+const getDataRegistrador = async(req, res)=>{  
+  const token =  req.headers.authorization
+  const result = await service.getDataRegistrador({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+}
+
+
 module.exports = {
-    getControlAbastecimiento
+    getControlAbastecimiento,
+    saveRegCtrlAbas, getDataRegistrador,
+
 }

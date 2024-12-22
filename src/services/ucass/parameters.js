@@ -50,9 +50,33 @@ const PARAMETROS = {
         update: [],
         referer: [ ],
     },
+    abasregis: {
+        table: 'uf_abastecimiento_registro',
+        alias: 'regis',
+        cardinalidad: "1",
+        campos: {
+            institucion_id: ['Institucion', true, true, 'C'],            
+            periodo: ['Periodo', true, false, 'C']
+        },
+        key: ['registro_id'],
+        moreData: [
+            // { ref: 'f_frm_opcionales', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id','tipo_opcion_id'],  campoForeign: 'formulario_id',   condicion: {activo:'Y'}, condicional:null },
+        ],
+        update: [],
+        ilogic: {            
+            periodo: `SELECT TO_CHAR(current_date - interval '1 month','YYYYMM') as value, TO_CHAR(current_date - interval '1 month','YYYY-Month') as text`
+            //periodo: `SELECT '202403' as value, '202403 - Marzo' as text`
+        },
+        referer: [
+            //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
+            { ref: 'ae_institucion', apropiacion: 'institucion_id', campos: ['institucion_id', 'nombre_institucion'], condicion: null, condicional: ['institucion_id,$inst'] },
+            //{ ref: 'f_formulario', apropiacion: 'formulario_id', campos: ['formulario_id', 'nombre_formulario'], condicion: [formulario_id:], condicional:null },
+
+        ],
+    },
     abastecimienton: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, f_formulario f ,f_formulario_institucion_cnf cnf, f_formulario_registro eval ',
+        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, uf_abastecimiento_institucion_cnf cnf, uf_abastecimiento_registro eval ',
         alias: 'abastecimienton',
         cardinalidad: "n",
         linked: "evaluacion",
@@ -61,7 +85,7 @@ const PARAMETROS = {
         d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
         p.primer_apellido AS evaluador,
 
-        f.nombre_formulario as frm, eval.periodo,
+         eval.periodo,
         
         eval.concluido AS concluido_estado, eval.revisado as revision_estado,
         eval.activo,
@@ -84,14 +108,12 @@ WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class
 || CASE WHEN eval.rtype_plus<> 'r0' THEN '\n Obs.: '||atr4.atributo ELSE '' END
 ELSE case when eval.concluido::DECIMAL<7 then '' else 
 '<span class="error">!!Estado de registro no Declarado.</span>' end
-END AS glosa
-        
+END AS glosa        
         `,
 
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
         { value: "periodo", text: "Periodo Registro" },
-        { value: "evaluador", text: "Evaluador" },
-        { value: "frm", text: "FORM." },
+        { value: "evaluador", text: "Responsable" },        
         { value: "ver", text: "Accion" },
 
         { value: "creacion", text: "Creacion" },
@@ -101,9 +123,9 @@ END AS glosa
         { value: "glosa", text: "Glosa" },
 
         ],
-        key: ['eval.formulario_id'],
-        precondicion: ['f.formulario_id = cnf.formulario_id',
-            'cnf.formulario_id = eval.formulario_id ', 'cnf.institucion_id=eval.institucion_id',
+        key: ['eval.institucion_id'],
+        precondicion: [
+             'cnf.institucion_id=eval.institucion_id',
             'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',
             'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
             'i.institucion_root =  eg.institucion_id',
@@ -222,6 +244,29 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         update: [],
         referer: [],
     },
+    rprte_abastecimienton:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'uf_abastecimiento_registro r, uf_abastecimiento_llenado ll, uf_liname l',
+        alias: 'rprte_abastecimienton',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `l.cod_liname, l.medicamento ||' '|| l.concentracion  AS descripcion, l.forma_farmaceutica AS presentacion,
+            ll.consumo_promedio, ll.stock, ll.obs   
+        `,
+
+        camposView: [{ value: "cod_liname", text: "CODIGO/ ITEM" }, { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
+            { value: "presentacion", text: "PRESENTACION" },
+        { value: "consumo_promedio", text: "CONSUMO PROMEDIO MENSUAL" },
+        { value: "stock", text: "STOCK" },        
+        { value: "obs", text: "OBSERVACIONES" },
+        ],
+        key: ['r.registro_id'],
+        precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',
+            'll.swloadend =  true' ],
+        groupOrder: ` ORDER BY  l.cod_liname `,//null string    
+        update: [],
+        referer: [  ],
+    }
 }
 
 const immutableObject = (obj) =>

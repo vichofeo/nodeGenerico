@@ -1,7 +1,10 @@
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
-const LOADERS = require('./parametersLoad') //JSON.parse(JSON.stringify(require('./parametersLoad')))
+const LOADERS ={}
+LOADERS.aeb = require('./parametersLoad') //JSON.parse(JSON.stringify(require('./parametersLoad')))
+LOADERS.ucass = require('../ucass/parametersLoad')
+const defaultEntity = 'aeb'
 
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
@@ -31,7 +34,7 @@ const egData = async (dto, handleError) => {
 
 const initialData = (dto, handleError) => {
   try {
-    const data = LOADERS
+    const data = LOADERS[defaultEntity]
     const d = {}
     for (const key in data) {
       d[key] = {
@@ -56,7 +59,7 @@ const initialData = (dto, handleError) => {
 
 const statusTmps = async (dto, handleError) => {
   try {
-    const modelos = LOADERS
+    const modelos = LOADERS[defaultEntity]
 
     let response = {}
     for (const key in modelos) {
@@ -91,7 +94,7 @@ const vaciarTmps = async (dto, handleError) => {
   try {
     const data = dto.data
     const model = Object.entries(data)[0][0]
-    const modelos = LOADERS
+    const modelos = LOADERS[defaultEntity]
     //elimina registros con flag swloadend=0
     const query = `DELETE FROM ${modelos[model].alias} WHERE ${modelos[
       model
@@ -119,12 +122,16 @@ const xlsxLoad = async (dto, handleError) => {
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
     //recibe datos por post
+    console.log("\n\n*******************************************************")
+    console.log("\n\nDTO")
+    console.log("\n\n", dto)
+    console.log("\n\n*******************************************************")
     const datos = dto.data
-    const modelos = LOADERS
+    const modelos = datos.entity?LOADERS[datos.entity]:LOADERS[defaultEntity]
 
     const model = Object.entries(datos)[0][0]
 
-    if (modelos[model].filterByFunc) {
+    if (modelos[model]?.filterByFunc) {
       //console.log("********************** DATA LOAD:", datos[model])
       const metodo = modelos[model].filterByFunc.alias
       const params = modelos[model].filterByFunc.params
@@ -138,6 +145,7 @@ const xlsxLoad = async (dto, handleError) => {
     //reEscribe valores a subir
     datos[model].data = datos[model].data.map((obj) => {
       obj.dni_register = obj_cnf.dni_register
+      obj.create_date = obj_cnf.create_date
       return obj
     })
 
@@ -232,10 +240,10 @@ const xlsxNormalize = async (dto, handleError) => {
     frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
     //datos
-    const name_modelos = dto.data
+    const name_modelos = dto.data.modelos
     console.log('-----', name_modelos)
     //modelos paramas
-    const modelos = LOADERS
+    const modelos = dto.data.entity?LOADERS[dto.data.entity]:LOADERS[defaultEntity]
 
     const results = {}
     const generos = {}
@@ -413,7 +421,7 @@ const xlsxNormalize = async (dto, handleError) => {
         qUtil.setDataset({ hash: keyString })
         await qUtil.modify()
         await qUtil.commitTransaction()
-      } catch (error) {
+      } catch (error) {        
         await qUtil.rollbackTransaction()
         //obtiene los registros duplicados
         const campoHash = ['hasher']
@@ -428,8 +436,9 @@ const xlsxNormalize = async (dto, handleError) => {
             qUtil.getResults().length +
             ', registros duplicados O que ya existen en Base de datos.'
         )
+        
         //obtiene los registros duplicados
-        const hashsers = qUtil.getResults().map((obj) => obj.hasher)
+        const hashsers = qUtil.getResults().map((obj) => obj.hasher)        
         qUtil.setTableInstance(element.alias)
         qUtil.setAttributes(element.keyAux)
         qUtil.setWhere({
@@ -442,7 +451,7 @@ const xlsxNormalize = async (dto, handleError) => {
 
         results[model].push(qUtil.getResults())
       }
-    }
+    }//fin for
 
     //termina actulizacion - si no hay observaciones se concluye procesamiento
     //-> si existe observacion se elimina todos los datos.
@@ -457,7 +466,7 @@ const xlsxNormalize = async (dto, handleError) => {
         sw[model].process = false
         //elimina registros malos
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
-        //await qUtil.deleting()
+        await qUtil.deleting()
       } else {
         sw[model].process = true
         //se procesan los archivos sin observacion ->swLoadend =  true

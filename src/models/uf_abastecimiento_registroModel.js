@@ -24,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
         as:'estado',
         foreignKey: 'concluido',
         targetKey: 'atributo_id'
+      }),
+      uf_abastecimiento_registro.belongsTo(models.au_persona,{
+        as:'abausr',
+        foreignKey: 'dni_register',
+        targetKey: 'dni_persona'
       })
     }
   }

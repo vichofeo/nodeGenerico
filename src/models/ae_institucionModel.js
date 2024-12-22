@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       }),
       ae_institucion.belongsTo(models.ae_institucion, {
         as:'father',
-        foreignKey:'institucion_id',
+        foreignKey:'institucion_root',
         targetKey: 'institucion_id'
       }),
       //link con actividades

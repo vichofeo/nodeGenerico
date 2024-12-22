@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class uf_abstecimiento_llenado extends Model {
+  class uf_abastecimiento_llenado extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -10,16 +10,16 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
      
-      uf_abstecimiento_llenado.belongsTo(models.uf_abastecimiento_registro,{
+      uf_abastecimiento_llenado.belongsTo(models.uf_abastecimiento_registro,{
         as:'aregis',
         foreignKey: 'registro_id'
       })    
       
     }
   }
-  uf_abstecimiento_llenado.init(
+  uf_abastecimiento_llenado.init(
     {
-        res_abas_id:{type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true},
+        res_abas_id:{type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement:true},
         create_date:{type: DataTypes.DATE, allowNull: true},
         last_modify_date_time:{type: DataTypes.DATE, allowNull: false},
         dni_register:{type: DataTypes.STRING(25), allowNull: true},
@@ -37,23 +37,23 @@ module.exports = (sequelize, DataTypes) => {
       saldo:{type: DataTypes.DOUBLE, allowNull: false, defaultValue:0},
       
       obs:{type: DataTypes.TEXT, allowNull: true},
-      
-
- 
-      
+            
       concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
-      
+
+      swloadend: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},          
+      hash: { type: DataTypes.STRING, allowNull: true, unique: true },
+      hasher: { type: DataTypes.STRING, allowNull: true },
  
         
     },
     {
       sequelize,
-      modelName: 'uf_abstecimiento_llenado',
+      modelName: 'uf_abastecimiento_llenado',
       timestamps: false,
       freezeTableName: true,
-      tableName: 'uf_abstecimiento_llenado',
+      tableName: 'uf_abastecimiento_llenado',
       classMethods: {},
     }
   )
-  return uf_abstecimiento_llenado
+  return uf_abastecimiento_llenado
 }
