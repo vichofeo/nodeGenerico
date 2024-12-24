@@ -291,7 +291,9 @@ const getDataCortina = async (dto, handleError) => {
         if(w.length > 0) filtersWhere.push(w.join(" AND "))
         if(w2.length >0) filtersWhere.push(w2)
       }
+      
     //pregunta si ya hay dato con search
+    if(filtersWhere.length>0)
      wherePluss += ` and ${filtersWhere.join(' AND ')}`
     
     }//end filters
@@ -328,7 +330,7 @@ const getDataCortina = async (dto, handleError) => {
 
   } catch (error) {
       console.log("\n\n ?????????????????????????????????error en GetNew Biblioteca?????????????????????? \n\n");
-      console.log(error);
+      //console.log(error);
       handleError.setMessage("Error de sistema: BVDATNEWSRV")
       handleError.setHttpError(error.message)
   };
