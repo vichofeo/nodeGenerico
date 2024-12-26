@@ -30,20 +30,23 @@ const PDEPENDENCIES = {
         },
         withInitial: false,
       },
-    frmc_box:{        
-        alias: 'cboxs',        
-        campos: {
-            grupo_formulario_id: ['Grupo de Formularios', false, true, 'C'],
-            formulario_id: ['Formulario', true, true, 'C']
+    regsFarms:{
+        alias: 'cboxs_evals',                
+        campos: {            
+            periodos: ['Periodos', true, true, 'C']
             
         }, 
-        ilogic: null,
-        referer: [        
-            { ref: 'f_formulario_grupo', apropiacion: 'grupo_formulario_id', campos: ['grupo_formulario_id', 'nombre_grupo_formulario'],  campoForeign: null,   condicion: {}, condicional:['aplicacion_id,$app'] },
-            { ref: 'f_formulario', apropiacion: 'formulario_id', campos: ['formulario_id', 'nombre_formulario'],  campoForeign: 'grupo_formulario_id', condicion: {}, condicional: null},
+        ilogic: {
             
-        ],
-    },
+            periodos:`SELECT distinct fr.periodo AS VALUE,
+            to_char(TO_DATE(fr.periodo, 'YYYYMM'), 'YYYY - Mon') AS text
+            FROM uf_abastecimiento_registro fr
+            WHERE  $keySession            
+            ORDER BY 1 DESC`
+        },
+        keySession:{replaceKey:false, campo:'fr.institucion_id'},
+        referer: [],
+    }
     
    
 }

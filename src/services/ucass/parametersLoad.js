@@ -11,7 +11,7 @@ const PARAMETERS = {
         update:[
              //['stock', 'CAST(stock AS NUMERIC )', 'Verifique campo STOCK que sea numerico y que no este vacio']
             ],
-        key:['cod_liname'],        
+        key:['registro_id','cod_liname'],        
         keyAux: ['cod_liname','consumo_promedio','stock','obs'],
         gender: null//['paciente', 'genero','f_genero']
     }, 

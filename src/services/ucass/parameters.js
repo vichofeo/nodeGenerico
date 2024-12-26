@@ -70,7 +70,7 @@ const PARAMETROS = {
         referer: [
             //{ ref: 'f_frm_opcionales_tipo', apropiacion: 'tipo_opcion_id', campos: ['tipo_opcion_id', 'tipo_opcion'], condicion: null, condicional:null, multiple:true },
             { ref: 'ae_institucion', apropiacion: 'institucion_id', campos: ['institucion_id', 'nombre_institucion'], condicion: null, condicional: ['institucion_id,$inst'] },
-            //{ ref: 'f_formulario', apropiacion: 'formulario_id', campos: ['formulario_id', 'nombre_formulario'], condicion: [formulario_id:], condicional:null },
+            
 
         ],
     },
@@ -142,10 +142,10 @@ END AS glosa
     abastecimiento_todes: {
         //'$app', '$inst', '$dni', '$usr'
         table: `ae_institucion i, al_departamento d, ae_institucion eg, 
-        f_formulario f , 
-        f_formulario_institucion_cnf cnf
+        
+        uf_abastecimiento_institucion_cnf cnf
                     LEFT JOIN (SELECT eval.registro_id as idx,
-                eval.institucion_id, eval.formulario_id, eval.periodo,
+                eval.institucion_id,  eval.periodo,
                 p.primer_apellido AS evaluador, 
                 eval.concluido, eval.activo,
                 CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
@@ -170,14 +170,12 @@ WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURREN
 WHEN (eval.revisado::DECIMAL=8 AND CURRENT_DATE> eval.frevisado_plus ) THEN 'El formulario debidamente llenado, pero no ha sido verificado por el departamental. <span class="red--text">En demora indefinida.</span>'
 
 WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class="teal--text">Formulario debidamente llenado y consolidado departamental, se ha enviado/entregado satisfactoriamente .</span>'
-|| CASE WHEN eval.ctype_plus<> 'c0' THEN '
- Obs.: '||atr3.atributo ELSE '' END
-|| CASE WHEN eval.rtype_plus<> 'r0' THEN '
- Obs.: '||atr4.atributo ELSE '' END
+|| CASE WHEN eval.ctype_plus<> 'c0' THEN ' Obs.: '||atr3.atributo ELSE '' END
+|| CASE WHEN eval.rtype_plus<> 'r0' THEN ' Obs.: '||atr4.atributo ELSE '' END
 ELSE '<span class="error">!!Estado de registro no Declarado.</span>'
 END AS glosa
 
-                FROM  au_persona p, f_formulario_registro eval
+                FROM  au_persona p, uf_abastecimiento_registro eval
                 LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
                 LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
             
@@ -185,7 +183,7 @@ END AS glosa
             LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
                 WHERE 
                 p.dni_persona =  eval.dni_register) AS eval ON (
-                eval.institucion_id =  cnf.institucion_id AND eval.formulario_id=cnf.formulario_id 
+                eval.institucion_id =  cnf.institucion_id  
                 AND ($paramDoms)
             )` ,
         alias: 'abastecimienton',
@@ -196,7 +194,7 @@ END AS glosa
         d.nombre_dpto, eg.nombre_corto, 
         i.institucion_id as institucion, i.nombre_institucion,
         
-        f.formulario_id as fidx, f.nombre_formulario as frm,
+         
         eval.evaluador, eval.periodo, 
         eval.concluido, eval.activo,
         eval.ver,
@@ -225,7 +223,7 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
         { value: "periodo", text: "Periodo Registro" },
         { value: "evaluador", text: "Evaluador" },
-        { value: "frm", text: "FORM." },
+        
         { value: "ver", text: "Accion" },
         { value: "creacion", text: "Creacion" },        
         { value: "conclusion", text: " " },
@@ -233,10 +231,10 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         { value: "glosa", text: "Glosa" },
 
         ],
-        key: ['f.formulario_id'],
+        key: [],
         keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
         paramDoms:[['eval.periodo',0]],
-        precondicion: ['f.formulario_id = cnf.formulario_id',
+        precondicion: [
              'cnf.institucion_id =  i.institucion_id',            
             'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
             'i.institucion_root =  eg.institucion_id'], //$paramDoms variable

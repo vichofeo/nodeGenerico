@@ -109,7 +109,7 @@ const REPORTS = {
       ['count(*)', 'registros'],
     ],
     campos: `departamento, ente_gestor_name, establecimiento, edad, edad_recodificada,genero,to_char(fecha_diagnostico,'YYYY-MM'),diagnostico_histopatologico,localizacion, sitio_primario,cie_grupo,localizacion_metastasis,to_char(fecha_defuncion,'YYYY-MM')`,
-    headers: ['DEPARTAMENTO','ENTE GESTOR','ESTABLECIMIENTO / INSTITUCION', 'EDAD', 'EDAD RECODIFICADA', 'SEXO', 'PERIODO DE DIAGNÓSTICO (YYYY-MM)', 'DIAGNÓSTICO HISTOPATOLOGICO , CLINICO Y/O IMAGENOLOGICO', 'LOCALIZACIÓN', 'SITIO PRIMARIO', 'CIE GRUPOS', 'LOCALIZACION DE METASTASIS', 'PERIODO DE DEFUNCIÓN'],
+    headers: ['DEPARTAMENTO', 'ENTE GESTOR', 'ESTABLECIMIENTO / INSTITUCION', 'EDAD', 'EDAD RECODIFICADA', 'SEXO', 'PERIODO DE DIAGNÓSTICO (YYYY-MM)', 'DIAGNÓSTICO HISTOPATOLOGICO , CLINICO Y/O IMAGENOLOGICO', 'LOCALIZACIÓN', 'SITIO PRIMARIO', 'CIE GRUPOS', 'LOCALIZACION DE METASTASIS', 'PERIODO DE DEFUNCIÓN'],
     tipo: 'Count',
     camposOcultos: [],
     rows: ['SEXO'],
@@ -131,7 +131,7 @@ const REPORTS = {
       return sentencia
     },
   },
-  
+
   snis301a: {
     table: 'tmp_snis301a',
     tables: 'tmp_snis301a s, ae_institucion i',
@@ -153,7 +153,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     parseAttrib: ['1'],
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
+      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -178,7 +178,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros =  dato.registros.map(o=>o.periodo)
+        dato.registros = dato.registros.map(o => o.periodo)
         console.log("\n ::::::::::::::", dato.registros)
         let sentenciaAux = ''
         if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
@@ -211,7 +211,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     parseAttrib: ['1'],
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
+      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -236,7 +236,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros =  dato.registros.map(o=>o.periodo)
+        dato.registros = dato.registros.map(o => o.periodo)
         console.log("\n ::::::::::::::", dato.registros)
         let sentenciaAux = ''
         if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
@@ -269,7 +269,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
     parseAttrib: ['1'],
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
+      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -284,7 +284,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
     tipo: 'Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
-    cols: ['VARIABLE','DENTRO/FUERA', 'SUBVARIABLE'],
+    cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
     precondicion: ['s.ente_gestor=i.institucion_id'],
     referer: [],
@@ -294,7 +294,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros =  dato.registros.map(o=>o.periodo)
+        dato.registros = dato.registros.map(o => o.periodo)
         console.log("\n ::::::::::::::", dato.registros)
         let sentenciaAux = ''
         if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
@@ -327,7 +327,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     parseAttrib: ['1'],
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento, gestion, mes, formulario, grupo, gvariable,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED',  'MUNICIPIO',
+      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -342,7 +342,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     tipo: 'Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
-    cols: ['TIPO REPORTE','VARIABLE', 'TIPO VARIABLE','SUBVARIABLE'],
+    cols: ['TIPO REPORTE', 'VARIABLE', 'TIPO VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
     precondicion: ['s.ente_gestor=i.institucion_id'],
     referer: [],
@@ -352,7 +352,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros =  dato.registros.map(o=>o.periodo)
+        dato.registros = dato.registros.map(o => o.periodo)
         console.log("\n ::::::::::::::", dato.registros)
         let sentenciaAux = ''
         if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']

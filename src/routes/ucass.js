@@ -28,5 +28,8 @@ router.post('/meds/datosReg', authMiddleWare, abastecimientoController.getDataRe
 
 //rutas para el cargado
 router.post('/loader/initializeLoader', authMiddleWare, loaderController.initialData)
+router.post('/loader/dataLoadingInitialReport', authMiddleWare, loaderController.dataLoadingReport)
+router.post('/report/dataLoadingReport', authMiddleWare, loaderController.getDataLoadingReport)
+router.post('/loader/comprobate', authMiddleWare, loaderController.loadersComprobate)
 
 module.exports = router
