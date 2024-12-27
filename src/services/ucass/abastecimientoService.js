@@ -55,7 +55,7 @@ const verificaPrimalAbastecimiento = async () => {
   return obj_cnf
 }
 
-const verificaPrimalAbasEnExistencia =  async (r_id) =>{
+const verificaFechasAbasEnProcesamiento =  async (r_id) =>{
   const obj_cnf = await frmUtil.getRoleSession()
   const obj_session = frmUtil.getObjSession()
   console.log("\n\n...............")
@@ -73,6 +73,48 @@ const verificaPrimalAbasEnExistencia =  async (r_id) =>{
     return {primal:r[0].primal}
   } else{
     return {primal:false}
+  }
+}
+const verificaPermisoAbasEnProcesamiento = async (dto) => {
+  try {
+    
+    const obj_cnf = frmUtil.getObjSession()
+    const idx = dto.data.reg
+    
+    qUtil.setResetVars()
+    console.log("\n\n ***********VERIFICANDO PERMISO PARA SUBIR INFORMACION ********** \n\n")
+    qUtil.setTableInstance('uf_abastecimiento_registro')
+    await qUtil.findID(idx)
+    const r = qUtil.getResults()
+    qUtil.setResetVars()
+
+    if(r.concluido == estado_conclusion || r.dni_register != obj_cnf.dni_register)
+      r.concluido = true
+    else {
+      //verifica primal segun dias limite
+      const obj_ctrl =  await verificaFechasAbasEnProcesamiento(idx)//await verificaPrimal(r.formulario_id)
+      console.log("\n\n ***********VALIDEZ REGISTRO ABASTECIMIENTO ********** \n\n", obj_ctrl)
+      r.concluido = obj_ctrl.primal
+      if(obj_ctrl.primal)
+        r.concluido = false
+      else
+      r.concluido = true
+    }
+
+    //verifica estado de conclusion
+    return {
+      ok: true,
+      data: r,
+      //obj:obj_cnf,
+      message: 'Resultado exitoso. Parametros Evaluacion obtenido',
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: ABASVERIFYDATA',
+      error: error.message,
+    }
   }
 }
 
@@ -214,7 +256,7 @@ const getDataRegistrador = async (dto, handleError) => {
 module.exports = {
     getControlAbastecimiento,
     saveRegCtrlAbas,
-    getDataRegistrador
-
+    getDataRegistrador,
+    verificaPermisoAbasEnProcesamiento
  
 }

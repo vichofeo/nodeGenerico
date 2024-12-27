@@ -3,6 +3,7 @@ const HandleErrors = require('../../utils/handleErrors.js')
 const handleError = new HandleErrors()
 
 const service =  require('../../services/ucass/loaderService.js')
+const AbasService =  require('../../services/ucass/abastecimientoService.js')
 
 //para iniciar parametros
 const initialData = async (req, res) =>{    
@@ -44,9 +45,19 @@ const loadersComprobate = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
     
 }
+const verificaPermisoAbasEnProcesamiento = async(req, res)=>{
+  
+  const token =  req.headers.authorization
+  const result = await AbasService.verificaPermisoAbasEnProcesamiento({data:req.body, token: token}, handleError)
+  handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+
+  //res.json(result)
+}
 module.exports = {
     
     initialData, dataLoadingReport, getDataLoadingReport,
-    loadersComprobate
+    loadersComprobate,
+    verificaPermisoAbasEnProcesamiento
 
 }
