@@ -31,6 +31,7 @@ router.post('/loader/initializeLoader', authMiddleWare, loaderController.initial
 router.post('/loader/dataLoadingInitialReport', authMiddleWare, loaderController.dataLoadingReport)
 router.post('/loader/comprobate', authMiddleWare, loaderController.loadersComprobate)
 router.post('/loader/verify', authMiddleWare, loaderController.verificaPermisoAbasEnProcesamiento)
+router.put('/loader/statusLoading', authMiddleWare, loaderController.actualizaEstadoLoader)
 
 router.post('/report/dataLoadingReport', authMiddleWare, loaderController.getDataLoadingReport)
 module.exports = router

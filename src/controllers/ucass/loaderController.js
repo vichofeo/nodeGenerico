@@ -10,7 +10,7 @@ const initialData = async (req, res) =>{
     const body =  req.body
     const token =  req.headers.authorization
 
-    const result =  await service.initialData({token:token, ...body}, handleError) 
+    const result =  await service.initialData({token:token, data: body}, handleError) 
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
@@ -54,10 +54,20 @@ const verificaPermisoAbasEnProcesamiento = async(req, res)=>{
 
   //res.json(result)
 }
+const actualizaEstadoLoader = async(req, res)=>{
+  
+    const token =  req.headers.authorization
+    const result = await service.actualizaEstadoLoader({data:req.body, token: token}, handleError)
+    handleError.setResponse(result)
+      res.status(handleError.getCode()).json(handleError.getResponse())
+  
+    //res.json(result)
+  }
 module.exports = {
     
     initialData, dataLoadingReport, getDataLoadingReport,
     loadersComprobate,
-    verificaPermisoAbasEnProcesamiento
+    verificaPermisoAbasEnProcesamiento,
+    actualizaEstadoLoader
 
 }

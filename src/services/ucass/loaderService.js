@@ -15,11 +15,14 @@ const frmUtil = new FrmUtils()
 
 const estado_conclusion='7'
 const estado_revision='15'
+const estado_proceso = '3'
+
+const abasServices =  require('./abastecimientoService.js')
 
 
 
 //metodos para el cargado
-const initialData = (dto, handleError) => {
+const initialData = async (dto, handleError) => {
   try {
     const data = LOADERS
     const d = {}
@@ -32,9 +35,12 @@ const initialData = (dto, handleError) => {
       }
     }
 
+    //obtiene permisos
+    const permiso = await abasServices.verificaPermisoAbasEnProcesamiento(dto)
     return {
       ok: true,
       data: d,
+      permiso: permiso.data
     }
   } catch (error) {
     console.log(error)
@@ -256,9 +262,65 @@ const loadersComprobate = async(dto, handleError)=>{
     }
   }
 }
+
+const actualizaEstadoLoader = async(dto, handleError)=>{
+  try {
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSessionForModify()
+    //datos de session
+    const idx = dto.data.idx
+    
+    console.log("\n\n",dto,"\n\n")
+    //console.log("\n\n",payload,"\n\n")
+    await qUtil.startTransaction()
+    if(dto.data?.payload?.process){
+      //const payload = dto.data.payload
+      //cambia a estado de en proceso
+      qUtil.setTableInstance("uf_abastecimiento_llenado")
+      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso})      
+      qUtil.setWhere({registro_id: idx})
+      await qUtil.modify()
+
+      qUtil.setTableInstance('uf_abastecimiento_registro')
+      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time, concluido:estado_proceso})
+      qUtil.setWhere({registro_id: idx})
+      await qUtil.modify()
+    }else{
+      //cambia a estado de en proceso
+      qUtil.setTableInstance("uf_abastecimiento_llenado")
+      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion})      
+      qUtil.setWhere({registro_id: idx})
+      await qUtil.modify()
+
+      qUtil.setTableInstance('uf_abastecimiento_registro')
+      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time, 
+        concluido:estado_conclusion, fecha_concluido:new Date(), revisado: 8})
+      qUtil.setWhere({registro_id: idx})
+      await qUtil.modify()
+    }
+    
+
+    await qUtil.commitTransaction()
+    return {
+      ok: true,      
+      //data: resultComprobacion,
+      message: 'Resultado exitoso. Parametros obtenidos',
+    }
+
+  } catch (error) {
+    qUtil.rollbackTransaction()
+    console.log(error)
+    return {
+      ok: false,
+      message: 'Error de sistema: RPTCMPBFARMSTESRV',
+      error: error.message,
+    }
+  }
+}
 module.exports = {    
     initialData, dataLoadingReport,
     getDataLoadingReport,
-    loadersComprobate
+    loadersComprobate, 
+    actualizaEstadoLoader
  
 }
