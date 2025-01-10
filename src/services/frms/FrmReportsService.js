@@ -53,23 +53,25 @@ const frmsStatusReport = async (dto, handleError) => {
 
     //colocar aki restriccion por estblecimiento segun rol
     const formulario_id = dto.model
-    const query = `SELECT 
-p.enunciado_id AS idx, p.codigo || '.- ' ||p.enunciado AS periodo, 
-'['||string_agg(DISTINCT '{"periodo":"'||r.periodo||'", "registros":'||
-(SELECT COUNT(*) FROM f_formulario_llenado ll2 WHERE ll2.formulario_id =  ll.formulario_id AND ll2.subfrm_id=ll.subfrm_id AND ll2.enunciado_id= ll.enunciado_id)
-||' }'  ,',' 
-ORDER BY '{"periodo":"'||r.periodo||'", "registros":'||
-(SELECT COUNT(*) FROM f_formulario_llenado ll2 WHERE ll2.formulario_id =  ll.formulario_id AND ll2.subfrm_id=ll.subfrm_id AND ll2.enunciado_id= ll.enunciado_id)
-||' }' desc
+    const query = `
+SELECT idx, enunciado AS periodo,
+'['||string_agg('{"periodo":"'||periodo||'", "registros":'||conteo||' }'  ,',' 
+ORDER BY '{"periodo":"'||periodo||'", "registros":'||conteo||' }' desc
 )||']' AS registros
-FROM f_formulario_registro r,  f_formulario_llenado ll, f_frm_enunciado p, f_frm_subfrm s
-WHERE 
-r.registro_id= ll.registro_id  
+FROM (
+SELECT
+p.enunciado_id AS idx, p.codigo || '.- ' ||p.enunciado AS enunciado,
+r.periodo, COUNT(*) AS conteo
+FROM f_formulario_registro r,  f_formulario_llenado ll, f_frm_enunciado p
+WHERE
+r.registro_id= ll.registro_id
 AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
-AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
 and r.formulario_id='${formulario_id}' ${whereAux}
+GROUP BY 1,2,3
+ORDER BY 2) AS tbl
 GROUP BY 1,2
-ORDER BY 2`
+ORDER BY 2
+`
     qUtil.setQuery(query)
     await qUtil.excuteSelect()
 

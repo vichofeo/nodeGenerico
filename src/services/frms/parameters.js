@@ -142,6 +142,9 @@ const PARAMETROS = {
         eval.concluido AS concluido_estado, eval.revisado as revision_estado,
         eval.activo,
 
+        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_concluido,
+        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_revisado,
+
         CASE WHEN strpos(eval.dni_register,'$dni')>0 or eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
         TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 0 as hab_conclusion, 0 as hab_revision,
 CASE 
@@ -171,7 +174,10 @@ END AS glosa
         { value: "ver", text: "Accion" },
 
         { value: "creacion", text: "Creacion" },
-        //{value:'creador', text:'Creado Por'},
+        
+        { value: "fecha_concluido", text: "Fecha Entrega" },
+        { value: "fecha_revisado", text: "Fecha Revisión" },
+
         { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
         { value: "glosa", text: "Glosa" },
@@ -202,6 +208,9 @@ END AS glosa
                 eval.institucion_id, eval.formulario_id, eval.periodo,
                 p.primer_apellido AS evaluador, 
                 eval.concluido, eval.activo,
+                
+                eval.fecha_concluido , eval.fecha_revisado,
+
                 CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
                 TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 
                 eval.concluido AS concluido_estado, eval.revisado as revision_estado,
@@ -257,6 +266,10 @@ END AS glosa
 
         eval.creacion, 
         eval.concluido_estado, eval.revision_estado,
+
+        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_concluido,
+        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_revisado,
+
 (eval.prevision AND (SELECT COUNT(*) FROM ae_institucion i3 WHERE i3.parent_grp_id= '$inst' AND i3.tipo_institucion_id= 'EESS')>0 ) AS prevision,
         eval.conclusion, eval.conclusion_color , 
         eval.revisado, eval.revisado_color, '|pd-0-pd|' as prdo, 
@@ -282,6 +295,10 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         { value: "frm", text: "FORM." },
         { value: "ver", text: "Accion" },
         { value: "creacion", text: "Creacion" },        
+
+        { value: "fecha_concluido", text: "Fecha Entrega" },
+        { value: "fecha_revisado", text: "Fecha Revisión" },
+
         { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
         { value: "glosa", text: "Glosa" },
