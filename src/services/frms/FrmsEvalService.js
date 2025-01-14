@@ -210,7 +210,7 @@ const editEvalForm = async (dto, handleError) => {
       console.log("\n ******************INGRESANDO PARA CAMBIAR ESTADO DE VERIFICACION  DE CONCLUSION\n")
       //es registro para VERIFICAR
       qUtil.setTableInstance('f_formulario_registro')
-      qUtil.setDataset({revisado: estado_revision, dni_revisado:obj_cnf.dni_register, fecha_revisado:NOW()})
+      qUtil.setDataset({revisado: estado_revision, dni_revisado:obj_cnf.dni_register, fecha_revisado:qUtil.literal('CURRENT_TIMESTAMP')})
       qUtil.setWhere({registro_id:dto.data.idx})
       await qUtil.modify()
       //obtiene datos de nuevo estado
@@ -378,7 +378,7 @@ const getDataFrmAll =  async (dto, handleError) => {
     if(dto.data.frm &&  !dto.data.sec &&  !dto.data.prg)
       return await getFrmSectionInfo(dto.data)
     if(dto.data.reg && !dto.data.frm &&  !dto.data.sec &&  !dto.data.prg)
-      return await getEvalInfo(dto.data)
+      return await getEvalInfo(dto.data,handleError)
     
     return{
       nose:"se pasao por alto",
@@ -395,39 +395,54 @@ const getDataFrmAll =  async (dto, handleError) => {
 
 /** brinda informacion de formulario por partes */
 
-const getEvalInfo = async (dto) => {
+const getEvalInfo = async (dto, handleError) => {
   try {
     
     const obj_cnf = frmUtil.getObjSession()
     const idx = dto.reg
     
-    qUtil.setResetVars()
-    console.log("\n\n ***********VERIFICANDO VALIDEZ FORMULARIO ********** \n\n")
-    qUtil.setTableInstance('f_formulario_registro')
-    await qUtil.findID(idx)
-    const r = qUtil.getResults()
-    qUtil.setResetVars()
+    
+    //pregunta si pidio datos complemenmtarios
+    if(dto?.headerData){
+      const pdfService =  require('./FrmPDFPrintService')
+      const result = await pdfService.getInitialHeaderData({idx:idx},handleError)
+      if(result.ok){
+        const noCampos=['registro_id', 'last_modify_date_time','dni_register', 'activo', 'institucion_id', 'formulario_id', 'concluido', 'fecha_climite', 'dni_revisado', 'revisado', 'fecha_rlimite', 'opening', 'dni_plus', 'modify_date_plus', 'ctype_plus', 'rtype_plus', 'flimite_plus', 'frevisado_plus']
+        for (const element of noCampos) {
+          delete result.data[element]
+        }
+      }
+      return result
+    }else{
+      qUtil.setResetVars()
+      console.log("\n\n ***********VERIFICANDO VALIDEZ FORMULARIO ********** \n\n")
+      qUtil.setTableInstance('f_formulario_registro')
+      await qUtil.findID(idx)
+      const r = qUtil.getResults()
+      qUtil.setResetVars()
 
-    if(r.concluido == estado_conclusion || r.dni_register != obj_cnf.dni_register)
-      r.concluido = true
-    else {
-      //verifica primal segun dias limite
-      const obj_ctrl =  await verificaPrimalEnExistencia(idx)//await verificaPrimal(r.formulario_id)
-      console.log("\n\n ***********VALIDEZ FORMULARIO ********** \n\n", obj_ctrl)
-      r.concluido = obj_ctrl.primal
-      if(obj_ctrl.primal)
-        r.concluido = false
-      else
-      r.concluido = true
+      if(r.concluido == estado_conclusion || r.dni_register != obj_cnf.dni_register)
+        r.concluido = true
+      else {
+        //verifica primal segun dias limite
+        const obj_ctrl =  await verificaPrimalEnExistencia(idx)//await verificaPrimal(r.formulario_id)
+        console.log("\n\n ***********VALIDEZ FORMULARIO ********** \n\n", obj_ctrl)
+        r.concluido = obj_ctrl.primal
+        if(obj_ctrl.primal)
+          r.concluido = false
+        else
+        r.concluido = true
+      }
+        //verifica estado de conclusion
+      return {
+        ok: true,
+        data: r,
+        //obj:obj_cnf,
+        message: 'Resultado exitoso. Parametros Evaluacion obtenido',
+      }
     }
 
-    //verifica estado de conclusion
-    return {
-      ok: true,
-      data: r,
-      //obj:obj_cnf,
-      message: 'Resultado exitoso. Parametros Evaluacion obtenido',
-    }
+    
   } catch (error) {
     console.log(error)
     return {
@@ -506,7 +521,7 @@ const getFrmSectionQuestionsInfo = async (dto) => {
         
     let cnf = {                    
           association: 'questions', required: false,
-          attributes: [['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
+          attributes: [['codigo','cod_e'],['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
                         'repeat', 'repeat_row', 'row_title', 'col_title',
                         ['row_code', 'mrow'], ['col_code', 'mcol'], ['scol_code', 'mscol']
                       ],          
@@ -547,7 +562,7 @@ const getFrmSecQueAnsersInfo = async (dto) => {
     qUtil.setResetVars()
     
     qUtil.setTableInstance('f_frm_enunciado')
-    qUtil.setAttributes([['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
+    qUtil.setAttributes([['codigo','cod_e'],['enunciado','question'], ['tipo_enunciado_id', 'type'], ['orden','ord'], ['enunciado_id','efrm'],['enunciado_root','root'], 
       'repeat', 'repeat_row', 'row_title', 'col_title',
       ['row_code', 'mrow'], ['col_code', 'mcol'], ['scol_code', 'mscol']
     ],   )
@@ -591,12 +606,16 @@ const getFrmSecQueAnsersInfo = async (dto) => {
     
       for(const k in r){
         //busca informacion solo si hay mrow, mcol y mscol
-        qUtil.setResetVars()
-        qUtil.setTableInstance('f_is_atributo')
-        qUtil.setAttributes(qUtil.transAttribByComboBox(['atributo_id','atributo'])) 
-        qUtil.setOrder(['orden'])       
+             
         for (const element of auxRcols) {
           if(r[k][element]){
+            qUtil.setResetVars()
+            qUtil.setTableInstance('f_is_atributo')
+            const campos = qUtil.transAttribByComboBox(['atributo_id','atributo'])
+            campos.push(['sw_sg','sume'])
+            
+            qUtil.setAttributes(campos) 
+            qUtil.setOrder(['orden'])  
             qUtil.setWhere({grupo_atributo: r[k][element]})
             const tmp = r[k][element]
             //delete r[0].sections[key].questions[k][element]
@@ -782,7 +801,7 @@ qUtil.setTableInstance('f_formulario_registro')
 qUtil.setDataset({revisado: Number(estado_conclusion) + 1, 
   dni_concluido: obj_cnf.dni_register,
   concluido:estado_conclusion, 
-  fecha_concluido: new Date(), 
+  fecha_concluido: qUtil.literal('CURRENT_TIMESTAMP'), 
   ...obj_cnf})
 qUtil.setWhere({registro_id:reg})
 await qUtil.modify()

@@ -142,8 +142,8 @@ const PARAMETROS = {
         eval.concluido AS concluido_estado, eval.revisado as revision_estado,
         eval.activo,
 
-        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_concluido,
-        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_revisado,
+        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY') as fecha_concluido,
+        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY') as fecha_revisadon,
 
         CASE WHEN strpos(eval.dni_register,'$dni')>0 or eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
         TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 0 as hab_conclusion, 0 as hab_revision,
@@ -176,7 +176,7 @@ END AS glosa
         { value: "creacion", text: "Creacion" },
         
         { value: "fecha_concluido", text: "Fecha Entrega" },
-        { value: "fecha_revisado", text: "Fecha Revisión" },
+        { value: "fecha_revisadon", text: "Fecha Revisión" },
 
         { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
@@ -267,8 +267,8 @@ END AS glosa
         eval.creacion, 
         eval.concluido_estado, eval.revision_estado,
 
-        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_concluido,
-        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY hh24:mi:ss') as fecha_revisado,
+        to_char(eval.fecha_concluido at time zone '${process.env.TZ}', 'DD/MM/YYYY') as fecha_concluido,
+        to_char(eval.fecha_revisado at time zone '${process.env.TZ}', 'DD/MM/YYYY') as fecha_revisado,
 
 (eval.prevision AND (SELECT COUNT(*) FROM ae_institucion i3 WHERE i3.parent_grp_id= '$inst' AND i3.tipo_institucion_id= 'EESS')>0 ) AS prevision,
         eval.conclusion, eval.conclusion_color , 

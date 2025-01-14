@@ -36,7 +36,7 @@ const ___getInfoRegistroFrm= async (dto)=>{
                             include:[{association: 'inivel', required: false, attributes:[['atributo','nivel']]},
                                      {association: 'ieg', required: false, attributes:[['nombre_institucion','ente_gestor'], ['nombre_corto', 'abrev']]}]
         })
-        qUtil.pushInclude({association:'form', required: false, attributes:['nombre_formulario']})
+        qUtil.pushInclude({association:'form', required: false, attributes:['nombre_formulario','descripcion','version']})
         await qUtil.findID(registro_id)
         const registro  = qUtil.getResults()
         
@@ -50,6 +50,11 @@ const ___getInfoRegistroFrm= async (dto)=>{
         fecha =  new Date(registro.last_modify_date_time)
         registro.end_date =  `${fecha.getDate()}/${(fecha.getMonth()+1).toString().padStart(2, '0')}/${fecha.getFullYear()}`
         
+        fecha =  new Date(registro.fecha_concluido)
+        registro.fecha_concluido =  `${fecha.getDate()}/${(fecha.getMonth()+1).toString().padStart(2, '0')}/${fecha.getFullYear()}`
+        fecha =  new Date(registro.fecha_revisado)
+        registro.fecha_revisado =  `${fecha.getDate()}/${(fecha.getMonth()+1).toString().padStart(2, '0')}/${fecha.getFullYear()}`
+        
 
         //1.1 obtine informacion del usuario que registro los datos
         qUtil.setTableInstance("au_persona")
@@ -59,6 +64,14 @@ const ___getInfoRegistroFrm= async (dto)=>{
         registro.register =  `${results.primer_apellido} ${results.segundo_apellido} ${results.nombres}`
 
         registro.nombre_solicitud = `${registro.periodo}__${registro.form.nombre_formulario}_${registro.eess.toLowerCase().replaceAll(" ","-")}`
+
+        if(registro?.dni_revisado){
+            qUtil.setTableInstance("au_persona")
+            qUtil.setAttributes(['primer_apellido', 'segundo_apellido', 'nombres'])
+            await qUtil.findID(registro.dni_revisado)
+            let results = qUtil.getResults()
+            registro.revisor =  `${results.primer_apellido} ${results.segundo_apellido} ${results.nombres}`
+        }
         return registro
 }
 
@@ -383,7 +396,20 @@ const getValuesFrmWithXY = async (dto, handleError) => {
         }
     }
 }
-
+const getInitialHeaderData = async(dto,handleError)=>{
+    try {
+        const registro =  await ___getInfoRegistroFrm(dto)
+        return{
+            ok: true,
+            data: registro
+        }
+    } catch (error) {
+        console.log(error)
+        handleError.setMessage('Error de sistema consulta: FRMPDFGETHEADERs')
+        handleError.setHttpError(error.message)
+    }
+}
 module.exports={
-    getValuesFrmWithXY
+    getValuesFrmWithXY,
+    getInitialHeaderData
 }

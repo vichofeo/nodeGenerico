@@ -516,7 +516,7 @@ return queryAux
     obj.dni_register = this.#dataSession?.dni
     obj.aplicacion_id = this.#dataSession?.app
     obj.tipo_institucion = this.#dataSession?.type
-    obj.create_date = new Date()
+    obj.create_date = this.#qUtils.literal('CURRENT_TIMESTAMP') //new Date()
 
     obj.login =  this.#dataSession?.usr
     
@@ -532,7 +532,7 @@ return queryAux
   getObjSessionForModify(){
     const obj = this.getObjSession()
     delete obj.create_date
-    obj.last_modify_date_time = new Date()
+    obj.last_modify_date_time = this.#qUtils.literal('CURRENT_TIMESTAMP')//new Date()
     return obj
   }
 
@@ -576,7 +576,7 @@ return queryAux
 
           delete obj.create_date
           obj[idx_aux] = dto.idx
-          obj.last_modify_date_time = new Date()
+          obj.last_modify_date_time = this.#qUtils.literal('CURRENT_TIMESTAMP')//new Date()
           const wheres = { [idx_aux]: dto.idx }
 
           this.#qUtils.setDataset(obj)
@@ -644,7 +644,7 @@ return queryAux
         for (const more_data of objModel.moreData) {
           this.#qUtils.setResetVars()
           this.#qUtils.setTableInstance(more_data.ref)
-          obj.create_date = new Date()
+          obj.create_date = this.#qUtils.literal('CURRENT_TIMESTAMP')//new Date()
           const setData = data[more_data.apropiacion].map(dato => ({ ...obj, [more_data.apropiacion]: dato }))
           this.#qUtils.setDataset(setData)
 
@@ -652,7 +652,7 @@ return queryAux
           delete obj.create_date
 
           if (dto.idx) {
-            obj.last_modify_date_time = new Date()
+            obj.last_modify_date_time = this.#qUtils.literal('CURRENT_TIMESTAMP')//new Date()
             const opciones = data[more_data.apropiacion]
             delete obj[more_data.apropiacion]
             const wheres = { [idx_aux]: dto.idx }
