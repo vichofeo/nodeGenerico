@@ -408,7 +408,7 @@ module.exports = class FrmsUtils {
      */
     if (objParamModel.ilogic) {
       for (const key in objParamModel.ilogic) {
-        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY!!!!!!! llave:', key)
+        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY ILOGIC::!!!!!!! llave:', key)
         let queryIlogic = objParamModel.ilogic[key] 
 
         const tempo = dataIn ? dataIn[key] : {} 
@@ -426,8 +426,11 @@ module.exports = class FrmsUtils {
         await this.#qUtils.excuteSelect()
 
         const result = this.#qUtils.getResults()
-        selected = this.#qUtils.searchSelectedForComboBox({ value: tempo })
-          console.log('************** DEFAUL SELECTED', selected)
+        //pregunta si va poner valor inicial -TODOS-
+        if(result.length>0 &&  objParamModel.withInitial) result.unshift(this.#qUtils.getInitialOpCbox())
+
+        selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
+          console.log('************** DEFAULT cobxDependency SELECTED', selected)
         parametros.valores[key] = {
           selected: selected,
           items: result

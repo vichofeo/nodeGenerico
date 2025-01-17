@@ -771,5 +771,42 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
     },
     withInitial: true,
   },
+  //cBox for sala situacional 
+  ss_eess:{        
+    alias: 'ss_eess',
+    campos: {      
+      eg: ['Ente Gestor', false, true, 'C',,,'M'],
+      dpto:['Departamento', false, true, 'C',,,'M'],
+      eess: ['Establecimiento de Salud', false, true, 'C',,,'M'],
+  }, 
+  
+  ilogic: {
+    eg:`SELECT DISTINCT eg.institucion_id AS value, eg.nombre_institucion AS text
+      FROM  ae_institucion i, al_departamento d, ae_institucion eg
+      WHERE i.tipo_institucion_id='EESS'
+      AND i.cod_dpto =  d.cod_dpto
+      AND i.institucion_root =  eg.institucion_id 
+      ORDER BY 2`,
+
+      dpto:`SELECT DISTINCT d.cod_dpto AS VALUE, d.nombre_dpto AS text
+      FROM  ae_institucion i, al_departamento d, ae_institucion eg
+      WHERE i.tipo_institucion_id='EESS'
+      AND i.cod_dpto =  d.cod_dpto
+      AND i.institucion_root =  eg.institucion_id
+      AND eg.institucion_id = '$campoForeign'
+      ORDER BY 2`,
+      
+      eess: `SELECT DISTINCT i.institucion_id AS value, d.nombre_dpto ||' - '||  i.nombre_institucion||' - '||e.nivel_atencion text
+      FROM  r_institucion_salud e, ae_institucion i, al_departamento d, ae_institucion eg
+      WHERE i.tipo_institucion_id='EESS' AND e.institucion_id =  i.institucion_id
+      AND i.cod_dpto =  d.cod_dpto
+      AND i.institucion_root =  eg.institucion_id AND eg.institucion_id= '$eg' AND i.cod_dpto='$campoForeign'
+      ORDER BY 2`,
+      
+ 
+  },
+    referer: [],
+    withInitial: true,
+},
 }
 module.exports = PDEPENDENCIES
