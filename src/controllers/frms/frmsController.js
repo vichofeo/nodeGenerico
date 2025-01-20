@@ -25,7 +25,7 @@ const getFrmsInfo = async(req, res)=>{
 const getDataCboxLigado = async (req, res) =>{    
   const modelo =  req.body.modelo
   const token =  req.headers.authorization
-console.log("555555555555555555 entre",modelo )
+//console.log("555555555555555555 entre",modelo )
   const result =  await frmService.getDataCboxLigado({modelo:modelo, token:token, ...req.body}, handleError) 
   handleError.setResponse(result)
   res.status(handleError.getCode()).json(handleError.getResponse())

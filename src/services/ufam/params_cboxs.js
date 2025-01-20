@@ -4,18 +4,18 @@ const PDEPENDENCIES = {
   dash_ames: {
     alias: 'ames',
     campos: {
-      departamento: ['DEPARTAMENTO', false, true, 'C'],
-      eg: ['ENTE GESTOR', false, true, 'C'],
-      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
-      tipo_solicitud: ['TIPO DE SOLICITUD', false, true, 'C'],
-      servicio: ['SERVICIO', false, true, 'C'],
-      gestion: ['GESTION', false, true, 'C'],
+      departamento: ['DEPARTAMENTO', false, true, 'C',,,'M'],
+      eg: ['ENTE GESTOR', false, true, 'C',,,'M'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C',,,'M'],
+      tipo_solicitud: ['TIPO DE SOLICITUD', false, true, 'C',,,'M'],
+      servicio: ['SERVICIO', false, true, 'C',,,'M'],
+      gestion: ['GESTION', false, true, 'C',,,'M'],
       genero: ['GENERO', false, true, 'C'],
       notificacion_legitimador: [
         'NOTIFICACION INFORME A LEGITIMADORES',
         false,
         true,
-        'C',
+        'C'
       ],
       notificacion_msyd: ['NOTIFICACION AL MSyD', false, true, 'C'],
       apelacion: ['APELACIÓN', false, true, 'C'],
@@ -96,7 +96,7 @@ const PDEPENDENCIES = {
       equivalencia: {
         departamento: ['departamento', 'departamento'],
         eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', 'establecimiento'],
+        establecimiento: ['establecimiento', "ente_gestor||': '|| departamento ||' - ' ||establecimiento"],
         tipo_solicitud: ['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],
@@ -144,12 +144,12 @@ const PDEPENDENCIES = {
     alias: 'inas',
     campos: {
       //departamento:['DEPARTAMENTO', false, true, 'C'],
-      departamento: ['CIUDAD', false, true, 'C'],
-      eg: ['ENTE GESTOR', false, true, 'C'],
-      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+      departamento: ['CIUDAD', false, true, 'C',,,'M'],
+      eg: ['ENTE GESTOR', false, true, 'C',,,'M'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C',,,'M'],
       //tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
-      servicio: ['SERVICIO', false, true, 'C'],
-      gestion: ['GESTION', false, true, 'C'],
+      servicio: ['SERVICIO', false, true, 'C',,,'M'],
+      gestion: ['GESTION', false, true, 'C',,,'M'],
 
       //genero:['GENERO', false, true, 'C'],
       //notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
@@ -231,7 +231,7 @@ const PDEPENDENCIES = {
       equivalencia: {
         departamento: ['ciudad', 'ciudad'],
         eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', 'establecimiento'],
+        establecimiento: ['establecimiento', "ente_gestor||': '|| ciudad ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],
@@ -258,12 +258,12 @@ const PDEPENDENCIES = {
     alias: 'rrame',
     campos: {
       //departamento:['DEPARTAMENTO', false, true, 'C'],
-      departamento: ['CIUDAD', false, true, 'C'],
-      eg: ['ENTE GESTOR', false, true, 'C'],
-      establecimiento: ['ESTABLECIMIENTO', false, true, 'C'],
+      departamento: ['CIUDAD', false, true, 'C',,,'M'],
+      eg: ['ENTE GESTOR', false, true, 'C',,,'M'],
+      establecimiento: ['ESTABLECIMIENTO', false, true, 'C',,,'M'],
       //tipo_solicitud:['TIPO DE SOLICITUD', false, true, 'C'],
-      servicio: ['SERVICIO', false, true, 'C'],
-      gestion: ['GESTION', false, true, 'C'],
+      servicio: ['SERVICIO', false, true, 'C',,,'M'],
+      gestion: ['GESTION', false, true, 'C',,,'M'],
 
       //genero:['GENERO', false, true, 'C'],
       //notificacion_legitimador:['NOTIFICACION INFORME A LEGITIMADORES', false, true, 'C'],
@@ -345,7 +345,7 @@ const PDEPENDENCIES = {
       equivalencia: {
         departamento: ['ciudad', 'ciudad'],
         eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', 'establecimiento'],
+        establecimiento: ['establecimiento', "ente_gestor||': '|| ciudad ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],

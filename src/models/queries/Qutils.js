@@ -330,21 +330,28 @@ module.exports = class Qutils {
     return this.searchSelectedInDataComboBox(this.#results, selected)
   }
 
-  searchSelectedInMultipleComboBox(data, selected) {
+  searchSelectedInMultipleComboBox(data, selected, isCombo=false) {
     try {
       const datos = data
       let i = 0
       let sw = 0
+      let swExito =0
       const results = []
       for (const ii in datos) {
         sw = 1
         const resultado = selected.find((obj) => obj.value === datos[ii].value)
         if (resultado) {
+          swExito++
           results.push(datos[ii])
         }
       }
 
-      if (sw) return results
+      if (sw) {
+        if(swExito<=0 && isCombo)
+          return [datos[0]]
+        else
+          return results
+      }
       else return this.#sinDatoByCombo
     } catch (error) {
       console.log(error)

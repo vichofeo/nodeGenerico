@@ -793,18 +793,18 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
       WHERE i.tipo_institucion_id='EESS'
       AND i.cod_dpto =  d.cod_dpto
       AND i.institucion_root =  eg.institucion_id
-      AND eg.institucion_id = '$campoForeign'
+      $iqw$
       ORDER BY 2`,
       
-      eess: `SELECT DISTINCT i.institucion_id AS value, d.nombre_dpto ||' - '||  i.nombre_institucion||' - '||e.nivel_atencion text
+      eess: `SELECT DISTINCT i.institucion_id AS value, eg.nombre_corto||': '||d.nombre_dpto ||' - '||  i.nombre_institucion||' - '||e.nivel_atencion text
       FROM  r_institucion_salud e, ae_institucion i, al_departamento d, ae_institucion eg
       WHERE i.tipo_institucion_id='EESS' AND e.institucion_id =  i.institucion_id
       AND i.cod_dpto =  d.cod_dpto
-      AND i.institucion_root =  eg.institucion_id AND eg.institucion_id= '$eg' AND i.cod_dpto='$campoForeign'
+      AND i.institucion_root =  eg.institucion_id 
+      $iqw$
       ORDER BY 2`,
-      
- 
   },
+  ilogicMultiple:{eg:'eg.institucion_id', dpto:'d.cod_dpto', eess:'i.institucion_id' },
     referer: [],
     withInitial: true,
 },

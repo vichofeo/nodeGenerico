@@ -323,7 +323,7 @@ module.exports = class FrmsUtils {
     //recorre referer
     this.#qUtils.setResetVars()
     let selected = dataIn ? { value: Object.values(dataIn)[0] } : { value: null }
-    //console.log("..............", selected)
+    console.log("\n\n..............PRIMER SELECTED", selected, "///\n \n ")
 
     for (const referer of objParamModel.referer) {
       //instancia campos
@@ -376,7 +376,13 @@ module.exports = class FrmsUtils {
       let pWhere=""
       //aplica mismo query a todos los campos
       for (const campo in objParamModel.campos) {
-        const tempo = dataIn ? dataIn[campo] : {} 
+
+        //pregunta si existe la posicion 6 para combomultiple
+        //const tempo = dataIn ? dataIn[campo] : {} 
+        let swMultipleBoxLocal = (parametros.campos[campo] && parametros.campos[campo][6]) ? true: false
+        let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:{}
+        if(swMultipleBoxLocal && Array.isArray(tempo)) tempo =  tempo.map(val=>({value:val}))
+        
         const attributes = `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text` 
         let query = queryPrimal.replaceAll(sattrib, attributes)
         query = query.replaceAll(swhere, pWhere)
@@ -386,11 +392,28 @@ module.exports = class FrmsUtils {
         let result = this.#qUtils.getResults()
         if(result.length>0 &&  objParamModel.withInitial) result.unshift(this.#qUtils.getInitialOpCbox())
         
-        selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
+        //selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
+        selected = swMultipleBoxLocal ? 
+                    this.#qUtils.searchSelectedInMultipleComboBox(result, tempo, swMultipleBoxLocal)          
+                    :this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo})
         //construye condicion para la siguiente iteracion solo si es distinto de -1
-        if(selected.value != '-1'){
-          primalCondition.push(`${equivalencia[campo][0]}='${selected.value}'`)
-          pWhere = 'AND ' + primalCondition.join(' AND ') 
+        if( !swMultipleBoxLocal ){
+          console.log("\n\n PRIMAL no m ultipleeee SELECTED::",selected,"\n\n")
+          if(selected.value != '-1'){
+            primalCondition.push(`${equivalencia[campo][0]}='${selected.value}'`)
+            pWhere = 'AND ' + primalCondition.join(' AND ') 
+          }          
+        }else{
+          console.log("\n\n PRIMAL MULTIPLE",tempo," SELECTED::",selected,"\n\n")
+          //opciones para comboMultiple
+          if(Array.isArray(selected) && selected.length>0){
+            const idsMultiple = selected.map( obj=>obj.value)
+            if( !idsMultiple.includes('-1')){
+              primalCondition.push(`${equivalencia[campo][0]} IN ('${idsMultiple.join("', '")}')`)
+              pWhere = 'AND ' + primalCondition.join(' AND ') 
+            }
+              
+          }
         }
         //vacias datos
         parametros.valores[campo] = {
@@ -407,16 +430,29 @@ module.exports = class FrmsUtils {
      *                      ***********************************************
      */
     if (objParamModel.ilogic) {
+      let condicionMultiple=""
       for (const key in objParamModel.ilogic) {
         console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY ILOGIC::!!!!!!! llave:', key)
+        let swMultipleBoxLocal = (parametros.campos[key] && parametros.campos[key][6]) ? true: false
+
         let queryIlogic = objParamModel.ilogic[key] 
 
-        const tempo = dataIn ? dataIn[key] : {} 
+        let tempo = dataIn[key] ? dataIn[key] : swMultipleBoxLocal?[]:{} 
+        
 
-        console.log('************** almacen ilogic si existe seleccionado', tempo)
-        queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
+        console.log('\n\n********", ' ,dataIn, ' ,"****** almacen ilogic si existe seleccionado', tempo, "*****\n MULTIPLE: ", swMultipleBoxLocal ,"\n")
+        if(!swMultipleBoxLocal){
+          queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)        
+          queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
+        }else{
+          //realiza reemplazo de variable $iqw$ en conjunto con campo ilogicMultiple
+          tempo = tempo.map(val=>({value: val}))
+          const variableWhereIlogic = '$iqw$'
+          console.log('\n\n************** SELECTED CON MULTIPLE', condicionMultiple, '\n\n')
+          queryIlogic = queryIlogic.replaceAll(variableWhereIlogic, condicionMultiple)
+
+        }
         queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
-        queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
         queryIlogic = await this.#replaceKeysSessionInQILogic(queryIlogic, objParamModel, '-1')
                 
         //complementa condicion en caso q haya existido condicion PRIMAL
@@ -427,10 +463,22 @@ module.exports = class FrmsUtils {
 
         const result = this.#qUtils.getResults()
         //pregunta si va poner valor inicial -TODOS-
-        if(result.length>0 &&  objParamModel.withInitial) result.unshift(this.#qUtils.getInitialOpCbox())
+        if(result.length>0 &&  objParamModel.withInitial && parametros.campos[key]) result.unshift(this.#qUtils.getInitialOpCbox())
 
-        selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
-          console.log('************** DEFAULT cobxDependency SELECTED', selected)
+        //selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
+        selected = swMultipleBoxLocal ? 
+                    this.#qUtils.searchSelectedInMultipleComboBox(result, tempo, swMultipleBoxLocal)          
+                    :this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo})
+          console.log('\n\n******ENTRADA:', tempo,'******** DEFAULT cobxDependency SELECTED', selected, '\n\n')
+         //construye condicion si es multiple y existe ilogicMultiple
+         if(swMultipleBoxLocal && objParamModel.ilogicMultiple){
+          if(Array.isArray(selected) && selected.length>0){
+            const idsMultiple = selected.map( obj=>obj.value)
+            if( !idsMultiple.includes('-1'))
+              condicionMultiple += ` AND ${objParamModel.ilogicMultiple[key]} IN ('${idsMultiple.join("', '")}')`
+          }
+         } 
+        //alista valores de retorno  
         parametros.valores[key] = {
           selected: selected,
           items: result
