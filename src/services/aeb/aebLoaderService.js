@@ -1,3 +1,4 @@
+const HandleErrors = require('../../utils/handleErrors')
 const QUtils = require('./../../models/queries/Qutils')
 const qUtil = new QUtils()
 
@@ -10,6 +11,9 @@ const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
 const loaderUtils = require('./aebUtilsLoaders')
+
+const parametros = JSON.stringify(require('./parameters'))
+const PARAMETROS = JSON.parse(parametros)
 
 const egData = async (dto, handleError) => {
   try {
@@ -488,6 +492,61 @@ const xlsxNormalize = async (dto, handleError) => {
     console.log('error:::', error)
   }
 }
+const tmpsSaveEquivalencia = async (dto, handleError)=>{
+  try {
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+
+    await qUtil.startTransaction()
+    const data = dto.data
+    const modelTable =  PARAMETROS[data.model].linked
+    
+    const setData = data.dataSet
+    const whereSet =  data.data
+
+    
+
+    
+    //modifica data de tabla tmps copn equivalencia
+    qUtil.setTableInstance(modelTable)
+    qUtil.setDataset(setData)
+    qUtil.setWhere(whereSet)    
+    await qUtil.modify()
+    const results = qUtil.getResults()
+
+    //elimina posible dato en equivalencia si existe
+    if(whereSet.eg){
+      qUtil.setTableInstance('tmp_equivalencia')
+      qUtil.setWhere(whereSet)
+      await qUtil.deleting()
+    }
+    //inserta nuevos datos
+    const neoData =  Object.assign(whereSet, setData)
+    qUtil.setTableInstance('tmp_equivalencia')
+    qUtil.setDataset([neoData])
+    await qUtil.createwLote()
+
+
+    await qUtil.commitTransaction()
+    if(results[0]){
+      return {
+        ok: true,
+        message: 'Equivalencia de datos  realizado con exito',
+      }
+    }else{
+      return{
+        ok: false,
+        message: 'No Se puedo guardar los datos.',
+      }
+    }
+    
+  } catch (error) {
+    qUtil.rollbackTransaction()
+    handleError.setMessage('Error de sistema: UPTTMPSSRV')
+    handleError.setHttpError(error.message)
+    console.log('error:::', error)
+  }
+}
 module.exports = {
   initialData,
   statusTmps,
@@ -495,4 +554,5 @@ module.exports = {
   xlsxLoad,
   xlsxNormalize,
   egData,
+  tmpsSaveEquivalencia
 }

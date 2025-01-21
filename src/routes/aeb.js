@@ -15,6 +15,7 @@ router.get("/:modelo/new", authMiddleWare, controller.getDataModelNew)
 router.get("/:idx/:modelo", authMiddleWare, controller.getDataModel1)
 
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
+router.post("/agrupado", authMiddleWare, controller.getGroupedModels) 
 
 
 //router.post("/eval/tpac/report", authMiddleWare, evalController.tpacReport)
@@ -29,6 +30,9 @@ router.post('/xlsx/suprtmps', authMiddleWare, loaderController.vaciarTmps)
 
 router.post('/xlsx/eg', authMiddleWare, loaderController.egData)
 
+//equivalencia de campos en datos de cargas
+router.post('/tmps/equivalence', authMiddleWare, loaderController.tmpsSaveEquivalencia)
+
 //rutas para reportes
 router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialReport)
 router.post('/xlsx/statusReport', authMiddleWare, reportController.tmpsStatus)
@@ -36,6 +40,8 @@ router.post('/xlsx/dataReport', authMiddleWare, reportController.tmpsReport)
 
 //reporte de snis que cargaron
 router.post('/xlsx/statusFrmsSnis', authMiddleWare, reportController.tmpsReportSnis)
+
+///
 
 
 

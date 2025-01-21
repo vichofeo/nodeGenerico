@@ -15,6 +15,7 @@ const PCBOXS = JSON.parse(pcboxs)
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
+const AGRUPADO =  require('./parametersAgrupado')
 
 const getDataModelN = async (dto, handleError) => {
     try {
@@ -97,10 +98,43 @@ const getDataCboxLigado = async (dto, handleError) => {
 
 }
 
+const getGroupedModels = async (dto, handleError) => {
+    try {
+        if(dto?.modelo){
+            console.log("\n\n modelo", dto.modelo)
+            console.log("\n\n agrupado", AGRUPADO)
+            if(AGRUPADO[dto.modelo]){
+                return {
+                    ok: true,                
+                    data: AGRUPADO[dto.modelo],
+                    message: "GROUPED MODEL : No Existe, error de diseño."
+                }
+
+            }else{
+                return {
+                    ok: false,                
+                    message: "GROUPED MODEL CONFIG: No Existe, error de parametro."
+                }                
+            }
+        }else{
+            return {
+                ok: false,                
+                message: "GROUPED MODEL : No Existe, error de diseño."
+            }
+        }
+
+    } catch (error) {
+        console.log(error);
+        handleError.setMessage("Error de sistema: AEBDATGROUPEDSRV")
+        handleError.setHttpError(error.message)
+    };
+
+}
+
 
 module.exports = {
     getDataModelN,
     getDataModelNew,
     getDataCboxLigado,
-
+    getGroupedModels
 }

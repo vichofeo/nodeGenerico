@@ -9,6 +9,7 @@
  * referer.condicion: {a:1,b:5}
  */
 "use strict"
+const paramsTmps = require("./parametersTmps.js")
 const PARAMETROS = {
     opciones:{
         campos:{
@@ -109,7 +110,7 @@ const PARAMETROS = {
         update: [],
         referer: [ ],
     },
-    
+    ...paramsTmps
     
 }
 

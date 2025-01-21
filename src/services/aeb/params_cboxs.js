@@ -775,6 +775,8 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
   ss_eess:{        
     alias: 'ss_eess',
     campos: {      
+      gestion: ['GESTION', false, true, 'C'],
+      periodo: ['MES', false, true, 'C',,,'M'],
       eg: ['Ente Gestor', false, true, 'C',,,'M'],
       dpto:['Departamento', false, true, 'C',,,'M'],
       eess: ['Establecimiento de Salud', false, true, 'C',,,'M'],
@@ -805,8 +807,49 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
       ORDER BY 2`,
   },
   ilogicMultiple:{eg:'eg.institucion_id', dpto:'d.cod_dpto', eess:'i.institucion_id' },
+  primal: {
+    equivalencia: {      
+      gestion: ['extract(year from fecha_vacunacion)', 'extract(year from fecha_vacunacion)'],
+      periodo: ["TO_CHAR(fecha_vacunacion, 'YYYY-MM')", "TO_CHAR(fecha_vacunacion, 'YYYY-MM')"],
+    },
+    query: `SELECT DISTINCT $a$
+              FROM tmp_pai
+              WHERE 1=1
+              $w$
+              ORDER BY 2`,
+    headers: [{}],
+    attributes: null,
+  },
     referer: [],
     withInitial: true,
+},
+equivalencias:{        
+  alias: 'equivalencias',
+  campos: {          
+    eg: ['Ente Gestor', false, true, 'C'],
+    dpto:['Departamento', false, true, 'C'],
+    eess: ['Establecimiento de Salud', false, true, 'C'],
+  }, 
+  ilogic: null,
+  ilogicMultiple: null,
+  primal: {
+    equivalencia: {      
+      eg: ['eg.institucion_id', 'eg.nombre_institucion'],
+      dpto: ['d.cod_dpto', 'd.nombre_dpto'],
+      eess: ['i.institucion_id', " i.nombre_institucion||' ('||e.nivel_atencion||')'"]
+    },
+    query: `SELECT DISTINCT $a$            
+            FROM  r_institucion_salud e, ae_institucion i, al_departamento d, ae_institucion eg
+            WHERE i.tipo_institucion_id='EESS' AND e.institucion_id =  i.institucion_id
+            AND i.cod_dpto =  d.cod_dpto
+            AND i.institucion_root =  eg.institucion_id 
+            $w$
+            ORDER BY 2`,
+    headers: [{}],
+    attributes: null,
+  },
+    referer: [],
+    withInitial: false,
 },
 }
 module.exports = PDEPENDENCIES

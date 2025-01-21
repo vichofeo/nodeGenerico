@@ -44,7 +44,13 @@ const getDataCboxLigado = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
-
+const getGroupedModels = async (req, res) =>{    
+    const data =  req.body
+    const token =  req.headers.authorization
+    const result =  await service.getGroupedModels({...data, token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 
 
 module.exports = {
@@ -52,7 +58,9 @@ module.exports = {
     
     getDataModel1, 
     getDataModelN, getDataModelNew, 
-    getDataCboxLigado
+    getDataCboxLigado,
+
+    getGroupedModels
 
 
 }

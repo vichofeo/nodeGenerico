@@ -58,7 +58,13 @@ module.exports = (sequelize, DataTypes) => {
       
       hash: { type: DataTypes.STRING, allowNull: true, unique: true },
       hasher: { type: DataTypes.STRING, allowNull: true },
-      dni_register: { type: DataTypes.STRING, allowNull: true }
+      dni_register: { type: DataTypes.STRING, allowNull: true },
+
+      eg: { type: DataTypes.STRING, allowNull: true },
+      dpto: { type: DataTypes.STRING, allowNull: true },
+      eess: { type: DataTypes.STRING, allowNull: true }
+
+
     },
     {
       sequelize,

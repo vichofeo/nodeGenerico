@@ -90,7 +90,7 @@ const PARAMETROS = {
         campos: {
 
             formulario_id: ['Formulario', true, true, 'C'],
-            institucion_id: ['Establecimiento de salus', true, true, 'C']
+            institucion_id: ['Establecimiento de salud', true, true, 'C']
 
         },
         key: ['institucion_id', 'formulario_id'],

@@ -374,8 +374,9 @@ module.exports = class FrmsUtils {
       const equivalencia =  objParamModel.primal.equivalencia
       let primalCondition = []
       let pWhere=""
-      //aplica mismo query a todos los campos
-      for (const campo in objParamModel.campos) {
+      //aplica mismo query a todos los campos declarado en equivalencia
+      //for (const campo in objParamModel.campos) {
+      for(const campo in equivalencia){
 
         //pregunta si existe la posicion 6 para combomultiple
         //const tempo = dataIn ? dataIn[campo] : {} 
@@ -383,6 +384,7 @@ module.exports = class FrmsUtils {
         let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:{}
         if(swMultipleBoxLocal && Array.isArray(tempo)) tempo =  tempo.map(val=>({value:val}))
         
+          
         const attributes = `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text` 
         let query = queryPrimal.replaceAll(sattrib, attributes)
         query = query.replaceAll(swhere, pWhere)

@@ -58,10 +58,20 @@ const xlsxNormalize = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const tmpsSaveEquivalencia =  async (req, res)=>{    
+    const body =  req.body
+    const token =  req.headers.authorization
+
+    const result =  await service.tmpsSaveEquivalencia({token:token, data: body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 module.exports = {
     
     initialData, statusTmps, vaciarTmps,
     xlsxLoad,
     xlsxNormalize,
-    egData
+    egData, 
+    tmpsSaveEquivalencia
 }
