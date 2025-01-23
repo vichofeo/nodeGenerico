@@ -215,7 +215,60 @@ const xlsxLoad = async (dto, handleError) => {
         }
       }
     }
+
+    //** UTILIZA EL CAMPO SUPERUPDATE PARA UNA ACTUQALIZACION AVANZADA con dos tablas */
+    if(modelo?.superUpdate){
+      let mensaje = ''
+      try {
+        //inicializa trasnaccionpor update
+        await qUtil.startTransaction()        
+        //construye objeto
+        let auxSet = []
+        let auxWhere = []
+        let t1p=t2p= ''
+        let t1=t2= ''
+        let from=''
+        if(modelo.superUpdate?.referer){
+          t2p='t2.'
+          t2= 't2'
+          t1p = 't1.'
+          t1= 't1'
+          from = `FROM ${modelo.superUpdate.referer} ${t2}`
+        }
+
+        //set
+        for (const key in modelo.superUpdate?.update) {
+          auxSet.push(` ${modelo.superUpdate.update[key][0]}= ${t2p}${modelo.superUpdate.update[key][1]} `) 
+          mensaje += '\n' + modelo.superUpdate.update[key][2]
+        }
+        //where
+        for (const key in modelo.superUpdate?.conditional) {
+          auxWhere.push(` ${t1p}${modelo.superUpdate.conditional[key][0]}= ${t2p}${modelo.superUpdate.conditional[key][1]} `)           
+        }
+
+        if(auxSet.length>0){
+          let query = `UPDATE ${modelos[model].alias} ${t1}
+                      SET ${auxSet.join(", ")}
+                      ${from}
+                      WHERE swloadend= false AND dni_register= '${obj_cnf.dni_register}'
+                      ${auxWhere.length>0? ' AND '+auxWhere.join(' AND '):''}
+                      `
+          qUtil.setQuery(query)
+          await qUtil.excuteUpdate()             
+
+        }
+
+        await qUtil.commitTransaction()
+      } catch (error) {
+        console.log(error)
+        return {
+          ok: false,
+          message: error.message + mensaje,
+        }
+      }
+    }
     
+    //**** fin super actuallizacion */
       //---------------------------- *0000 ******************************
       //** *********** fin guardado **** */
 

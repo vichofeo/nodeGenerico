@@ -91,6 +91,195 @@ const PARAMETROS = {
         update: [],
         referer: []
     },
+    tmp_inasn:{
+        table: `tmp_inas tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'tmp_inasn',
+        cardinalidad: "n",
+        linked:"tmp_inas",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    tmp_amesn:{
+        table: `tmp_ames tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'tmp_amesn',
+        cardinalidad: "n",
+        linked:"tmp_ames",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    tmp_rramen:{
+        table: `tmp_rrame tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'tmp_rramen',
+        cardinalidad: "n",
+        linked:"tmp_rrame",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    vtmp_snis301an:{
+        table: `tmp_snis301a tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'vtmp_snis301an',
+        cardinalidad: "n",
+        linked:"tmp_snis301a",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    vtmp_snis301bn:{
+        table: `tmp_snis301b tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'vtmp_snis301bn',
+        cardinalidad: "n",
+        linked:"tmp_snis301b",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    vtmp_snis302an:{
+        table: `tmp_snis302a tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'vtmp_snis302an',
+        cardinalidad: "n",
+        linked:"tmp_snis302a",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
+    vtmp_snis302bn:{
+        table: `tmp_snis302b tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+        alias: 'vtmp_snis302bn',
+        cardinalidad: "n",
+        linked:"tmp_snis302b",
+        campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
+                tc.eg, tc.dpto, tc.eess
+                `,
+
+        camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, { value: "establecimiento", text: "Reg: Establecimiento" },        
+            { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },        
+           ],
+        key: [],
+        precondicion: [],
+        groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
+                    eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
+                    tc.eg, tc.dpto, tc.eess
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion) DESC, 
+                    tc.ente_gestor_name, tc.departamento, tc.establecimiento
+                    `,
+        update: [],
+        referer: []
+    },
 }
 
 

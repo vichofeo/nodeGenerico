@@ -37,6 +37,75 @@ const tmpsInitialReport = (dto, handleError) => {
     }
   }
 
+  const ___tmpStatusLiteral = async(modelos, dto)=>{
+    const element = modelos[dto.model]  
+    const tabla = element.table
+    const atributos =  element.attributes
+    const where =  element?.conditional ? 'WHERE '+element.conditional:''
+    const order = element?.order ? element.order:''
+    const query = `SELECT ${atributos}
+    FROM ${tabla}
+    ${where}
+    ${order}
+    `
+    qUtil.setQuery(query)
+    await qUtil.excuteSelect()
+    let result = qUtil.getResults()
+    if(element.parseAttrib && Array.isArray(element.parseAttrib)){
+      result =  result.map(obj=>{
+        const keys =  Object.keys(obj)            
+        let oAux =  {}            
+        for (const i in keys) {
+          let k = keys[i]
+          
+          if(element.parseAttrib.includes(i.toString())) obj[k]=JSON.parse(obj[k])
+          
+          oAux =  Object.assign(oAux, {[k]:obj[k]})
+        }
+        return oAux
+      })
+      
+     }
+     return { [dto.model]: {items:result, multiple:Array.isArray(element.parseAttrib)} }
+
+  }
+  const ___tmpStatus = async(modelos, dto)=>{
+    const element = modelos[dto.model]  
+    const attributes =  element.attributes.map(arr=>[qUtil.literal(arr[0]), arr[1]])
+    const agroup = element.attributes.map(arr=> qUtil.literal(arr[0]))
+
+    qUtil.setTableInstance(element.table)
+    qUtil.setAttributes(attributes)
+    qUtil.setWhere({ swloadend: true })
+    agroup.pop()
+    qUtil.setGroupBy(agroup)
+    //pregunta si es cons Subquery especial
+    if(Array.isArray(element.parseAttrib))
+      qUtil.setOrder([qUtil.literal("1")])
+      else
+    qUtil.setOrder([[qUtil.literal(element.attributes[0][0]), 'DESC']])
+
+     await qUtil.findTune()
+     
+     let result =  qUtil.getResults()
+     
+     if(element.parseAttrib && Array.isArray(element.parseAttrib)){
+      result =  result.map(obj=>{
+        const keys =  Object.keys(obj)            
+        let oAux =  {}            
+        for (const i in keys) {
+          let k = keys[i]
+          
+          if(element.parseAttrib.includes(i.toString())) obj[k]=JSON.parse(obj[k])
+          
+          oAux =  Object.assign(oAux, {[k]:obj[k]})
+        }
+        return oAux
+      })
+      
+     }
+    return { [dto.model]: {items:result, multiple:Array.isArray(element.parseAttrib)} }
+  }
   const tmpsStatus = async (dto, handleError) => {
     try { 
       
@@ -47,42 +116,11 @@ const tmpsInitialReport = (dto, handleError) => {
       let response = {}
       
       if(typeof modelos[dto.model] == 'undefined') throw new Error("Modelo no definido error de diseño")
-
-        const element = modelos[dto.model]  
-        const attributes =  element.attributes.map(arr=>[qUtil.literal(arr[0]), arr[1]])
-        const agroup = element.attributes.map(arr=> qUtil.literal(arr[0]))
-
-        qUtil.setTableInstance(element.table)
-        qUtil.setAttributes(attributes)
-        qUtil.setWhere({ swloadend: true })
-        agroup.pop()
-        qUtil.setGroupBy(agroup)
-        //pregunta si es cons Subquery especial
-        if(Array.isArray(element.parseAttrib))
-          qUtil.setOrder([qUtil.literal("1")])
+      
+        if(modelos[dto.model]?.literal)
+          response = await ___tmpStatusLiteral(modelos,dto)
           else
-        qUtil.setOrder([[qUtil.literal(element.attributes[0][0]), 'DESC']])
-
-         await qUtil.findTune()
-         
-         let result =  qUtil.getResults()
-         
-         if(element.parseAttrib && Array.isArray(element.parseAttrib)){
-          result =  result.map(obj=>{
-            const keys =  Object.keys(obj)            
-            let oAux =  {}            
-            for (const i in keys) {
-              let k = keys[i]
-              
-              if(element.parseAttrib.includes(i.toString())) obj[k]=JSON.parse(obj[k])
-              
-              oAux =  Object.assign(oAux, {[k]:obj[k]})
-            }
-            return oAux
-          })
-          
-         }
-        response = { [dto.model]: {items:result, multiple:Array.isArray(element.parseAttrib)} }
+        response =  await ___tmpStatus(modelos, dto)
       
      
       return {

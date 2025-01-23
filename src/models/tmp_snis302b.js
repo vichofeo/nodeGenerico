@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     red: {type: DataTypes.STRING, allowNull: true}, 
     municipio: {type: DataTypes.STRING, allowNull: true}, 
     
-    ente_gestor: {type: DataTypes.STRING, allowNull: false}, 
+    ente_gestor_name: {type: DataTypes.STRING, allowNull: false}, 
     establecimiento: {type: DataTypes.STRING, allowNull: false}, 
     cue: {type: DataTypes.STRING, allowNull: true}, 
     nivel: {type: DataTypes.STRING, allowNull: true}, 
@@ -42,7 +42,11 @@ module.exports = (sequelize, DataTypes) => {
           
       hash: { type: DataTypes.STRING, allowNull: true, unique: true },
       hasher: { type: DataTypes.STRING, allowNull: true },
-      dni_register: { type: DataTypes.STRING, allowNull: true }
+      dni_register: { type: DataTypes.STRING, allowNull: true },
+
+      eg: { type: DataTypes.STRING, allowNull: true },
+      dpto: { type: DataTypes.STRING, allowNull: true },
+      eess: { type: DataTypes.STRING, allowNull: true }
     },
     {
       sequelize,

@@ -66,13 +66,14 @@ const PARAMETERS = {
     snis_301a:{
         alias:'tmp_snis301a',
         attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
-        file: [[[0,0],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS']], [[3,3], 'departamento'], [[], 'ente_gestor'], [[4,8], 'establecimiento'], [[4,44], 'gestion'], [[4,36],'mes'], [[3,21], 'red'], [[3,40], 'municipio'],[[2,40], 'sub_sector']],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
+        file: [[[0,0],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS']], [[3,3], 'departamento'], [[], 'ente_gestor_name'], [[4,8], 'establecimiento'], [[4,44], 'gestion'], [[4,36],'mes'], [[3,21], 'red'], [[3,40], 'municipio'],[[2,40], 'sub_sector']],
+        table: ['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//[ array de campos fecha a validar],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
-        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
+        key:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
             alias:'parserSnis301A' ,
@@ -213,13 +214,14 @@ const PARAMETERS = {
     snis_301b:{
         alias:'tmp_snis301b',
         attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
-        file: [[[2,1],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS DE II Y III NIVEL']], [[5,4], 'departamento'], [[], 'ente_gestor'], [[6,4], 'establecimiento'], [[6,30], 'gestion'], [[6,23],'mes'], [[5,14], 'red'], [[5,23], 'municipio'],[[4,39], 'sub_sector']],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
+        file: [[[2,1],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS DE II Y III NIVEL']], [[5,4], 'departamento'], [[], 'ente_gestor_name'], [[6,4], 'establecimiento'], [[6,30], 'gestion'], [[6,23],'mes'], [[5,14], 'red'], [[5,23], 'municipio'],[[4,39], 'sub_sector']],
+        table: ['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//[ array de campos fecha a validar],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "COALESCE(variable,'-1')","COALESCE(lugar_atencion,'-1')" ,"COALESCE(subvariable, '-1')"],
-        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
+        key:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', "COALESCE(variable,'-1')","COALESCE(lugar_atencion,'-1')" ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
             alias:'parserSnis301B' ,
@@ -290,13 +292,14 @@ const PARAMETERS = {
         alias:'tmp_snis302a',
         attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
         //file: ['departamento', 'ente gestor', 'establecimiento', 'cue','gestion', 'semana', 'Grupo de variables', ' Menor de 6 meses|Masculino', ' Menor de 6 meses|Femenino', '6 meses a menor de 1 año|Masculino', '6 meses a menor de 1 año|Femenino', '1 - 4 años|Masculino', '1 - 4 años|Femenino', '5 - 9 años|Masculino', '5 - 9 años|Femenino', '10 - 14 años|Masculino', '10 - 14 años|Femenino', '15 - 19 años|Masculino', '15 - 19 años|Femenino', '20 - 39 años|Masculino', '20 - 39 años|Femenino', '40 - 49 años|Masculino', '40 - 49 años|Femenino', '50 - 59 años|Masculino', '50 - 59 años|Femenino', '60 años y más|Masculino', '60 años y más|Femenino'],
-        file: [[[1,26],['frm','NOTIFICACIÓN PARA LA VIGILANCIA EPIDEMIOLÓGICA']], [[4,3], 'departamento'], [[], 'ente_gestor'], [[5,6], 'establecimiento'], [[5,35], 'gestion'], [[2,87],'semana'], [[4,28], 'red'], [[4,59], 'municipio'],[[5,57], 'sub_sector']],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
+        file: [[[1,26],['frm','NOTIFICACIÓN PARA LA VIGILANCIA EPIDEMIOLÓGICA']], [[4,3], 'departamento'], [[], 'ente_gestor_name'], [[5,6], 'establecimiento'], [[5,35], 'gestion'], [[2,87],'semana'], [[4,28], 'red'], [[4,59], 'municipio'],[[5,57], 'sub_sector']],
+        table: ['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
-        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
+        key:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
             alias:'parserSnis302A' ,
@@ -333,13 +336,14 @@ const PARAMETERS = {
     snis_302b:{
         alias:'tmp_snis302b',
         attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
-        file: [[[1,1],['frm','NOTIFICACIÓN MENSUAL  PARA LA VIGILANCIA EPIDEMIOLOGICA  (ENFERMEDADES NO TRANSMISIBLES Y FACTORES DE RIESGO)']], [[6,7], 'departamento'], [[], 'ente_gestor'], [[8,8], 'establecimiento'], [[8,44], 'gestion'], [[8,33],'mes'], [[6,18], 'red'], [[6,30], 'municipio'],[[6,43], 'sub_sector']],
-        table: ['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo','gvariable' ,"variable", 'subvariable', 'valor'],        
+        file: [[[1,1],['frm','NOTIFICACIÓN MENSUAL  PARA LA VIGILANCIA EPIDEMIOLOGICA  (ENFERMEDADES NO TRANSMISIBLES Y FACTORES DE RIESGO)']], [[6,7], 'departamento'], [[], 'ente_gestor_name'], [[8,8], 'establecimiento'], [[8,44], 'gestion'], [[8,33],'mes'], [[6,18], 'red'], [[6,30], 'municipio'],[[6,43], 'sub_sector']],
+        table: ['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo','gvariable' ,"variable", 'subvariable', 'valor'],        
         validate: [1,1,1,2,2,1,1,0,0,2],
         forFilter:  null,//[ array de campos fecha a validar],        
         update:[],
-        key:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo',"COALESCE(gvariable,'-1')" ,"COALESCE(variable,'-1')","COALESCE(lugar_atencion,'-1')" ,"COALESCE(subvariable, '-1')"],
-        keyAux:['departamento', 'ente_gestor', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'gvariable','variable','lugar_atencion' ,'subvariable', 'valor'],
+        superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
+        key:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo',"COALESCE(gvariable,'-1')" ,"COALESCE(variable,'-1')","COALESCE(lugar_atencion,'-1')" ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'mes', 'formulario', 'grupo', 'gvariable','variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
             alias:'parserSnis302B' ,

@@ -28,11 +28,11 @@ const PARAMETROS = {
     },
      snis301an: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'tmp_snis301a t, au_persona p, ae_institucion eg',
+        table: 'tmp_snis301a t, au_persona p',
         alias: 'snis301an',
         cardinalidad: "n",
         linked: "snis",
-        campos: `t.gestion, t.departamento, eg.nombre_institucion AS ente, t.establecimiento,
+        campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
         string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
         p.primer_apellido||' '||p.nombres AS usr  `,
 
@@ -40,20 +40,19 @@ const PARAMETROS = {
         { value: "meses", text: "Periodos" },
         { value: "usr", text: "Usuario" } ],
         key: [],
-        precondicion: ['t.dni_register = p.dni_persona',
-            't.ente_gestor = eg.institucion_id'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, eg.nombre_institucion , t.establecimiento, usr 
+        precondicion: ['t.dni_register = p.dni_persona'],
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
     },
     snis301bn: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'tmp_snis301b t, au_persona p, ae_institucion eg',
+        table: 'tmp_snis301b t, au_persona p',
         alias: 'snis301bn',
         cardinalidad: "n",
         linked: "snis",
-        campos: `t.gestion, t.departamento, eg.nombre_institucion AS ente, t.establecimiento,
+        campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
         string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
         p.primer_apellido||' '||p.nombres AS usr  `,
 
@@ -61,20 +60,19 @@ const PARAMETROS = {
         { value: "meses", text: "Periodos" },
         { value: "usr", text: "Usuario" } ],
         key: [],
-        precondicion: ['t.dni_register = p.dni_persona',
-            't.ente_gestor = eg.institucion_id'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, eg.nombre_institucion , t.establecimiento, usr 
+        precondicion: ['t.dni_register = p.dni_persona'],
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
     },
     snis302an: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'tmp_snis302a t, au_persona p, ae_institucion eg',
+        table: 'tmp_snis302a t, au_persona p',
         alias: 'snis302an',
         cardinalidad: "n",
         linked: "snis",
-        campos: `t.gestion, t.departamento, eg.nombre_institucion AS ente, t.establecimiento,
+        campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
         string_agg(distinct t.semana||'', ', ' ORDER BY semana||'') AS semana,
         p.primer_apellido||' '||p.nombres AS usr  `,
 
@@ -82,20 +80,19 @@ const PARAMETROS = {
         { value: "semana", text: "Semana Epidemiologica" },
         { value: "usr", text: "Usuario" } ],
         key: [],
-        precondicion: ['t.dni_register = p.dni_persona',
-            't.ente_gestor = eg.institucion_id'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, eg.nombre_institucion , t.establecimiento, usr 
+        precondicion: ['t.dni_register = p.dni_persona'],
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
     },
     snis302bn: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'tmp_snis302b t, au_persona p, ae_institucion eg',
+        table: 'tmp_snis302b t, au_persona p',
         alias: 'snis302bn',
         cardinalidad: "n",
         linked: "snis",
-        campos: `t.gestion, t.departamento, eg.nombre_institucion AS ente, t.establecimiento,
+        campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
         string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
         p.primer_apellido||' '||p.nombres AS usr  `,
 
@@ -103,9 +100,8 @@ const PARAMETROS = {
         { value: "meses", text: "Periodos" },
         { value: "usr", text: "Usuario" } ],
         key: [],
-        precondicion: ['t.dni_register = p.dni_persona',
-            't.ente_gestor = eg.institucion_id'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, eg.nombre_institucion , t.establecimiento, usr 
+        precondicion: ['t.dni_register = p.dni_persona'],
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],

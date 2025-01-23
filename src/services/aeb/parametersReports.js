@@ -133,24 +133,25 @@ const REPORTS = {
   },
 
   snis301a: {
-    table: 'tmp_snis301a',
+    literal: true,
+    table: `( SELECT formulario, gestion||'-'||mes AS periodo, COUNT(*) AS registros
+          FROM tmp_snis301a
+          WHERE 
+          swloadend = TRUE 
+          GROUP BY 1,2
+          ORDER BY 1
+          ) AS t1`,
     tables: 'tmp_snis301a s, ae_institucion i',
     alias: 'Datos snis - Formularios 301A',
     //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
-    attributes: [
-      ['formulario', 'periodo'],
-      [
-        `'['||
-string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis301a s2 WHERE s2.formulario= tmp_snis301a.formulario AND s2.gestion= tmp_snis301a.gestion AND s2.mes= tmp_snis301a.mes)
-||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis301a s2 WHERE s2.formulario= tmp_snis301a.formulario AND s2.gestion= tmp_snis301a.gestion AND s2.mes= tmp_snis301a.mes)
-||'}' DESC
-)||' ]'`,
-        'registros',
-      ],
-    ],
+    attributes: ` formulario AS periodo,
+                '['|| string_agg(
+                '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                )||' ]' AS registros `,
     parseAttrib: ['1'],
+    conditional: null,
+    order:'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
       'DEPARTAMENTO', 'RED', 'MUNICIPIO',
