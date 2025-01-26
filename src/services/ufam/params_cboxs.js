@@ -30,10 +30,10 @@ const PDEPENDENCIES = {
                 GROUP BY gestion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
                 FROM tmp_ames 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor, gestion
+                GROUP BY ente_gestor_name, gestion
                 ORDER BY 1, 2`,
       ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_ames),'DD/MM/YYYY') as obs
@@ -69,13 +69,13 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY 1 ORDER BY 1`,
       ames_eg_arts: `SELECT
-                ente_gestor, 
+                ente_gestor_name, 
                 SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
                 SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
                 SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor
+                GROUP BY ente_gestor_name
                 ORDER BY 1`,
       ames_gestion_arts: `SELECT
                 gestion, 
@@ -95,8 +95,8 @@ const PDEPENDENCIES = {
     primal: {
       equivalencia: {
         departamento: ['departamento', 'departamento'],
-        eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', "ente_gestor||': '|| departamento ||' - ' ||establecimiento"],
+        eg: ['ente_gestor_name', 'ente_gestor_name'],
+        establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         tipo_solicitud: ['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],
@@ -166,16 +166,16 @@ const PDEPENDENCIES = {
                 GROUP BY gestion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
                 FROM tmp_inas 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor, gestion
+                GROUP BY ente_gestor_name, gestion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value,
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_inas),'DD/MM/YYYY') as obs
                 FROM tmp_inas 
                 WHERE 1=1 $w$
-                GROUP BY ciudad, gestion 
+                GROUP BY departamento, gestion 
                 ORDER BY 1, 2`,
       /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_ames
@@ -204,13 +204,13 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY 1 ORDER BY 1`,
       /*ames_eg_arts:`SELECT
-                ente_gestor, 
+                ente_gestor_name, 
                 SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
                 SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
                 SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor
+                GROUP BY ente_gestor_name
                 ORDER BY 1`,
                 ames_gestion_arts:`SELECT
                 gestion, 
@@ -229,9 +229,9 @@ const PDEPENDENCIES = {
     referer: [],
     primal: {
       equivalencia: {
-        departamento: ['ciudad', 'ciudad'],
-        eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', "ente_gestor||': '|| ciudad ||' - ' ||establecimiento"],
+        departamento: ['departamento', 'departamento'],
+        eg: ['ente_gestor_name', 'ente_gestor_name'],
+        establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],
@@ -280,16 +280,16 @@ const PDEPENDENCIES = {
                 GROUP BY gestion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
                 FROM tmp_rrame 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor, gestion
+                GROUP BY ente_gestor_name, gestion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT ciudad as pila, gestion as ejex,  COUNT(*) AS value,
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_rrame),'DD/MM/YYYY') as obs
                 FROM tmp_rrame 
                 WHERE 1=1 $w$
-                GROUP BY ciudad, gestion 
+                GROUP BY departamento, gestion 
                 ORDER BY 1, 2`,
       /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_ames
@@ -318,13 +318,13 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY 1 ORDER BY 1`,*/
       /*ames_eg_arts:`SELECT
-                ente_gestor, 
+                ente_gestor_name, 
                 SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
                 SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
                 SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor
+                GROUP BY ente_gestor_name
                 ORDER BY 1`,
                 ames_gestion_arts:`SELECT
                 gestion, 
@@ -343,9 +343,9 @@ const PDEPENDENCIES = {
     referer: [],
     primal: {
       equivalencia: {
-        departamento: ['ciudad', 'ciudad'],
-        eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento: ['establecimiento', "ente_gestor||': '|| ciudad ||' - ' ||establecimiento"],
+        departamento: ['departamento', 'departamento'],
+        eg: ['ente_gestor_name', 'ente_gestor_name'],
+        establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion', 'gestion'],

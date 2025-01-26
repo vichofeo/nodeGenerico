@@ -4,6 +4,7 @@ const Qutils = require('../../models/queries/Qutils')
 const handleToken =  require('./../../utils/handleToken')
 const { v4: uuidv4 } = require('uuid');
 const { Query } = require('pg');
+const { header } = require('express-validator');
 module.exports = class FrmsUtils {
   #parametros
   #qUtils
@@ -314,7 +315,7 @@ module.exports = class FrmsUtils {
     console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------")
 
     const objParamModel = this.#parametros[dto.modelo]
-    console.log("\n *************************** \n\n modelo:", dto.modelo, "----------- OBJETO SELECT", objParamModel)
+    console.log("\n *************************** ----------- OBJETO SELECT", objParamModel)
     const dataIn = dto.data
     let parametros = {}
     parametros.campos = objParamModel.campos
@@ -369,6 +370,7 @@ module.exports = class FrmsUtils {
     const swhere =  '$w$'
     if(objParamModel.primal){
       const sattrib = '$a$'
+      const sAttribStatic = '$sa$'
       
       let queryPrimal = objParamModel.primal.query
       const equivalencia =  objParamModel.primal.equivalencia
@@ -382,11 +384,26 @@ module.exports = class FrmsUtils {
         //const tempo = dataIn ? dataIn[campo] : {} 
         let swMultipleBoxLocal = (parametros.campos[campo] && parametros.campos[campo][6]) ? true: false
         let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:{}
+        let tempSelectedIn = tempo
         if(swMultipleBoxLocal && Array.isArray(tempo)) tempo =  tempo.map(val=>({value:val}))
         
-          
-        const attributes = `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text` 
-        let query = queryPrimal.replaceAll(sattrib, attributes)
+        
+        const reemplazaAtributos = () =>{
+            let query = ""
+            if(queryPrimal.includes(sattrib)){
+              let cadena=  `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text`              
+              query = queryPrimal.replaceAll(sattrib, cadena)
+            }else if(queryPrimal.includes(sAttribStatic)){
+              let cadena = ""
+              if(swMultipleBoxLocal) cadena = ` UNNEST(ARRAY['${tempSelectedIn.join("', '")}']) as value`
+              else cadena = ` '${tempSelectedIn}' as value`
+              query = queryPrimal.replaceAll(sAttribStatic, cadena)
+            }
+            return query
+          } 
+        //const attributes = `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text` 
+        //let query = queryPrimal.replaceAll(sattrib, attributes)
+        let query = reemplazaAtributos()
         query = query.replaceAll(swhere, pWhere)
         //ejecuta query
         this.#qUtils.setQuery(query)
@@ -398,15 +415,16 @@ module.exports = class FrmsUtils {
         selected = swMultipleBoxLocal ? 
                     this.#qUtils.searchSelectedInMultipleComboBox(result, tempo, swMultipleBoxLocal)          
                     :this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo})
+//**************************************************************************************************** */                    
         //construye condicion para la siguiente iteracion solo si es distinto de -1
         if( !swMultipleBoxLocal ){
-          console.log("\n\n PRIMAL no m ultipleeee SELECTED::",selected,"\n\n")
+          console.log("\n\n PRIMAL NO multipleeee(", campo ,":", tempSelectedIn ,") SELECTED::",selected,"\n\n")
           if(selected.value != '-1'){
             primalCondition.push(`${equivalencia[campo][0]}='${selected.value}'`)
             pWhere = 'AND ' + primalCondition.join(' AND ') 
           }          
         }else{
-          console.log("\n\n PRIMAL MULTIPLE",tempo," SELECTED::",selected,"\n\n")
+          console.log("\n************************campo:", campo,":",tempSelectedIn,"******************************\n PRIMAL MULTIPLE tempo:\n",tempo," SELECTED::\n",selected,"\n\n")
           //opciones para comboMultiple
           if(Array.isArray(selected) && selected.length>0){
             const idsMultiple = selected.map( obj=>obj.value)
@@ -417,10 +435,11 @@ module.exports = class FrmsUtils {
               
           }
         }
+       
         //vacias datos
         parametros.valores[campo] = {
           selected: selected,
-          items: result
+          items: result,          
         }
 
       }

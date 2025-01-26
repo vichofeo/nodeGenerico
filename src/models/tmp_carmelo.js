@@ -42,7 +42,8 @@ module.exports = (sequelize, DataTypes) => {
 
       eg: { type: DataTypes.STRING, allowNull: true },
       dpto: { type: DataTypes.STRING, allowNull: true },
-      eess: { type: DataTypes.STRING, allowNull: true }
+      eess: { type: DataTypes.STRING, allowNull: true },
+      prd: { type: DataTypes.STRING, allowNull: true }
 
     },
     {

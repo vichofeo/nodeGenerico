@@ -171,7 +171,7 @@ const REPORTS = {
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: ['s.ente_gestor=i.institucion_id'],
+    precondicion: ['s.eg=i.institucion_id'],
     referer: [],
     metodo: function (dato = {}) {
       //Array(formulario, [mess "gestion-mes"])
@@ -192,24 +192,25 @@ const REPORTS = {
     },
   },
   snis301b: {
-    table: 'tmp_snis301b',
+    literal: true,
+    table: `( SELECT formulario, gestion||'-'||mes AS periodo, COUNT(*) AS registros
+          FROM tmp_snis301b
+          WHERE 
+          swloadend = TRUE 
+          GROUP BY 1,2
+          ORDER BY 1
+          ) AS t1`,
     tables: 'tmp_snis301b s, ae_institucion i',
-    alias: 'Datos SNIS - Formularios 301B',
+    alias: 'Datos snis - Formularios 301B',
     //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
-    attributes: [
-      ['formulario', 'periodo'],
-      [
-        `'['||
-string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis301b s2 WHERE s2.formulario= tmp_snis301b.formulario AND s2.gestion= tmp_snis301b.gestion AND s2.mes= tmp_snis301b.mes)
-||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis301b s2 WHERE s2.formulario= tmp_snis301b.formulario AND s2.gestion= tmp_snis301b.gestion AND s2.mes= tmp_snis301b.mes)
-||'}' DESC
-)||' ]'`,
-        'registros',
-      ],
-    ],
+    attributes: ` formulario AS periodo,
+                '['|| string_agg(
+                '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                )||' ]' AS registros `,
     parseAttrib: ['1'],
+    conditional: null,
+    order:'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
       'DEPARTAMENTO', 'RED', 'MUNICIPIO',
@@ -229,7 +230,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: ['s.ente_gestor=i.institucion_id'],
+    precondicion: ['s.eg=i.institucion_id'],
     referer: [],
     metodo: function (dato = {}) {
       //Array(formulario, [mess "gestion-mes"])
@@ -250,24 +251,25 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     },
   },
   snis302a: {
-    table: 'tmp_snis302a',
+    literal: true,
+    table: `( SELECT formulario, gestion||'-'||semana AS periodo, COUNT(*) AS registros
+          FROM tmp_snis302a
+          WHERE 
+          swloadend = TRUE 
+          GROUP BY 1,2
+          ORDER BY 1
+          ) AS t1`,
     tables: 'tmp_snis302a s, ae_institucion i',
     alias: 'Datos snis - Formularios 302A',
-    //attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],
-    attributes: [
-      ['formulario', 'periodo'],
-      [
-        `'['||
-string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis302a s2 WHERE s2.formulario= tmp_snis302a.formulario AND s2.gestion= tmp_snis302a.gestion AND s2.semana= tmp_snis302a.semana)
-||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis302a s2 WHERE s2.formulario= tmp_snis302a.formulario AND s2.gestion= tmp_snis302a.gestion AND s2.semana= tmp_snis302a.semana)
-||'}' DESC
-)||' ]'`,
-        'registros',
-      ],
-    ],
+    //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
+    attributes: ` formulario AS periodo,
+                '['|| string_agg(
+                '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                )||' ]' AS registros `,
     parseAttrib: ['1'],
+    conditional: null,
+    order:'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
       'DEPARTAMENTO', 'RED', 'MUNICIPIO',
@@ -287,7 +289,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: ['s.ente_gestor=i.institucion_id'],
+    precondicion: ['s.eg=i.institucion_id'],
     referer: [],
     metodo: function (dato = {}) {
       //Array(formulario, [semanas "gestion-semana"])
@@ -308,24 +310,25 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||semana||'", "registros":'||
     },
   },
   snis302b: {
-    table: 'tmp_snis302b',
+    literal: true,
+    table: `( SELECT formulario, gestion||'-'||mes AS periodo, COUNT(*) AS registros
+          FROM tmp_snis302b
+          WHERE 
+          swloadend = TRUE 
+          GROUP BY 1,2
+          ORDER BY 1
+          ) AS t1`,
     tables: 'tmp_snis302b s, ae_institucion i',
-    alias: 'Datos SNIS - Formularios 302b',
+    alias: 'Datos snis - Formularios 302B',
     //attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
-    attributes: [
-      ['formulario', 'periodo'],
-      [
-        `'['||
-string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis302b s2 WHERE s2.formulario= tmp_snis302b.formulario AND s2.gestion= tmp_snis302b.gestion AND s2.mes= tmp_snis302b.mes)
-||'}', ',' ORDER BY '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
-(SELECT COUNT(*) FROM tmp_snis302b s2 WHERE s2.formulario= tmp_snis302b.formulario AND s2.gestion= tmp_snis302b.gestion AND s2.mes= tmp_snis302b.mes)
-||'}' DESC
-)||' ]'`,
-        'registros',
-      ],
-    ],
+    attributes: ` formulario AS periodo,
+                '['|| string_agg(
+                '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                )||' ]' AS registros `,
     parseAttrib: ['1'],
+    conditional: null,
+    order:'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento, gestion, mes, formulario, grupo, gvariable,variable,lugar_atencion, subvariable,valor`,
     headers: [
       'DEPARTAMENTO', 'RED', 'MUNICIPIO',
@@ -345,7 +348,7 @@ string_agg(DISTINCT '{"periodo":"'||gestion||'-'||mes||'", "registros":'||
     rows: ['GRUPO DE VARIABLES'],
     cols: ['TIPO REPORTE', 'VARIABLE', 'TIPO VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: ['s.ente_gestor=i.institucion_id'],
+    precondicion: ['s.eg=i.institucion_id'],
     referer: [],
     metodo: function (dato = {}) {
       //Array(formulario, [mess "gestion-mes"])
