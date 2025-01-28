@@ -784,6 +784,7 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
   }, 
   
   ilogic: {
+    gestion:`SELECT GENERATE_SERIES(2019,EXTRACT(YEAR  FROM CURRENT_DATE),1) as value, GENERATE_SERIES(2019,EXTRACT(YEAR  FROM CURRENT_DATE),1) as text `,
     eg:`SELECT DISTINCT eg.institucion_id AS value, eg.nombre_institucion AS text
       FROM  ae_institucion i, al_departamento d, ae_institucion eg
       WHERE i.tipo_institucion_id='EESS'
@@ -809,15 +810,22 @@ SUM(COUNT(*)) OVER (PARTITION BY cie_grupo ORDER BY cie_grupo, CASE WHEN genero=
   },
   ilogicMultiple:{eg:'eg.institucion_id', dpto:'d.cod_dpto', eess:'i.institucion_id' },
   primal: {
-    equivalencia: {      
-      gestion: ['extract(year from fecha_vacunacion)', 'extract(year from fecha_vacunacion)'],
-      periodo: ["TO_CHAR(fecha_vacunacion, 'YYYY-MM')", "TO_CHAR(fecha_vacunacion, 'YYYY-MM')"],
+    equivalencia: {     
+      
+      periodo: ["to_char((CASE WHEN '$campoForeign'='-1' or '$campoForeign'='undefined' THEN '2019' ELSE '$campoForeign' END||'-01-01')::DATE + (interval '1' month * GENERATE_SERIES(0,month_count::INT)), 'YYYY-MM')", 
+              "to_char((CASE WHEN '$campoForeign'='-1' or '$campoForeign'='undefined' THEN '2019' ELSE '$campoForeign' END||'-01-01')::DATE + (interval '1' month * GENERATE_SERIES(0,month_count::INT)), 'YYYY-MM')"],
     },
-    query: `SELECT DISTINCT $a$
-              FROM tmp_pai
-              WHERE 1=1
-              $w$
-              ORDER BY 2`,
+    query: `SELECT $a$
+    from (
+   SELECT 
+   CASE WHEN '$campoForeign'='-1' or '$campoForeign'='undefined' THEN extract(year from diff) * 12 + extract(month from diff)  
+	ELSE 
+	CASE WHEN extract(year from diff) >=1 THEN 12 ELSE extract(month from diff) END
+	END  as month_count
+   from (
+          select age(current_timestamp, (CASE WHEN '$campoForeign'='-1' or '$campoForeign'='undefined' THEN '2019' ELSE '$campoForeign' END||'-01-01 00:00:00')::timestamp) as diff
+   ) td
+) t`,
     headers: [{}],
     attributes: null,
   },

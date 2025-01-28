@@ -54,7 +54,7 @@ GROUP BY 1) AS tbl`
     primal: {
       equivalencia: {
         gestion: ['gestion', 'gestion'],
-        periodo: ['prd', 'prd'],
+        periodo: ["to_char(fecha_emision,'YYYY-MM')","to_char(fecha_emision,'YYYY-MM')"],
         eg: ['eg', "eg"],
         dpto: ['dpto', 'dpto'],
         eess: ['eess', 'eess'],

@@ -315,7 +315,7 @@ module.exports = class FrmsUtils {
     console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------")
 
     const objParamModel = this.#parametros[dto.modelo]
-    console.log("\n *************************** ----------- OBJETO SELECT", objParamModel)
+    //console.log("\n *************************** ----------- OBJETO SELECT", objParamModel)
     const dataIn = dto.data
     let parametros = {}
     parametros.campos = objParamModel.campos
@@ -323,7 +323,8 @@ module.exports = class FrmsUtils {
 
     //recorre referer
     this.#qUtils.setResetVars()
-    let selected = dataIn ? { value: Object.values(dataIn)[0] } : { value: null }
+    //let selected = dataIn ? { value: Object.values(dataIn)[0] } : { value: null }
+    let selected = dataIn ? { value: dataIn[Object.keys(parametros.campos)[0]] } : { value: null }
     console.log("\n\n..............PRIMER SELECTED", selected, "///\n \n ")
 
     for (const referer of objParamModel.referer) {
@@ -405,6 +406,15 @@ module.exports = class FrmsUtils {
         //let query = queryPrimal.replaceAll(sattrib, attributes)
         let query = reemplazaAtributos()
         query = query.replaceAll(swhere, pWhere)
+        //remplaza con variables de Entrada ej: $nameCampo
+        query = query.replaceAll('$campoForeign', selected.value)                
+
+console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+console.log(selected)
+console.log(dataIn),
+console.log(Object.keys(parametros.campos)[0]),
+console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+
         //ejecuta query
         this.#qUtils.setQuery(query)
         await this.#qUtils.excuteSelect()
@@ -418,13 +428,13 @@ module.exports = class FrmsUtils {
 //**************************************************************************************************** */                    
         //construye condicion para la siguiente iteracion solo si es distinto de -1
         if( !swMultipleBoxLocal ){
-          console.log("\n\n PRIMAL NO multipleeee(", campo ,":", tempSelectedIn ,") SELECTED::",selected,"\n\n")
+          //console.log("\n\n PRIMAL NO multipleeee(", campo ,":", tempSelectedIn ,") SELECTED::",selected,"\n\n")
           if(selected.value != '-1'){
             primalCondition.push(`${equivalencia[campo][0]}='${selected.value}'`)
             pWhere = 'AND ' + primalCondition.join(' AND ') 
           }          
         }else{
-          console.log("\n************************campo:", campo,":",tempSelectedIn,"******************************\n PRIMAL MULTIPLE tempo:\n",tempo," SELECTED::\n",selected,"\n\n")
+          //console.log("\n************************campo:", campo,":",tempSelectedIn,"******************************\n PRIMAL MULTIPLE tempo:\n",tempo," SELECTED::\n",selected,"\n\n")
           //opciones para comboMultiple
           if(Array.isArray(selected) && selected.length>0){
             const idsMultiple = selected.map( obj=>obj.value)
@@ -453,7 +463,7 @@ module.exports = class FrmsUtils {
     if (objParamModel.ilogic) {
       let condicionMultiple=""
       for (const key in objParamModel.ilogic) {
-        console.log('!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY ILOGIC::!!!!!!! llave:', key)
+        console.log('\n!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY ILOGIC::!!!!!!! llave:', key,'\n\n')
         let swMultipleBoxLocal = (parametros.campos[key] && parametros.campos[key][6]) ? true: false
 
         let queryIlogic = objParamModel.ilogic[key] 
@@ -461,7 +471,7 @@ module.exports = class FrmsUtils {
         let tempo = dataIn[key] ? dataIn[key] : swMultipleBoxLocal?[]:{} 
         
 
-        console.log('\n\n********", ' ,dataIn, ' ,"****** almacen ilogic si existe seleccionado', tempo, "*****\n MULTIPLE: ", swMultipleBoxLocal ,"\n")
+        //console.log('\n\n********", ' ,dataIn, ' ,"****** almacen ilogic si existe seleccionado', tempo, "*****\n MULTIPLE: ", swMultipleBoxLocal ,"\n")
         if(!swMultipleBoxLocal){
           queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)        
           queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
@@ -469,9 +479,9 @@ module.exports = class FrmsUtils {
           //realiza reemplazo de variable $iqw$ en conjunto con campo ilogicMultiple
           tempo = tempo.map(val=>({value: val}))
           const variableWhereIlogic = '$iqw$'
-          console.log('\n\n************** SELECTED CON MULTIPLE', condicionMultiple, '\n\n')
+          //console.log('\n\n************** SELECTED CON MULTIPLE', selected, '\n\n')
           queryIlogic = queryIlogic.replaceAll(variableWhereIlogic, condicionMultiple)
-
+          queryIlogic = queryIlogic.replaceAll('$campoForeign', selected.value)
         }
         queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
         queryIlogic = await this.#replaceKeysSessionInQILogic(queryIlogic, objParamModel, '-1')
@@ -490,7 +500,7 @@ module.exports = class FrmsUtils {
         selected = swMultipleBoxLocal ? 
                     this.#qUtils.searchSelectedInMultipleComboBox(result, tempo, swMultipleBoxLocal)          
                     :this.#qUtils.searchSelectedInDataComboBox(result, {value: tempo})
-          console.log('\n\n******ENTRADA:', tempo,'******** DEFAULT cobxDependency SELECTED', selected, '\n\n')
+          //console.log('\n\n******ENTRADA:', tempo,'******** DEFAULT cobxDependency SELECTED', selected, '\n\n')
          //construye condicion si es multiple y existe ilogicMultiple
          if(swMultipleBoxLocal && objParamModel.ilogicMultiple){
           if(Array.isArray(selected) && selected.length>0){
