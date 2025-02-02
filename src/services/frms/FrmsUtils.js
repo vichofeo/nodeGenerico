@@ -384,7 +384,7 @@ module.exports = class FrmsUtils {
         //pregunta si existe la posicion 6 para combomultiple
         //const tempo = dataIn ? dataIn[campo] : {} 
         let swMultipleBoxLocal = (parametros.campos[campo] && parametros.campos[campo][6]) ? true: false
-        let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:{}
+        let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:'-1'//{}
         let tempSelectedIn = tempo
         if(swMultipleBoxLocal && Array.isArray(tempo)) tempo =  tempo.map(val=>({value:val}))
         
@@ -409,11 +409,13 @@ module.exports = class FrmsUtils {
         //remplaza con variables de Entrada ej: $nameCampo
         query = query.replaceAll('$campoForeign', selected.value)                
 
-console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-console.log(selected)
-console.log(dataIn),
-console.log(Object.keys(parametros.campos)[0]),
-console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        console.log("selectedINN:",tempSelectedIn)
+        console.log("selected:",selected)
+        console.log("DataIn:",dataIn),
+        console.log("Keys Campos:",campo),
+        console.log("Es Multiple:",swMultipleBoxLocal)
+        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
         //ejecuta query
         this.#qUtils.setQuery(query)
