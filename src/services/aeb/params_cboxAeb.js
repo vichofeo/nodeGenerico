@@ -50,19 +50,20 @@ const PDEPENDENCIES = {
       eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],},
     ilogic: {
       aeb_depniv: `SELECT 
-              eg.nombre_institucion as ente_gestor, i.nombre_institucion, r.nivel_atencion, a.atributo AS nivel, r.snis,
-              i.cod_dpto AS dpto, dpto.nombre_dpto AS ndpto,
-              i.telefono, i.direccion_web,
-              i.zona_barrio||'; '||i.avenida_calle AS direccion,
-              i.latitud, i.longitud,
-              to_char(i.fecha_creacion,'DD/MM/YYYY') AS creacion
+                eg.nombre_corto as ente_gestor, dpto.nombre_dpto AS dpto,
+                r.nivel_atencion||r.snis AS nivel_atencion, 
+                a.atributo || case WHEN r.snis='Y' THEN ' (c/cr)' ELSE ' (s/cr)' END  AS nivel,
+                COUNT(*) AS value
 
-              FROM r_institucion_salud r, ae_institucion i, ae_institucion eg, r_is_atributo a, al_departamento dpto
-              WHERE 
-              r.institucion_id = i.institucion_id AND r.ente_gestor_id = eg.institucion_id AND r.nivel_atencion=a.atributo_id 
-              AND i.cod_pais=dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-              AND r.nivel_atencion IN ('1ERNIVEL','2DONIVEL','3ERNIVEL')
-                  $w$`
+                FROM r_institucion_salud r, ae_institucion i, ae_institucion eg, r_is_atributo a, al_departamento dpto
+                WHERE 
+                r.institucion_id = i.institucion_id AND i.institucion_root = eg.institucion_id AND r.nivel_atencion=a.atributo_id 
+                AND i.cod_pais=dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                AND r.nivel_atencion IN ('1ERNIVEL','2DONIVEL','3ERNIVEL')
+                $w$
+                GROUP BY 1,2,3,4
+                ORDER BY 1, 2, 3
+                `
     },
     referer: [],
     primal: {
