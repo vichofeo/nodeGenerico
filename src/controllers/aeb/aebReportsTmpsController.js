@@ -43,8 +43,20 @@ const tmpsReportSnis = async (req, res) =>{
     
 }
 
+const tmpsDeletetSnis = async (req, res) =>{
+    //handleError.setRes(res)    ???
+    const body =  req.body
+    const token =  req.headers.authorization
+
+    const result =  await service.tmpsDeletetSnis({token:token, data: body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+    
+}
+
 module.exports = {   
     tmpsInitialReport, tmpsStatus, 
     tmpsReport, 
-    tmpsReportSnis
+    tmpsReportSnis, 
+    tmpsDeletetSnis
 }

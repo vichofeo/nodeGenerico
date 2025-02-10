@@ -37,6 +37,7 @@ router.post('/tmps/equivalence', authMiddleWare, loaderController.tmpsSaveEquiva
 router.post('/xlsx/initialReport', authMiddleWare, reportController.tmpsInitialReport)
 router.post('/xlsx/statusReport', authMiddleWare, reportController.tmpsStatus)
 router.post('/xlsx/dataReport', authMiddleWare, reportController.tmpsReport)
+router.put('/xlsx/loading', authMiddleWare, reportController.tmpsDeletetSnis)
 
 //reporte de snis que cargaron
 router.post('/xlsx/statusFrmsSnis', authMiddleWare, reportController.tmpsReportSnis)

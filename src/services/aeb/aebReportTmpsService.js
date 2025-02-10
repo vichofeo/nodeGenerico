@@ -229,9 +229,58 @@ const tmpsReportSnis =  async (dto, handleError)=>{
       handleError.setHttpError(error.message)
   }
 }
+
+const tmpsDeletetSnis =  async (dto, handleError)=>{
+  await qUtil.startTransaction()
+  try {
+    const tablas = { snis301an: 'tmp_snis301a', snis301bn: 'tmp_snis301b', snis302an: 'tmp_snis302a', snis302bn: 'tmp_snis302b' }
+    frmUtil.setToken(dto.token)
+    const obj_cnf = frmUtil.getObjSession()
+    const data = dto.data
+    const index = data.snisflag
+    let periodo = null
+    let ok = null
+    let message = ""
+    if(data?.semana && data.semana.split(",").length==1)
+      periodo = {semana: data.semana}
+    else if(data?.periodo && data.periodo.split(",").length==1)
+      periodo = {periodo: data.periodo}
+    
+    if(tablas[index] && periodo && data.accion==true){
+      qUtil.setTableInstance(tablas[index])
+      let where = {
+        gestion: data.gestion, 
+        departamento:data.departamento, 
+        ente_gestor_name: data.ente, 
+        establecimiento: data.establecimiento,
+        ...periodo,
+        dni_register: obj_cnf.dni_register
+      }
+      
+      qUtil.setWhere(where)
+      await qUtil.deleting()
+      ok=true
+      message= "Registro Eliminado Correctamente."
+    }else{
+      ok=false
+      message="No se pudo eliminar registro posiblemente desa borrar mas de un periodo/semana"
+    }
+    
+    await qUtil.commitTransaction()
+    return {
+      ok:ok,
+      message: message
+    }
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    handleError.setMessage('Error de sistema: DESTROYSNISSRV')
+      handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
     tmpsInitialReport,
     tmpsStatus,
     tmpsReport, 
-    tmpsReportSnis
+    tmpsReportSnis, 
+    tmpsDeletetSnis
 }

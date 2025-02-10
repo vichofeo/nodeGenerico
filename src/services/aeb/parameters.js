@@ -74,14 +74,16 @@ const PARAMETROS = {
         linked: "snis",
         campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
         string_agg(distinct t.semana||'', ', ' ORDER BY semana||'') AS semana,
-        p.primer_apellido||' '||p.nombres AS usr  `,
+        p.primer_apellido||' '||p.nombres AS usr , 
+        CASE t.dni_register WHEN  '$dni' THEN TRUE  ELSE false END  as accion`,
 
-        camposView: [{ value: "gestion", text: "Gestion" }, { value: "departamento", text: "Departamento" }, { value: "ente", text: "Ente Gestor" }, { value: "establecimiento", text: "Establecimiento de Salud" },
+        camposView: [{ value: "gestion", text: "Gestion" }, { value: "departamento", text: "Departamento" }, { value: "ente", text: "Ente Gestor" }, 
+            { value: "establecimiento", text: "Establecimiento de Salud" },
         { value: "semana", text: "Semana Epidemiologica" },
-        { value: "usr", text: "Usuario" } ],
+        { value: "usr", text: "Usuario" } , {value:'accion', text:'Accion'}],
         key: [],
         precondicion: ['t.dni_register = p.dni_persona'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr, t.dni_register 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
