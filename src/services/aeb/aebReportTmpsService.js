@@ -241,10 +241,17 @@ const tmpsDeletetSnis =  async (dto, handleError)=>{
     let periodo = null
     let ok = null
     let message = ""
-    if(data?.semana && data.semana.split(",").length==1)
+    
+    /*if(data?.semana && data.semana.split(",").length==1)
       periodo = {semana: data.semana}
     else if(data?.periodo && data.periodo.split(",").length==1)
       periodo = {periodo: data.periodo}
+    */
+    if(data?.semana && data.periodoSelected.length>0)
+      periodo = {semana: data.periodoSelected}
+    else if(data?.periodo && data.periodoSelected.length>0)
+      periodo = {periodo: data.periodoSelected}
+    
     
     if(tablas[index] && periodo && data.accion==true){
       qUtil.setTableInstance(tablas[index])
