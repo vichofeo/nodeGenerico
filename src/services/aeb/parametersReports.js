@@ -147,7 +147,7 @@ const REPORTS = {
     attributes: ` formulario AS periodo,
                 '['|| string_agg(
                 '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
-                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}' DESC
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
@@ -166,7 +166,7 @@ const REPORTS = {
       'SUBVARIABLE',
       'VALOR',
     ],
-    tipo: 'Sum',
+    tipo: 'Integer Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
@@ -206,7 +206,7 @@ const REPORTS = {
     attributes: ` formulario AS periodo,
                 '['|| string_agg(
                 '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
-                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}' DESC
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
@@ -225,7 +225,7 @@ const REPORTS = {
       'SUBVARIABLE',
       'VALOR',
     ],
-    tipo: 'Sum',
+    tipo: 'Integer Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'SUBVARIABLE'],
@@ -265,7 +265,7 @@ const REPORTS = {
     attributes: ` formulario AS periodo,
                 '['|| string_agg(
                 '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
-                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}' DESC
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
@@ -284,7 +284,7 @@ const REPORTS = {
       'SUBVARIABLE',
       'VALOR',
     ],
-    tipo: 'Sum',
+    tipo: 'Integer Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
     cols: ['VARIABLE', 'DENTRO/FUERA', 'SUBVARIABLE'],
@@ -324,7 +324,7 @@ const REPORTS = {
     attributes: ` formulario AS periodo,
                 '['|| string_agg(
                 '{"periodo":"'||periodo||'", "registros":'||registros||'}', ',' 
-                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}'
+                ORDER BY '{"periodo":"'||periodo||'", "registros":'||registros||'}' DESC
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
@@ -343,7 +343,7 @@ const REPORTS = {
       'SUBVARIABLE',
       'VALOR',
     ],
-    tipo: 'Sum',
+    tipo: 'Integer Sum',
     camposOcultos: ['VALOR'],
     rows: ['GRUPO DE VARIABLES'],
     cols: ['TIPO REPORTE', 'VARIABLE', 'TIPO VARIABLE', 'SUBVARIABLE'],
@@ -375,7 +375,7 @@ const REPORTS = {
     attributes:[["to_char(fecha_registro, 'YYYY-MM-DD')", 'periodo'], ['count(*)', 'registros']],
     campos: `to_char(fecha_registro,'YYYY-MM-DD'), mail_origen, ente_gestor, establecimieno, nivel_atencion, servicios_primer, servicios_segundo, servicios_tercer, total_camas, camas_disponibles, total_camas_emergencia, camas_emergencia_disponibles`,
     headers:['Marca temporal','Dirección de correo electrónico','ENTE GESTOR','NOMBRE DEL ESTABLECIMIENTO DE SALUD','NIVEL DE ATENCIÓN','SERVICIOS DEL EESS PRIMER NIVEL','SERVICIOS DEL EESS SEGUNDO NIVEL','SERVICIOS EESS TERCER NIVEL','TOTAL CAMAS HOSPITALIZACIÓN','NÚMERO DE CAMAS DISPONIBLES HOSPITALIZACIÓN','TOTAL CAMAS UREGENCIAS/EMERGENCIAS','NÚMERO DE CAMAS DISPONIBLES URGENCIAS/EMERGENCIAS'],
-    tipo: 'Sum',
+    tipo: 'Integer Sum',
     camposOcultos: ['TOTAL CAMAS HOSPITALIZACIÓN','NÚMERO DE CAMAS DISPONIBLES HOSPITALIZACIÓN','TOTAL CAMAS UREGENCIAS/EMERGENCIAS','NÚMERO DE CAMAS DISPONIBLES URGENCIAS/EMERGENCIAS'],
     rows: ['ENTE GESTOR'],
     cols: [],
