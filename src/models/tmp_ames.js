@@ -14,9 +14,12 @@ module.exports = (sequelize, DataTypes) => {
   tmp_ames.init(
     {
       numero:{type: DataTypes.STRING, allowNull: true},
+      auditor:{type: DataTypes.STRING, allowNull: true},
 	no_ame: {type: DataTypes.STRING, allowNull: true},
 	caso: {type: DataTypes.STRING, allowNull: true},
 	genero: {type: DataTypes.STRING, allowNull: true},
+  edad: {type: DataTypes.STRING, allowNull: true},
+  por_fallecimiento: {type: DataTypes.STRING, allowNull: true},
 	solicitante: {type: DataTypes.STRING, allowNull: true},
 	tipo_solicitud: {type: DataTypes.STRING, allowNull: false},
 	gestion : {type: DataTypes.STRING, allowNull: true},
@@ -30,11 +33,12 @@ module.exports = (sequelize, DataTypes) => {
 	fecha_emision : {type: DataTypes.DATEONLY, allowNull: true},
 	cronograma: {type: DataTypes.DATEONLY, allowNull: true},
 	notificacion_legitimador: {type: DataTypes.STRING, allowNull: true},
-	observacion : {type: DataTypes.TEXT, allowNull: true},
-	notificacion_msyd : {type: DataTypes.STRING, allowNull: true},
+  notificacion_msyd : {type: DataTypes.STRING, allowNull: true},
+	
 	seguimiento: {type: DataTypes.STRING, allowNull: true},
 	apelacion: {type: DataTypes.STRING, allowNull: true},
 	segimiento_2: {type: DataTypes.STRING, allowNull: true},      
+  observacion : {type: DataTypes.TEXT, allowNull: true},
 
       eg: { type: DataTypes.STRING, allowNull: true },
       dpto: { type: DataTypes.STRING, allowNull: true },

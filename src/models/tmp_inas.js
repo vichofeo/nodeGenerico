@@ -17,7 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       numero:{type: DataTypes.STRING, allowNull: true},
       gestion:{type: DataTypes.STRING, allowNull: true},
       ente_gestor_name:{type: DataTypes.STRING, allowNull: true},
+      origen_inas:{type: DataTypes.STRING, allowNull: true},
       inas_no:{type: DataTypes.STRING, allowNull: true},
+      auditor:{type: DataTypes.STRING, allowNull: true},
       establecimiento:{type: DataTypes.STRING, allowNull: true},
       servicio:{type: DataTypes.STRING, allowNull: true},
       departamento:{type: DataTypes.STRING, allowNull: true},
@@ -29,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       eg: { type: DataTypes.STRING, allowNull: true },
       dpto: { type: DataTypes.STRING, allowNull: true },
       eess: { type: DataTypes.STRING, allowNull: true },
-      prd: { type: DataTypes.STRING, allowNull: true }
+//      prd: { type: DataTypes.STRING, allowNull: true }
 
     },
     {
