@@ -1,5 +1,7 @@
 'use strict'
 
+const { nacimientos } = require("./parametersLoad")
+
 const REPORTS = {
   carmelo: {
     table: 'tmp_carmelo',
@@ -109,7 +111,21 @@ const REPORTS = {
       ['count(*)', 'registros'],
     ],
     campos: `departamento, ente_gestor_name, establecimiento, edad, edad_recodificada,genero,to_char(fecha_diagnostico,'YYYY-MM'),diagnostico_histopatologico,localizacion, sitio_primario,cie_grupo,localizacion_metastasis,to_char(fecha_defuncion,'YYYY-MM')`,
-    headers: ['DEPARTAMENTO', 'ENTE GESTOR', 'ESTABLECIMIENTO / INSTITUCION', 'EDAD', 'EDAD RECODIFICADA', 'SEXO', 'PERIODO DE DIAGNÓSTICO (YYYY-MM)', 'DIAGNÓSTICO HISTOPATOLOGICO , CLINICO Y/O IMAGENOLOGICO', 'LOCALIZACIÓN', 'SITIO PRIMARIO', 'CIE GRUPOS', 'LOCALIZACION DE METASTASIS', 'PERIODO DE DEFUNCIÓN'],
+    headers: [
+      'DEPARTAMENTO',
+      'ENTE GESTOR',
+      'ESTABLECIMIENTO / INSTITUCION',
+      'EDAD',
+      'EDAD RECODIFICADA',
+      'SEXO',
+      'PERIODO DE DIAGNÓSTICO (YYYY-MM)',
+      'DIAGNÓSTICO HISTOPATOLOGICO , CLINICO Y/O IMAGENOLOGICO',
+      'LOCALIZACIÓN',
+      'SITIO PRIMARIO',
+      'CIE GRUPOS',
+      'LOCALIZACION DE METASTASIS',
+      'PERIODO DE DEFUNCIÓN',
+    ],
     tipo: 'Count',
     camposOcultos: [],
     rows: ['SEXO'],
@@ -132,6 +148,78 @@ const REPORTS = {
     },
   },
 
+  nacimientos: {
+    table: 'tmp_nacimientos',
+    tables: 'tmp_nacimientos',
+    alias: 'Datos de Nacimientos',
+    attributes: [
+      ["to_char(fecha_nacimiento, 'YYYY-MM')", 'periodo'],
+      ['count(*)', 'registros'],
+    ],
+    campos: `departamento,establecimiento,nivel,ente_gestor_name,ambito,to_char(fecha_nacimiento,'YYYY-MM'),sexo,parto_atendido,edad_gestacional,malformaciones,peso,talla`,
+    headers: ['Departamento', 'Establecimiento', 'Nivel Atencion', 'Ente Gestor', 'Rural/Urbano', 'Periodo Nacimiento', 'Sexo', 'Parto atendido', 'Edad gestacional', 'Malformaciones', 'Peso', 'Talla' ],
+    tipo: 'Count',
+    camposOcultos: [],
+    rows: ['Departamento'],
+    cols: ['Ente Gestor'],
+    mdi: 'mdi-baby-buggy',
+
+    precondicion: [],
+
+    referer: [],
+    //condicionSolicitud: function(){return `to_char(fecha_dispensacion, 'YYYY')='${dato}'`}
+    metodo: function (dato = Array()) {
+      let sentencia = ''
+      if (Array.isArray(dato)) {
+        dato = dato.map((o) => o.periodo)
+
+        if (dato.length == 1 && dato[0] == 'Todos') sentencia = ['1=1']
+        else
+          sentencia = dato.map(
+            (val) => `to_char(fecha_nacimiento, 'YYYY-MM')='${val}'`
+          )
+
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      } else sentencia = '1=2'
+      return sentencia
+    },
+  },
+  defunciones: {
+    table: 'tmp_defunciones',
+    tables: 'tmp_defunciones',
+    alias: 'Datos de defunciones',
+    attributes: [
+      ["to_char(fecha_defuncion, 'YYYY-MM')", 'periodo'],
+      ['count(*)', 'registros'],
+    ],
+    campos: `departamento,establecimiento,nivel,ente_gestor_name,ambito,to_char(fecha_defuncion, 'YYYY-MM'),edad_anio,sexo,grado_Instruccion,estado_civil,causa_directa,cie10_causa_directa_codigo||' - '||cie10_causa_directa_descripcion,causa_antecedente_1,cie10_causa_antecedente_1_codigo||' - '||cie10_causa_antecedente_1_descripcion,causa_contribuyente_1,cie10_causa_contribuyente_1_codigo||' -  '||cie10_causa_contribuyente_1_descripcion,cie10_causa_B_sica_codigo||' - '||cie10_causa_B_sica_descripcion,presuncion_muerte,mecanismo_muerte,defuncion_femenina,causa_fue_complicacion_embarazo,causa_complic_embarazo,estado`,
+    headers: ['Departamento', 'Establecimiento', 'Nivel', 'Ente Gestor', 'Rura/Urbano', 'Periodo Defunción', 'Edad Año', 'Sexo', 'Grado Instrucción', 'Estado Civil', 'Causa Directa', 'CIE10 Causa Directa', 'Causa Antecedente 1', 'IE10 Causa Antecedente 1',  'Causa Contribuyente 1', 'CIE10 Causa Contribuyente 1',  'CIE10 Causa Básica ',  'Presunción Muerte', 'Mecanismo Muerte', 'Defunción Femenina', 'Causa Fue Complicación Embarazo', 'Causa Complicó Embarazo', 'Estado'],
+    tipo: 'Count',
+    camposOcultos: [''],
+    rows: ['Departamento'],
+    cols: ['Ente Gestor'],
+    mdi: 'mdi-emoticon-dead',
+
+    precondicion: [],
+
+    referer: [],
+    //condicionSolicitud: function(){return `to_char(fecha_dispensacion, 'YYYY')='${dato}'`}
+    metodo: function (dato = Array()) {
+      let sentencia = ''
+      if (Array.isArray(dato)) {
+        dato = dato.map((o) => o.periodo)
+
+        if (dato.length == 1 && dato[0] == 'Todos') sentencia = ['1=1']
+        else
+          sentencia = dato.map(
+            (val) => `to_char(fecha_defuncion, 'YYYY-MM')='${val}'`
+          )
+
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      } else sentencia = '1=2'
+      return sentencia
+    },
+  },
   snis301a: {
     literal: true,
     table: `( SELECT formulario, gestion||'-'||mes AS periodo, COUNT(*) AS registros
@@ -151,10 +239,12 @@ const REPORTS = {
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
-    order:'GROUP BY 1 ORDER BY 1',
+    order: 'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
+      'DEPARTAMENTO',
+      'RED',
+      'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -179,12 +269,15 @@ const REPORTS = {
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros = dato.registros.map(o => o.periodo)
-        console.log("\n ::::::::::::::", dato.registros)
+        dato.registros = dato.registros.map((o) => o.periodo)
+        console.log('\n ::::::::::::::', dato.registros)
         let sentenciaAux = ''
-        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos')
+          sentenciaAux = ['1=1']
         else
-          sentenciaAux = dato.registros.map((val) => `gestion||'-'||mes='${val}'`)
+          sentenciaAux = dato.registros.map(
+            (val) => `gestion||'-'||mes='${val}'`
+          )
 
         sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       } else sentencia = '1=2'
@@ -210,10 +303,12 @@ const REPORTS = {
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
-    order:'GROUP BY 1 ORDER BY 1',
+    order: 'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,mes,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
+      'DEPARTAMENTO',
+      'RED',
+      'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -238,12 +333,15 @@ const REPORTS = {
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros = dato.registros.map(o => o.periodo)
-        console.log("\n ::::::::::::::", dato.registros)
+        dato.registros = dato.registros.map((o) => o.periodo)
+        console.log('\n ::::::::::::::', dato.registros)
         let sentenciaAux = ''
-        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos')
+          sentenciaAux = ['1=1']
         else
-          sentenciaAux = dato.registros.map((val) => `gestion||'-'||mes='${val}'`)
+          sentenciaAux = dato.registros.map(
+            (val) => `gestion||'-'||mes='${val}'`
+          )
 
         sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       } else sentencia = '1=2'
@@ -269,10 +367,12 @@ const REPORTS = {
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
-    order:'GROUP BY 1 ORDER BY 1',
+    order: 'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento,gestion,semana,formulario,grupo,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
+      'DEPARTAMENTO',
+      'RED',
+      'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
@@ -297,12 +397,15 @@ const REPORTS = {
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros = dato.registros.map(o => o.periodo)
-        console.log("\n ::::::::::::::", dato.registros)
+        dato.registros = dato.registros.map((o) => o.periodo)
+        console.log('\n ::::::::::::::', dato.registros)
         let sentenciaAux = ''
-        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos')
+          sentenciaAux = ['1=1']
         else
-          sentenciaAux = dato.registros.map((val) => `gestion||'-'||semana='${val}'`)
+          sentenciaAux = dato.registros.map(
+            (val) => `gestion||'-'||semana='${val}'`
+          )
 
         sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       } else sentencia = '1=2'
@@ -328,16 +431,19 @@ const REPORTS = {
                 )||' ]' AS registros `,
     parseAttrib: ['1'],
     conditional: null,
-    order:'GROUP BY 1 ORDER BY 1',
+    order: 'GROUP BY 1 ORDER BY 1',
     campos: `departamento, red,  municipio, i.nombre_corto,establecimiento, gestion, mes, formulario, grupo, gvariable,variable,lugar_atencion, subvariable,valor`,
     headers: [
-      'DEPARTAMENTO', 'RED', 'MUNICIPIO',
+      'DEPARTAMENTO',
+      'RED',
+      'MUNICIPIO',
       'ENTE GESTOR',
       'ESTABLECIMIENTO / INSTITUCION',
       'GESTION',
       'MES',
       'FORMULARIO',
-      'GRUPO DE VARIABLES', 'TIPO REPORTE',
+      'GRUPO DE VARIABLES',
+      'TIPO REPORTE',
       'VARIABLE',
       'TIPO VARIABLE',
       'SUBVARIABLE',
@@ -356,12 +462,15 @@ const REPORTS = {
       if (dato.periodo) sentencia = `s.formulario='${dato.periodo}' and `
 
       if (Array.isArray(dato.registros)) {
-        dato.registros = dato.registros.map(o => o.periodo)
-        console.log("\n ::::::::::::::", dato.registros)
+        dato.registros = dato.registros.map((o) => o.periodo)
+        console.log('\n ::::::::::::::', dato.registros)
         let sentenciaAux = ''
-        if (dato.registros.length == 1 && dato.registros[0] == 'Todos') sentenciaAux = ['1=1']
+        if (dato.registros.length == 1 && dato.registros[0] == 'Todos')
+          sentenciaAux = ['1=1']
         else
-          sentenciaAux = dato.registros.map((val) => `gestion||'-'||mes='${val}'`)
+          sentenciaAux = dato.registros.map(
+            (val) => `gestion||'-'||mes='${val}'`
+          )
 
         sentencia += `( ${sentenciaAux.join(' OR ')} ) `
       } else sentencia = '1=2'

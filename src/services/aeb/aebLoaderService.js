@@ -5,6 +5,7 @@ const qUtil = new QUtils()
 const LOADERS ={}
 LOADERS.aeb = require('./parametersLoad') //JSON.parse(JSON.stringify(require('./parametersLoad')))
 LOADERS.ucass = require('../ucass/parametersLoad')
+LOADERS.ufam = require('../ufam/parametersLoad')
 const defaultEntity = 'aeb'
 
 const FrmUtils = require('./../frms/FrmsUtils')
@@ -38,7 +39,8 @@ const egData = async (dto, handleError) => {
 
 const initialData = (dto, handleError) => {
   try {
-    const data = LOADERS[defaultEntity]
+    const datos = dto.data    
+    const data = datos?.entity && LOADERS[datos.entity]  ? LOADERS[datos.entity] :LOADERS[defaultEntity]
     const d = {}
     for (const key in data) {
       d[key] = {
