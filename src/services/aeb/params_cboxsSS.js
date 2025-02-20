@@ -53,7 +53,7 @@ GROUP BY 1) AS tbl`
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ['gestion', 'gestion'],
+        gestion: ["to_char(fecha_emision,'YYYY')", "to_char(fecha_emision,'YYYY')"],
         periodo: ["to_char(fecha_emision,'YYYY-MM')","to_char(fecha_emision,'YYYY-MM')"],
         eg: ['eg', "eg"],
         dpto: ['dpto', 'dpto'],

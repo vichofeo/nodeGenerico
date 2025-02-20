@@ -25,7 +25,7 @@ const statusTmps = async (req, res) =>{
     const body =  req.body
     const token =  req.headers.authorization
 
-    const result =  await service.statusTmps({token:token, ...body}, handleError) 
+    const result =  await service.statusTmps({token:token, data: body}, handleError) 
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }

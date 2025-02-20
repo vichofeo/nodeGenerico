@@ -3,23 +3,28 @@ const qUtil = new QUtils()
 
 const PARAMETERS = require("./parameters")
 
-const REPORTS = require('./parametersReports')//JSON.parse(JSON.stringify(require('./parametersReports')))
-const REPORTSUCASS = require('../acrehab/parametersReports')
+const REPORTS = {}
+REPORTS.aeb = require('./parametersReports')//JSON.parse(JSON.stringify(require('./parametersReports')))
+REPORTS.ucass = require('../acrehab/parametersReports')
+REPORTS.ufam = require('../ufam/parametersReports')
 
-const theReports= {
+const defaultOption = 'aeb'
+/*const theReports= {
   aeb: REPORTS,
   ucass: REPORTSUCASS
-}
+}*/
 
 const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
 const tmpsInitialReport = (dto, handleError) => {
     try {
-      let data = REPORTS
-      if(dto.option)
-      data = theReports[dto.option]
+      let data = REPORTS[defaultOption]
 
+      
+      if(dto?.option && REPORTS[dto.option])
+      data = REPORTS[dto.option]
+      console.log("intial report opcion", data)
       const d = {}
       for (const key in data) {
         d[key] = { title: data[key].alias }
@@ -109,9 +114,9 @@ const tmpsInitialReport = (dto, handleError) => {
   const tmpsStatus = async (dto, handleError) => {
     try { 
       
-      let modelos = REPORTS
-      if(dto.option)
-        modelos = theReports[dto.option]
+      let modelos = REPORTS[defaultOption]
+      if(dto?.option && REPORTS[dto.option])
+        modelos = REPORTS[dto.option]
   
       let response = {}
       
@@ -139,9 +144,9 @@ const tmpsInitialReport = (dto, handleError) => {
   const tmpsReport = async (dto, handleError) => {
     try {
 
-      let optionReport = REPORTS
-      if(dto.option)
-        optionReport = theReports[dto.option]
+      let optionReport = REPORTS[defaultOption]
+      if(dto?.option && REPORTS[dto.option])
+        optionReport = REPORTS[dto.option]
 
         //VALIDAR USO Y CONDICIONES SEGUN TOKEN //pendiente de patente
         //dondicion extra por lugar

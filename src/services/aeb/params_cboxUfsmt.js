@@ -7,52 +7,46 @@ const cmps = {
 }
 //extraCondicion:[[campo, valor], [campo2, valor]...]
 ;('use strict')
-const PDEPENDENCIES = {
-  ufam_air: {
-    alias: 'ufam_air',
+const PDEPENDENCIES = {  
+  ufsmt_frma: {
+    alias: 'ufsmt_frma',
     campos: cmps,
     ilogic: {
-      ufam_air: `SELECT eg.nombre_corto as ente_gestor, 'RRAME' AS grupo, to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
-                FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-                $w$
-                GROUP BY 1,2,3
+      ufsmt_frma: `SELECT 
+                CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+                THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
 
-                UNION 
+                --eg.nombre_institucion AS "Ente Gestor",
 
-                SELECT eg.nombre_corto as ente_gestor, 'INAS' AS grupo,  to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
-                FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                dpto.nombre_dpto as subgrupo,
+                sum(ll.texto::integer) AS valor
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+                LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
+                LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
+                LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='A.'
+                AND p.codigo='A1'
                 $w$
-                GROUP BY 1,2,3
-
-                UNION
-                
-                SELECT eg.nombre_corto as ente_gestor, 'AMES' AS grupo,  to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
-                FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-                $w$
-                GROUP BY 1,2,3
-                ORDER BY 1,2,3
+                AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
+                GROUP BY 1, 2
+                ORDER BY 1,2
                 `,
     },
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_emision,'YYYY')", "to_char(t.fecha_emision,'YYYY')"],
-        periodo: [
-          "to_char(t.fecha_emision,'YYYY-MM')",
-          "to_char(t.fecha_emision,'YYYY-MM')",
-        ],
+        gestion: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')"],
+        periodo: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')" ],
         eg: ['i.institucion_root', 'i.institucion_root'],
         dpto: ['i.cod_dpto', 'i.cod_dpto'],
         eess: ['i.institucion_id', 'i.institucion_id'],
@@ -67,7 +61,7 @@ const PDEPENDENCIES = {
     alias: 'ufam_air_genero',
     campos: cmps,
     ilogic: {
-      ufam_air_dpto: `SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+      ufam_air_dpto: `SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
 
                 FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
@@ -79,7 +73,7 @@ const PDEPENDENCIES = {
 
                 UNION 
 
-SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
 
                 FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
@@ -91,7 +85,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
 
                 UNION
                 
-SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
                 FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -101,7 +95,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
                 GROUP BY 1,2
                 ORDER BY 1,2
                 `,
-        ames: `SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+        ames: `SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
                 FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -132,7 +126,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_emision,'YYYY')", "to_char(t.fecha_emision,'YYYY')"],
+        gestion: ['t.gestion', 't.gestion'],
         periodo: [
           "to_char(t.fecha_emision,'YYYY-MM')",
           "to_char(t.fecha_emision,'YYYY-MM')",
@@ -149,34 +143,3 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
   },
 }
 module.exports = PDEPENDENCIES
-
-SELECT 
-CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
-THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
-
---eg.nombre_institucion AS "Ente Gestor",
-
-dpto.nombre_dpto AS "Departamento",
-TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM') AS periodo
-
---sum(ll.texto::integer) AS valor
-FROM ae_institucion eg,
-f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
-LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
-LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
-LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
-ae_institucion i 
-LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
-WHERE eg.institucion_id =  i.institucion_root
-AND a.atributo_id =  r.concluido
-AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
-and r.registro_id= ll.registro_id
-AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
-AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
-AND frm.codigo_formulario='FRM003'
-AND s.codigo='A.'
-AND p.codigo='A1'
-AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
---GROUP BY 1, 2
-
-ORDER BY 1,2

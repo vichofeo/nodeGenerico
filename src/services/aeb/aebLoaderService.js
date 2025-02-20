@@ -65,7 +65,9 @@ const initialData = (dto, handleError) => {
 
 const statusTmps = async (dto, handleError) => {
   try {
-    const modelos = LOADERS[defaultEntity]
+    const datos = dto.data    
+    const modelos = datos?.entity && LOADERS[datos.entity]  ? LOADERS[datos.entity] :LOADERS[defaultEntity]
+    //const modelos = LOADERS[defaultEntity]
 
     let response = {}
     for (const key in modelos) {
