@@ -12,7 +12,7 @@ const PDEPENDENCIES = {
     alias: 'ufsmt_frma',
     campos: cmps,
     ilogic: {
-      ufsmt_frma: `SELECT 
+      /*ufsmt_frma: `SELECT 
                 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
                 THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
 
@@ -40,7 +40,38 @@ const PDEPENDENCIES = {
                 AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
                 GROUP BY 1, 2
                 ORDER BY 1,2
-                `,
+                `,*/
+      ufsmt_frma: `SELECT 
+                CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+                THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
+ 
+
+                dpto.nombre_dpto as subgrupo,
+eg.nombre_institucion AS "insitucion",
+COALESCE(c.atributo,'') AS "grupo_etario", 
+COALESCE(sc.atributo,'') AS genero,
+                sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+                LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
+                LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
+                LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='A.'
+                AND p.codigo='A1'
+  $w$
+                AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
+                GROUP BY 1, 2, 3, 4, 5
+                ORDER BY 1,2,3
+      `
     },
     referer: [],
     primal: {
