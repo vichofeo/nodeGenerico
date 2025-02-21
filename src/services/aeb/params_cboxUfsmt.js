@@ -19,7 +19,7 @@ const PDEPENDENCIES = {
                 --eg.nombre_institucion AS "Ente Gestor",
 
                 dpto.nombre_dpto as subgrupo,
-                sum(ll.texto::integer) AS valor
+                sum(ll.texto::integer) AS value
                 FROM ae_institucion eg,
                 f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
                 LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
