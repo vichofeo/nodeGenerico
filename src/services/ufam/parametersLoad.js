@@ -22,7 +22,7 @@ const PARAMETERS = {
         alias:'tmp_inas',
         attributes:[["to_char(fecha_emision, 'YYYY-MM')", 'periodo'], ['count(*)', 'registros']],
         file: ['N° ', 'GESTION', 'ENTE GESTOR ', 'ORIGEN DE INAS', 'INAS N° ', 'AUDITOR RESPONSABLE', 'ESTABLECIMIENTO DE SALUD ', 'SERVICIO ', 'CIUDAD', 'FECHA DE EMISIÓN', 'CRONOGRAMA', 'OBSERVACION'],
-        table: ['numero', 'gestion', 'ente_gestor_name', 'origen_inas', 'inas_no', 'auditor', 'establecimiento', 'servicio', 'departamento', 'f_emision', 'f_cronograma', 'observacion'],        
+        table: ['numero', 'gestion_ejecucion', 'ente_gestor_name', 'origen_inas', 'inas_no', 'auditor', 'establecimiento', 'servicio', 'departamento', 'f_emision', 'f_cronograma', 'observacion'],        
         validate: [0,0,1,0,1,0,0,0,1,0,0,0],
         forFilter:['FECHA DE EMISIÓN','CRONOGRAMA'],        
         update:[['fecha_emision',"TO_DATE(f_emision, 'DD/MM/YYYY')",'Verifique el formato de fecha Emision DD/MM/YYYY'], 
@@ -30,7 +30,7 @@ const PARAMETERS = {
         superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
         //key:['fecha_vacunacion', "COALESCE(ci,'-1')",  'fecha_nacimiento', "COALESCE(nombre,'-1')", "COALESCE(edad, '-1')", 'f_genero', 'vacuna'],
         key:['inas_no'],
-        keyAux:['numero', 'gestion', 'ente_gestor_name', 'origen_inas', 'inas_no', 'auditor', 'establecimiento', 'servicio', 'departamento', 'f_emision', 'f_cronograma', 'seguimiento'],
+        keyAux:['numero', 'gestion_ejecucion', 'ente_gestor_name', 'origen_inas', 'inas_no', 'auditor', 'establecimiento', 'servicio', 'departamento', 'f_emision', 'f_cronograma', 'seguimiento'],
         //gender: ['nombre', 'genero','f_genero']        
     },
    

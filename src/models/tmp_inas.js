@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       idx: { type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement: true },
 
       numero: { type: DataTypes.STRING, allowNull: true },
-      gestion: { type: DataTypes.STRING, allowNull: true },
+      gestion_ejecucion: { type: DataTypes.STRING, allowNull: true },
       ente_gestor_name: { type: DataTypes.STRING, allowNull: true },
       origen_inas: { type: DataTypes.STRING, allowNull: true },
       inas_no: { type: DataTypes.STRING, allowNull: true },

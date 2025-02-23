@@ -12,7 +12,7 @@ const PDEPENDENCIES = {
     alias: 'ufam_air',
     campos: cmps,
     ilogic: {
-      ufam_air: `SELECT eg.nombre_corto as ente_gestor, 'RRAME' AS grupo, to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
+      ufam_air: `SELECT eg.nombre_corto as ente_gestor, 'RRAME' AS grupo, t.gestion_ejecucion as gestion, COUNT(*) AS value
                 FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -23,7 +23,7 @@ const PDEPENDENCIES = {
 
                 UNION 
 
-                SELECT eg.nombre_corto as ente_gestor, 'INAS' AS grupo,  to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
+                SELECT eg.nombre_corto as ente_gestor, 'INAS' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
                 FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -34,7 +34,7 @@ const PDEPENDENCIES = {
 
                 UNION
                 
-                SELECT eg.nombre_corto as ente_gestor, 'AMES' AS grupo,  to_char(t.fecha_emision,'YYYY') as gestion, COUNT(*) AS value
+                SELECT eg.nombre_corto as ente_gestor, 'AMES' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
                 FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -48,7 +48,7 @@ const PDEPENDENCIES = {
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_emision,'YYYY')", "to_char(t.fecha_emision,'YYYY')"],
+        gestion: ["t.gestion_ejecucion", "t.gestion_ejecucion"],
         periodo: [
           "to_char(t.fecha_emision,'YYYY-MM')",
           "to_char(t.fecha_emision,'YYYY-MM')",
@@ -64,44 +64,47 @@ const PDEPENDENCIES = {
     withInitial: true,
   },
   ufam_air_dpto: {
-    alias: 'ufam_air_genero',
+    alias: 'ufam_air_dpto',
     campos: cmps,
     ilogic: {
-      ufam_air_dpto: `SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+      ufam_air_dpto: `SELECT pila, ejex, sum(value) AS value
+FROM (
+SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
                 FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
                 AND i.institucion_root = eg.institucion_id 
                 AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-                $w$
+$w$
                 GROUP BY 1,2
 
                 UNION 
 
-SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
                 FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
                 AND i.institucion_root = eg.institucion_id 
                 AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-                $w$
+$w$
                 GROUP BY 1,2
 
                 UNION
                 
-SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
                 FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
                 AND i.institucion_root = eg.institucion_id 
                 AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
-                $w$
+$w$
+                GROUP BY 1,2) AS tbl
                 GROUP BY 1,2
                 ORDER BY 1,2
                 `,
-        ames: `SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(*) AS value
+        ames: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
                 FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
                 t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
@@ -110,7 +113,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
                 $w$
                 GROUP BY 1,2
                 ORDER BY 1,2`,
-        inas: `SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
+        inas: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
                 FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
@@ -119,7 +122,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
                 AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
                 $w$
                 GROUP BY 1,2 ORDER BY 1,2`,
-        rrame: `SELECT dpto.nombre_dpto as pila, t.gestion AS ejex, COUNT(*) AS value
+        rrame: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
                 FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
                 WHERE 
@@ -132,7 +135,7 @@ SELECT dpto.nombre_dpto as pila, to_char(t.fecha_emision,'YYYY') AS ejex, COUNT(
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_emision,'YYYY')", "to_char(t.fecha_emision,'YYYY')"],
+        gestion: ["t.gestion_ejecucion", "t.gestion_ejecucion"],
         periodo: [
           "to_char(t.fecha_emision,'YYYY-MM')",
           "to_char(t.fecha_emision,'YYYY-MM')",

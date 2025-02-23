@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       
       
       numero: {type: DataTypes.STRING, allowNull: true},
-	gestion: {type: DataTypes.STRING, allowNull: true},
+      gestion_ejecucion: {type: DataTypes.STRING, allowNull: true},
 	ente_gestor_name: {type: DataTypes.STRING, allowNull: true},
 	rrame_no: {type: DataTypes.STRING, allowNull: true},
 	caso: {type: DataTypes.STRING, allowNull: true},

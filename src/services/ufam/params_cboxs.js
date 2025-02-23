@@ -24,27 +24,27 @@ const PDEPENDENCIES = {
       art644: ['ART. 64,4', false, true, 'C'],
     },
     ilogic: {
-      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+      ames_ejecutadas: `SELECT gestion_ejecucion as gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion_ejecucion ) AS total_acumulado
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY gestion
+                GROUP BY gestion_ejecucion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion_ejecucion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion_ejecucion ) AS total_acumulado
                 FROM tmp_ames 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor_name, gestion
+                GROUP BY ente_gestor_name, gestion_ejecucion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion_ejecucion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_ames),'DD/MM/YYYY') as obs
                 FROM tmp_ames 
                 WHERE 1=1 $w$
-                GROUP BY departamento, gestion 
+                GROUP BY departamento, gestion_ejecucion 
                 ORDER BY 1, 2`,
-      ames_genero: `SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+      ames_genero: `SELECT gestion_ejecucion as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY gestion, genero
+                GROUP BY gestion_ejecucion, genero
                 ORDER BY 1,2
                 `,
       ames_tipo_sol: `SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
@@ -78,13 +78,13 @@ const PDEPENDENCIES = {
                 GROUP BY ente_gestor_name
                 ORDER BY 1`,
       ames_gestion_arts: `SELECT
-                gestion, 
+                gestion_ejecucion as gestion, 
                 SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
                 SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
                 SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY gestion
+                GROUP BY gestion_ejecucion
                 ORDER BY 1`,
       ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
                 FROM tmp_ames WHERE 1=1 $w$
@@ -99,7 +99,7 @@ const PDEPENDENCIES = {
         establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         tipo_solicitud: ['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
-        gestion: ['gestion', 'gestion'],
+        gestion: ['gestion_ejecucion', 'gestion_ejecucion'],
         genero: ['genero', 'genero'],
         notificacion_legitimador: [
           'notificacion_legitimador',
@@ -160,27 +160,27 @@ const PDEPENDENCIES = {
       //art644:['ART. 64,4', false, true, 'C']
     },
     ilogic: {
-      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+      ames_ejecutadas: `SELECT gestion_ejecucion as gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion_ejecucion ) AS total_acumulado
                 FROM tmp_inas
                 WHERE 1=1 $w$
-                GROUP BY gestion
+                GROUP BY gestion_ejecucion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion_ejecucion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion_ejecucion ) AS total_acumulado
                 FROM tmp_inas 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor_name, gestion
+                GROUP BY ente_gestor_name, gestion_ejecucion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion_ejecucion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_inas),'DD/MM/YYYY') as obs
                 FROM tmp_inas 
                 WHERE 1=1 $w$
-                GROUP BY departamento, gestion 
+                GROUP BY departamento, gestion_ejecucion 
                 ORDER BY 1, 2`,
-      /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
+      /*ames_genero:`SELECT gestion_ejecucion as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY gestion, genero
+                GROUP BY gestion_ejecucion, genero
                 ORDER BY 1,2`,
                 ames_tipo_sol:`SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
                 SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
@@ -213,13 +213,13 @@ const PDEPENDENCIES = {
                 GROUP BY ente_gestor_name
                 ORDER BY 1`,
                 ames_gestion_arts:`SELECT
-                gestion, 
+                gestion_ejecucion, 
                 SUM(CASE WHEN art_63='SI' THEN 1 ELSE 0 END) AS art_63,
                 SUM(CASE WHEN art_642 ='SI' THEN 1 ELSE 0 END) AS "art_64.2",
                 SUM(CASE WHEN art_644 ='SI' THEN 1 ELSE 0 END) AS "art_64.4"
                 FROM tmp_ames
                 WHERE 1=1 $w$
-                GROUP BY gestion
+                GROUP BY gestion_ejecucion
                 ORDER BY 1`,*/
       ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
                 FROM tmp_inas WHERE 1=1 $w$
@@ -234,7 +234,7 @@ const PDEPENDENCIES = {
         establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
-        gestion: ['gestion', 'gestion'],
+        gestion: ['gestion_ejecucion', 'gestion_ejecucion'],
         //genero:['genero', 'genero'],
         //notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
         //notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
@@ -274,22 +274,22 @@ const PDEPENDENCIES = {
       //art644:['ART. 64,4', false, true, 'C']
     },
     ilogic: {
-      ames_ejecutadas: `SELECT gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion ) AS total_acumulado
+      ames_ejecutadas: `SELECT gestion_ejecucion as gestion, COUNT(*) AS value, SUM(COUNT(*)) OVER (ORDER BY  gestion_ejecucion ) AS total_acumulado
                 FROM tmp_rrame
                 WHERE 1=1 $w$
-                GROUP BY gestion
+                GROUP BY gestion_ejecucion
                 ORDER BY 1`,
       ames_eg_gestion: `SELECT 
-                ente_gestor_name as pila, gestion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion ) AS total_acumulado
+                ente_gestor_name as pila, gestion_ejecucion as ejex, COUNT(*) AS value, SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name, gestion_ejecucion ) AS total_acumulado
                 FROM tmp_rrame 
                 WHERE 1=1 $w$
-                GROUP BY ente_gestor_name, gestion
+                GROUP BY ente_gestor_name, gestion_ejecucion
                 ORDER BY 1, 2`,
-      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion as ejex,  COUNT(*) AS value,
+      ames_dpto_eg_gestion: `SELECT departamento as pila, gestion_ejecucion as ejex,  COUNT(*) AS value,
       to_char((select max(fecha_emision) from tmp_rrame),'DD/MM/YYYY') as obs
                 FROM tmp_rrame 
                 WHERE 1=1 $w$
-                GROUP BY departamento, gestion 
+                GROUP BY departamento, gestion_ejecucion 
                 ORDER BY 1, 2`,
       /*ames_genero:`SELECT gestion as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_ames
@@ -348,7 +348,7 @@ const PDEPENDENCIES = {
         establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
-        gestion: ['gestion', 'gestion'],
+        gestion: ['gestion_ejecucion', 'gestion_ejecucion'],
         //genero:['genero', 'genero'],
         //notificacion_legitimador:['notificacion_legitimador','notificacion_legitimador'],
         //notificacion_msyd: ['notificacion_msyd','notificacion_msyd'],
