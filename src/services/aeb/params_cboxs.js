@@ -396,8 +396,7 @@ const PDEPENDENCIES = {
                   WHERE 1=1 $w$
                   GROUP BY 1) AS tt
                   LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor = p.ente_gestor)
-                  order by 3 
-`,
+                  order by 3 `,
       cancer_casos: `SELECT 'Registrados' as pivot ,gestion as ejex ,COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY  1,2

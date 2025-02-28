@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             
             gestion: { type: DataTypes.STRING, allowNull: true },
             codigo: { type: DataTypes.STRING, allowNull: true },
+            fecha: { type: DataTypes.DATEONLY, allowNull: true },
             cod_dpto: { type: DataTypes.STRING, allowNull: true },
             departamento: { type: DataTypes.STRING, allowNull: true },
             cod_area: { type: DataTypes.STRING, allowNull: true },

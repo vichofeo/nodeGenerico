@@ -554,6 +554,8 @@ module.exports = class FrmsUtils {
     }else query =  query.replaceAll(stringReplace, " 1=1 ")
     return query
   }
+  //tag remplacer sobre query Json para reporte
+  //reemplaza valores q estan en mediode tags |pd-#-pd| ej: |pd-0-pd|
   #replaceTagWithPDomOrDtoValues(dto, objModel, query){
     const tagIniDom = '|pd-'
     const tagFinDom = '-pd|'

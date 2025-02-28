@@ -47,7 +47,7 @@ const PDEPENDENCIES = {
  
 
                 dpto.nombre_dpto as subgrupo,
-eg.nombre_corto AS "insitucion",
+eg.nombre_corto AS "institucion",
 COALESCE(c.atributo,'') AS "grupo_etario", 
 COALESCE(sc.atributo,'') AS genero,
                 sum(ll.texto::integer) AS value
@@ -101,7 +101,7 @@ COALESCE(sc.atributo,'') AS genero,
  
 
                 dpto.nombre_dpto as subgrupo,
-eg.nombre_corto AS "insitucion",
+eg.nombre_corto AS "institucion",
 COALESCE(c.atributo,'') AS "grupo_etario", 
 COALESCE(sc.atributo,'') AS genero,
                 sum(ll.texto::integer) AS value
