@@ -4,6 +4,8 @@ const UFAM_CBOXS = require('./params_cboxUfam')
 const UCASS_CBOXS = require('./params_cboxUcass')
 const UFSMT_CBOXS = require('./params_cboxUfsmt')
 
+const OTHERSAEB_CBOX = require('./params_cboxAebAll')
+
 //extraCondicion:[[campo, valor], [campo2, valor]...]
 'use strict'
 const PDEPENDENCIES = {
@@ -868,6 +870,7 @@ equivalencias:{
 ...AEB_CBOXS,
 ...UFAM_CBOXS,
 ...UCASS_CBOXS,
-...UFSMT_CBOXS
+...UFSMT_CBOXS,
+...OTHERSAEB_CBOX
 }
 module.exports = PDEPENDENCIES
