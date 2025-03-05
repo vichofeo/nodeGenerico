@@ -342,9 +342,12 @@ const PARAMETERS = {
                 dataValid: ['Sospecha diagnóstica', 'INMUNOPREVENIBLES', 'INFECCIONES DE TRANSMISIÓN SEXUAL', 'OTRAS INFECCIONES', 'ENFERMEDADES TRANSMITIDAS POR VECTORES (ETV)', 'TUBERCULOSIS Y LEPRA', 'VIOLENCIA, HECHOS DE TRANSITO Y ACCIDENTES', 'INTOXICACIONES', 'Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO'],
                 dataNoProcess: ['Evento', 'MORTALIDAD MATERNA', 'SALUD SEXUAL Y REPRODUCTIVA', 'MORTALIDAD', 'SOSPECHA DE ENFERMEDADES CONGÉNITAS DEL METABOLISMO', 'MORTALIDAD PERINATAL, NEONATAL E INFANTIL'],
                 columnsSecundary:{
-                    ['Evento']:{alias: 'REGISTRO DE EVENTOS AMBIENTALES DE NOTIFICACIÓN INMEDIATA',
+                    /*['Evento']:{alias: 'REGISTRO DE EVENTOS AMBIENTALES DE NOTIFICACIÓN INMEDIATA',
                                 columns:[[0,13,25,37],[54,67,79,91]],
-                                valuesColumns: ['No. de Eventos', 'No. de personas afectadas', 'No. de personas fallecidas'] },
+                                valuesColumns: ['No. de Eventos', 'No. de personas afectadas', 'No. de personas fallecidas'] },*/
+                    ['Evento']:{alias: 'REGISTRO DE EVENTOS AMBIENTALES DE NOTIFICACIÓN INMEDIATA',
+                                    columns:[[0,13,21,29,37,45],[54,67,75,83,91,99]],
+                                    valuesColumns: ['No. de Eventos','No. de personas afectadas','No. de personas damnificadas','No. de pacientes atendidos','No. de personas fallecidas'] },            
                     ['MORTALIDAD MATERNA']:{
                             columns:[27,31,35,39,43,47,51,55,59,63],
                             valuesColumns: ['10 - 14 años|Dentro', '10 - 14 años|Fuera', '15 - 19 años|Dentro', '15 - 19 años|Fuera', '20 - 39 años|Dentro', '20 - 39 años|Fuera', '40 - 49 años|Dentro', '40 - 49 años|Fuera', '50 - 59 años|Dentro', '50 - 59 años|Fuera']                        
