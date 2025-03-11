@@ -1,13 +1,40 @@
+//require("dotenv").config();
+const path = require('path');
+require('dotenv').config({
+  path: path.resolve(__dirname, `.env.${process.env.NODE_ENV}`),
+});
+
+if (!process.env.NODE_ENV) {
+  console.error('NODE_ENV no está definido. Usa development o production.');
+  process.exit(1);
+}
 /** *****************************************
  * 1. IMPORTAR MODULOS
  */
-require("dotenv").config();
+
 const express = require('express')
 const morgan = require('morgan') //FOR DEV control
+const helmet = require('helmet');
 //const xmlparser = require('express-xml-bodyparser')
 const config = require('./config/config.cnf.js')
 
+//******************************************************** */
+// Usar helmet para agregar encabezados de seguridad
+app.use(helmet());
 
+/*app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'", 'trusted.com'], // Recursos por defecto
+          scriptSrc: ["'self'", 'trusted.com'],  // Scripts
+          styleSrc: ["'self'", 'fonts.googleapis.com'], // Estilos
+          imgSrc: ["'self'", 'data:', 'trusted.com'], // Imágenes
+          fontSrc: ["'self'", 'fonts.gstatic.com'], // Fuentes
+        },
+      },
+    })
+  );*/
 /** ******************************************
  *  2. IMPORTANDO RUTAS
  */
