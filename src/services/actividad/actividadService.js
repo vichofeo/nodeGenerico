@@ -15,6 +15,9 @@ const FrmUtils = require('./../frms/FrmsUtils')
 const { actividad } = require('./parameters')
 const frmUtil = new FrmUtils()
 
+const MailerUtils = require('../utils/MailerUtils')
+const sendMail =  new MailerUtils()
+
 const cronograma = async (dto, handleError) => {
     try {
 
@@ -339,9 +342,34 @@ const getAllProg = async (dto, handleError) => {
     };
 
 }
+
+/**envio de mails */
+const enviarMail = async(dto,handleError)=>{
+    try{
+        const Mailer = require('../utils/MailerUtils')
+        const mailer = new Mailer()
+        mailer.setFromMail('vichofeo@yahoo.com')
+        mailer.setToMail('bottyfeo@gmail.com')
+        mailer.setSubjet('mail de prueba desde nodin')
+        mailer.setMessagePlain("Mensaje de vico condori")
+        mailer.sendMail()
+
+        return {
+            ok: true,            
+            message: 'Resultado exitoso. MAiL enviado',
+        }
+
+    }catch(error){
+        console.log(error);
+        handleError.setMessage("Error de sistema: MAILSENDSRV")
+        handleError.setHttpError(error.message)
+    }
+}
+
 module.exports = {
     getDataModelN,
     getDataModelNew,
     getDataCboxLigado, cronogramaSave,
-    getProgramacion, getAllProg
+    getProgramacion, getAllProg,
+    enviarMail
 }

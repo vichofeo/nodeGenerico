@@ -15,6 +15,8 @@ router.post("/cron/save", authMiddleWare, controller.cronogramaSave)
 router.get("/cron/get/programacion", authMiddleWare, controller.getProgramacion)
 router.get("/cron/get/all", authMiddleWare, controller.getAllProg)
 
+router.post("/tosender", authMiddleWare, controller.enviarMail) 
+
 
 /*
 router.post("/save", authMiddleWare, adminController.saveDataModifyInsertByModel)

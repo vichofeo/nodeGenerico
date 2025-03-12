@@ -1,0 +1,6 @@
+2025-03-12T18:18:30.630Z [ERROR]: Error en envio de mail:
+Error: Can't create new access token for user
+2025-03-12T18:19:00.794Z [ERROR]: Error Send mail:Error: Can't create new access token for user
+2025-03-12T18:20:14.554Z [ERROR]: Error Send mail:Error: No recipients defined
+2025-03-12T18:22:10.065Z [ERROR]: Error Send mail:Error: No recipients defined
+2025-03-12T18:23:31.735Z [ERROR]: Error Send mail:Error: No recipients defined

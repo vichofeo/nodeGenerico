@@ -1,13 +1,22 @@
+/**
+ * 00 definie rutas para modo de corrida produccion o desarrollo
+ */
 //require("dotenv").config();
 const path = require('path');
+const rootPath = path.resolve(__dirname, '..')
+
 require('dotenv').config({
-  path: path.resolve(__dirname, `.env.${process.env.NODE_ENV}`),
+  path: path.resolve(rootPath, `.env.${process.env.NODE_ENV}`),
 });
 
 if (!process.env.NODE_ENV) {
   console.error('NODE_ENV no está definido. Usa development o production.');
   process.exit(1);
 }
+
+/*console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('APP_NAME:', process.env.PORT);
+console.log('DB_HOST:', process.env.UPLOADS);*/
 /** *****************************************
  * 1. IMPORTAR MODULOS
  */
@@ -17,6 +26,20 @@ const morgan = require('morgan') //FOR DEV control
 const helmet = require('helmet');
 //const xmlparser = require('express-xml-bodyparser')
 const config = require('./config/config.cnf.js')
+
+
+
+
+/**
+ * 3.CONEXION A BASE DE DATOS
+ */
+
+
+/** **************************************
+ * 4. CONFIGURACIONES
+ */
+
+const app = express()
 
 //******************************************************** */
 // Usar helmet para agregar encabezados de seguridad
@@ -35,7 +58,8 @@ app.use(helmet());
       },
     })
   );*/
-/** ******************************************
+
+  /** ******************************************
  *  2. IMPORTANDO RUTAS
  */
 
@@ -43,16 +67,6 @@ app.use(helmet());
 const routes = require('./routes/index')
 
 
-/**
- * 3.CONEXION A BASE DE DATOS
- */
-
-
-/** **************************************
- * 4. CONFIGURACIONES
- */
-
-const app = express()
 app.set('port', process.env.PORT || config.PORT )
 
 //el xml parser 

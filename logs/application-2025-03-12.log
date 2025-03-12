@@ -1,0 +1,16 @@
+2025-03-12T18:18:30.630Z [ERROR]: Error en envio de mail:
+Error: Can't create new access token for user
+2025-03-12T18:19:00.794Z [ERROR]: Error Send mail:Error: Can't create new access token for user
+2025-03-12T18:19:44.449Z [INFO]: Mail enviado con exito..!
+2025-03-12T18:20:14.554Z [ERROR]: Error Send mail:Error: No recipients defined
+2025-03-12T18:22:10.065Z [ERROR]: Error Send mail:Error: No recipients defined
+2025-03-12T18:23:01.686Z [INFO]: Mail enviado con exito..!
+2025-03-12T18:23:31.735Z [ERROR]: Error Send mail:Error: No recipients defined
+2025-03-12T18:26:05.770Z [INFO]: Mail enviado con exito..!
+2025-03-12T18:26:10.310Z [INFO]: Mail enviado con exito..!
+2025-03-12T18:26:11.501Z [INFO]: Email enviado exitosamente: 250 2.0.0 OK  1741803964 98e67ed59e1d1-3011823568csm2158221a91.18 - gsmtp
+2025-03-12T18:26:36.967Z [INFO]: Email enviado exitosamente: 250 2.0.0 OK  1741803989 98e67ed59e1d1-30118235173sm2364611a91.18 - gsmtp
+2025-03-12T18:27:44.447Z [INFO]: Email enviado exitosamente: 250 2.0.0 OK  1741804057 41be03b00d2f7-af281096763sm11673910a12.30 - gsmtp
+2025-03-12T18:30:10.335Z [INFO]: Email enviado exitosamente: 250 2.0.0 OK  1741804203 d2e1a72fcca58-736cc153016sm7793673b3a.173 - gsmtp
+2025-03-12T18:30:20.856Z [INFO]: Mail enviado con exito..!
+2025-03-12T19:02:18.627Z [INFO]: Mail enviado con exito..!

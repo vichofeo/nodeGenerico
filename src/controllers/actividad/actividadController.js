@@ -81,6 +81,13 @@ const getAllProg = async (req, res) =>{
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
+
+const enviarMail= async (req, res)=>{
+    const token =  req.headers.authorization    
+    const result =  await service.enviarMail({ token:token, idx:'-1'}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 module.exports = {
     cronograma,
     
@@ -89,5 +96,8 @@ module.exports = {
     getDataCboxLigado,
     cronogramaSave,
 
-    getProgramacion, getAllProg
+    getProgramacion, getAllProg,
+
+    enviarMail
+    
 }
