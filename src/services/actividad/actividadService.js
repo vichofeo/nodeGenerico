@@ -145,7 +145,8 @@ const cronogramaSave = async (dto, handleError) => {
                         nombre_actividad: obj.titulo,
                         inicio_proyecto: `${obj.fecha} ${tmp2[0]}`,
                         finalizacion: `${obj.fecha} ${tmp2[1]}`,
-                        full_dia: obj.full_dia
+                        full_dia: obj.full_dia,
+                        sede: obj.sede
                     }
                     
                     obj_cnf.create_date = new Date()
@@ -156,7 +157,8 @@ const cronogramaSave = async (dto, handleError) => {
                     nombre_actividad: obj.titulo,
                     inicio_proyecto: `${obj.fecha}`,
                     finalizacion: `${obj.fecha}`,
-                    full_dia: obj.full_dia
+                    full_dia: obj.full_dia,
+                    sede: obj.sede
                 }
                 obj_cnf.create_date = new Date()
                 datos.subactividad.push({ ...aux2, ...obj_cnf })

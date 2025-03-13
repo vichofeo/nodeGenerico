@@ -41,9 +41,9 @@ module.exports = class MailerUtils{
                 pass: this.#pass
             },
             debug: true, // show debug output
-            logger: true // log information in console
+            //logger: true // log information in console
         })
-        this.#___verify()
+        //this.#___verify()
       }
       #___verify(){
         this.#transporter.verify()

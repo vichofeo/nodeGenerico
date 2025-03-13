@@ -19,6 +19,7 @@ const PARAMETROS = {
             virtual: ['Es Virtual', true, false, 'SW', 1],
             nombre_actividad:['Nombre Actividad', true, true, 'TT', 80],  
             
+            sede: ['Lugar', true, true, 'TA',1024],   
             objetivo: ['Objetivo de la Actividad', true, true, 'TA',1024],   
             narrativa: ['Observaciones', true, true, 'TA',1024], 
             
