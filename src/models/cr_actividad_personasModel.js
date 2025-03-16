@@ -8,8 +8,11 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here      
-
+            // define association here   
+            cr_actividad_personas.belongsTo(models.au_persona, {
+                as: 'act_people',
+                foreignKey: 'dni_persona'
+              })   
         }
     }
     cr_actividad_personas.init(

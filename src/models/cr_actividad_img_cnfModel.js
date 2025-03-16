@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       cx: { type: DataTypes.INTEGER, allowNull: true, },
       cy: { type: DataTypes.INTEGER, allowNull: true, },
       align: { type: DataTypes.STRING(10), allowNull: true },
+      tipo_obj: { type: DataTypes.STRING(10), allowNull: true, defaultValue:0 },
 
 
     },

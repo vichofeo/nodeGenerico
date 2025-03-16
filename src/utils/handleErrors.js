@@ -1,8 +1,11 @@
+const { error } = require('winston')
+
 module.exports = class HandleErrors {
     #_res
     #_message
     #_code
     #_objResponse
+    #_logger
     constructor(res=null){
         if(HandleErrors.instance)
         return HandleErrors.instance
@@ -10,6 +13,7 @@ module.exports = class HandleErrors {
         this.#_res =  res
         this.#_code =  401
         this.#_message = "Existe un Error que impide continuar el proceso"
+        this.#_logger = require('../config/logger')
         HandleErrors.instance =  this
     }
 
@@ -29,24 +33,28 @@ module.exports = class HandleErrors {
     handleHttpError(error){
         console.log("\n\n************Error para logs HANDLE-> INGRESO:\n\n", error)
         this.#_res.status(500) //condicion inesperada
-        this.#_res.send({error: "ERROR", ok:false, message: this.#_message })        
+        this.#_res.send({error: "ERROR", ok:false, message: this.#_message }) 
+        this.#_logger.error(this.#_message+ '\n' + error)       
         return;    
     }
     setHttpError(error){
         console.log("\n\n************Error para logs SETHTTP-> INGRESO:\n\n", error)
         this.setCode(500)
         this.#setObjResponse({error: "ERROR", ok:false, message: this.#_message })
+        this.#_logger.error(this.#_message + '\n' + error)
     }
     handleErrorResponse(payload={}){
-        console.log("\n\n****Error pa log RESPONSE def\n\n")
+        console.log("\n\n****Error pa log RESPONSE handleError\n\n")
         this.#_res.json({ok: false,error: this.#_message, ...payload})
+        this.#_logger.warn(this.#_message + '\n' + payload)
         return;
     }
 
     setHttpErrorResponse(payload={}){
-        console.log("\n\n****Error pa log RESPONSE def\n\n", payload)
+        console.log("\n\n****Error pa log RESPONSE sethttpError\n\n", payload)
         this.setCode(203)
         this.#setObjResponse({error: this.#_message, ...payload})
+        this.#_logger.error(this.#_message, +'\n'+ payload)
     }
 
     handleResponse(payload){

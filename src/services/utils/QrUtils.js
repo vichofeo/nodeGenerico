@@ -15,7 +15,10 @@ module.exports = class QrUtils{
         this.#linkDefault =  link
     }  
     async generateQrLink(){
-        this.#result = await qrcode.toDataURL(this.#linkDefault)
+        try{
+            this.#result = await qrcode.toDataURL(this.#linkDefault)
+        }catch(e) {console.log(e)}
+        
     }
 
     getQrResult(){

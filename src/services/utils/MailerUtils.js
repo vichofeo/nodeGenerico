@@ -14,6 +14,9 @@ module.exports = class MailerUtils{
     #mailOptions
     #textPlain
     #textHtml
+    #attachments
+    #adjunto
+    #result
 
     #transporter
 
@@ -26,6 +29,8 @@ module.exports = class MailerUtils{
         this.#user =  process.env.MAILER_PASSPORT
         this.#pass =  process.env.MAILER_CODE
         this.#myMail = myMail
+        this.#attachments = undefined
+        this.#adjunto = undefined
         this.#initializerMailer()
         MailerUtils.instance = this
       }
@@ -70,26 +75,54 @@ module.exports = class MailerUtils{
       setMessagePlain(messagePlain){
         this.#textPlain =  messagePlain
       }
+      setAdjunto(blobFile, fileName='prx01.xyz'){        
+        if(blobFile) {
+          this.#attachments = true
+          this.#adjunto={filename: fileName,
+            content: Buffer.from(blobFile).toString('base64'),
+            encoding: 'base64'
+          }
+        } else {
+          this.#attachments =  false
+          this.#adjunto =  null
+        }
+      }
 
-      sendMail(){
+      async sendMail(){
         const mailOptions = {
           from: this.#myMail,
           to: this.#toMail,
           subject: this.#subjet,
           text: this.#textPlain
         }
+        if(this.#attachments) mailOptions.attachments=[this.#adjunto]
         //send mail
-         this.#transporter.sendMail(mailOptions,
-          function(error, info){
+         /*this.#transporter.sendMail(mailOptions,
+          (error, info)=>{
             if(error){
+              this.#result = {ok:false, message: error}
               console.log("Error Send mail", error)
-              logger.error("Error Send mail:"+ error)
+              logger.error("Error Send mail:"+ error)              
             }else{
               console.log('Email enviado exitosamente: ' + info.response)
               logger.info('Email enviado exitosamente: ' + info.response)
+              this.#result = {ok:true, message: "Mail enviado exitosamente:"+this.#toMail}
             }
           }
-        )
+        )*/
         //this.#___verify()
+        try {
+          const info = await this.#transporter.sendMail(mailOptions);
+          console.log('Email enviado exitosamente: ' + info.response);
+          logger.info('Email enviado exitosamente: ' + info.response);
+          this.#result = { ok: true, message: "Mail enviado exitosamente: " + this.#toMail };
+      } catch (error) {
+          console.log("Error Send mail", error);
+          logger.error("Error Send mail: " + error);
+          this.#result = { ok: false, message: error };
+      }
+      }
+      getResults(){
+        return this.#result
       }
 }

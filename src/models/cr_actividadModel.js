@@ -9,6 +9,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      cr_actividad.hasMany(models.cr_actividad_img, {
+        as: 'act_img',
+        foreignKey:'actividad_id'
+      }),
+      cr_actividad.hasMany(models.cr_actividad_personas, {
+        as: 'act_per',
+        foreignKey:'actividad_id'
+      }),
       cr_actividad.hasMany(models.cr_actividad, {
         as: 'subactividad',
         foreignKey:'actividad_root'

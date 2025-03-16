@@ -2,6 +2,7 @@ const HandleErrors = require('./../../utils/handleErrors')
 const handleError = new HandleErrors()
 
 const service =  require('./../../services/actividad/actividadService')
+const servicePdfPrint =  require('../../services/actividad/actividadPDFPrintService')
 
 const cronograma = async (req, res) => {
     handleError.setRes(res)
@@ -88,6 +89,20 @@ const enviarMail= async (req, res)=>{
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
+const printCert= async (req, res)=>{
+    const token =  req.headers.authorization    
+    const result =  await servicePdfPrint.getValuesActWithXY({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
+const sendCert= async (req, res)=>{
+    const token =  req.headers.authorization    
+    const result =  await servicePdfPrint.sendCertificadoMail({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 module.exports = {
     cronograma,
     
@@ -98,6 +113,6 @@ module.exports = {
 
     getProgramacion, getAllProg,
 
-    enviarMail
+    enviarMail, printCert, sendCert
     
 }
