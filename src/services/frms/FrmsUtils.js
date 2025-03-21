@@ -312,7 +312,7 @@ module.exports = class FrmsUtils {
     this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
     const datos = this.#seteaObjWithDataSession()
 
-    console.log("\n *************************** \n\n modelo:", dto.modelo, "-----------")
+    console.log("\n *************COMBODEPENDENCY************** \n\n modelo:", dto.modelo, "-----------")
 
     const objParamModel = this.#parametros[dto.modelo]
     //console.log("\n *************************** ----------- OBJETO SELECT", objParamModel)
@@ -408,6 +408,8 @@ module.exports = class FrmsUtils {
         query = query.replaceAll(swhere, pWhere)
         //remplaza con variables de Entrada ej: $nameCampo
         query = query.replaceAll('$campoForeign', selected.value)                
+        //reemplza variables de sesion enel query: $inst, $dni, etc
+        query= this.#replaceStringByDataSession(query)
 
         console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         console.log("selectedINN:",tempSelectedIn)
@@ -456,6 +458,22 @@ module.exports = class FrmsUtils {
 
       }
       CONDITION_PRIMAL = pWhere
+      //*****************VERIFICA SI SE TRATA DE DEVOLVER  DATOS PARA DATATABLE*/
+      if(objParamModel.primal.attributes && Array.isArray(objParamModel.primal.headers) && objParamModel.primal.headers.length>0){
+        //existe orden para sacara datos para table data
+        let query = queryPrimal.replaceAll(swhere, CONDITION_PRIMAL)
+        query = query.replaceAll(sattrib, objParamModel.primal.attributes)
+        query = query.replaceAll(sAttribStatic, objParamModel.primal.attributes)
+        //reemplza variables de sesion enel query: $inst, $dni, etc
+        query= this.#replaceStringByDataSession(query)
+        //remplaza con variables de Entrada ej: $nameCampo
+        query = query.replaceAll('$campoForeign', selected.value)
+        //ejecuta query
+        this.#qUtils.setQuery(query)
+        await this.#qUtils.excuteSelect()
+        let result = this.#qUtils.getResults()        
+        parametros.dataTable={items:result, headers:objParamModel.primal.headers}
+      }
     }
     // ------------------------- 0 FIN PRIMAL 0------------------
     /**

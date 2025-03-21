@@ -5,6 +5,7 @@
  * T?->TT: texto, TN: texto numero entero, TM: TextMail, TD: Texto decimal, TA: Text Area
  * use-se la opcion dual cuando la interaccion y la insercion es con tablas de bd
  * referer.condicional:['aplicacion_id,$app'] 
+ * '$app', '$inst', '$dni', '$usr'
  * referer.condicion: {a:1,b:5}
  */
 "use strict"
@@ -55,6 +56,42 @@ const PARAMETROS = {
         ],
     },
    
+    actividad_active:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'cr_actividad',
+        alias: 'actividad',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                   
+            actividad_id: ['Actividad', true, true, 'C']
+        },        
+        key: ['actividad_id'],        
+        ilogic:null,//{},
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [
+            { ref: 'cr_actividad', apropiacion: 'actividad_id', campos: ['actividad_id', 'nombre_actividad'], condicion: {activo:'Y', actividad_root:null}, condicional: ['institucion_id,$inst'] },
+        ],
+    },
+    actividad_personan: {
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'cr_actividad a , cr_actividad_personas ap, au_persona p',
+        alias: 'actividad_personan',
+        cardinalidad: "n",
+        linked: "actividad_active",
+        campos: `p.primer_apellido, p.segundo_apellido, p.nombres, ap.mail_registro `,
+
+        camposView: [{ value: "primer_apellido", text: "Primer Apellido" }, { value: "segundo_apellido", text: "Segundo Apellido" }, { value: "nombres", text: "Nombres" },
+             { value: "mail_registro", text: "email" },
+        ],
+        key: ['actividad_id'],
+        precondicion: ['a.actividad_id = ap.actividad_id', 'ap.dni_persona=p.dni_persona', "a.activo='Y'", "a.institucion_id='$inst'", "actividad_id=$actividad_id"],
+        groupOrder: ` ORDER BY 1  `,//null string    
+        update: [],
+        referer: [ ],
+    },
  
 }
 
