@@ -26,6 +26,7 @@ const PDEPENDENCIES = {
         ],
         primal:{
             equivalencia:{ },
+            attributes:`p.primer_apellido, p.segundo_apellido, p.nombres, ap.mail_registro, p.dni_persona as dni`,
             query:`SELECT DISTINCT 
             $a$
             FROM cr_actividad a , cr_actividad_personas ap, au_persona p
@@ -38,7 +39,7 @@ const PDEPENDENCIES = {
             headers:[{ value: "primer_apellido", text: "Primer Apellido" }, { value: "segundo_apellido", text: "Segundo Apellido" }, { value: "nombres", text: "Nombres" },
                 { value: "mail_registro", text: "email" }
             ],      
-            attributes:`p.primer_apellido, p.segundo_apellido, p.nombres, ap.mail_registro`,
+            
         },
         withInitial:true,
         
