@@ -83,6 +83,13 @@ const getAllProg = async (req, res) =>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const personaActividadSave= async (req, res)=>{
+    const token =  req.headers.authorization    
+    const result =  await service.personaActividadSave({ token:token, ...req.body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 const enviarMail= async (req, res)=>{
     const token =  req.headers.authorization    
     const result =  await service.enviarMail({ token:token, idx:'-1'}, handleError) 
@@ -97,11 +104,13 @@ const printCert= async (req, res)=>{
 }
 
 const sendCert= async (req, res)=>{
-    const token =  req.headers.authorization    
+    const token =  req.headers.authorization        
     const result =  await servicePdfPrint.sendCertificadoMail({ token:token, ...req.body}, handleError) 
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
+
+
 
 module.exports = {
     cronograma,
@@ -113,6 +122,7 @@ module.exports = {
 
     getProgramacion, getAllProg,
 
-    enviarMail, printCert, sendCert
+    enviarMail, printCert, sendCert,
     
+    personaActividadSave
 }

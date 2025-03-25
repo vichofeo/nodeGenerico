@@ -80,7 +80,9 @@ const getValuesActWithXY = async (dto, handleError) => {
         for (const persona of registro.act_per) {
             //settings
             registro.persona = `${persona.act_people.primer_apellido} ${persona.act_people.segundo_apellido} ${persona.act_people.nombres}`
+
             qRutils.setLinkUrl(`http://localhost:8080/${persona.dni_persona}/${btoa(dto.idx)}`)
+            
             await qRutils.generateQrLink()
             registro.qr = qRutils.getQrResult()
             registro.fecha = `${registro.inicio_proyecto} al ${registro.finalizacion}`
@@ -143,7 +145,8 @@ const sendCertificadoMail = async (dto, handleError) => {
                 mailer.setSubjet('mail de prueba desde con su certificado del seminario')
                 mailer.setMessagePlain("Mensaje de prueba de su servidor con su certificado")
                 mailer.setAdjunto(element.blob, 'myfile.pdf')
-                await mailer.sendMail()
+                //await mailer.sendMail()
+                mailer.sendMailwLogTable()
                 console.log(mailer.getResults())
                 registro.push(mailer.getResults())
             }

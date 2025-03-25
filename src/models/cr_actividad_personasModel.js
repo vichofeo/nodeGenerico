@@ -30,6 +30,8 @@ module.exports = (sequelize, DataTypes) => {
             last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
             activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
 
+            logsend: { type: DataTypes.TEXT, allowNull: true},
+
 
         },
         {

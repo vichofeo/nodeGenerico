@@ -18,6 +18,7 @@ router.get("/cron/get/all", authMiddleWare, controller.getAllProg)
 router.post("/tosender", authMiddleWare, controller.enviarMail) 
 router.post("/printcert", authMiddleWare, controller.printCert) 
 router.post("/sendcert", authMiddleWare, controller.sendCert) 
+router.post("/savePerAct", authMiddleWare, controller.personaActividadSave) 
 
 /*
 router.post("/save", authMiddleWare, adminController.saveDataModifyInsertByModel)

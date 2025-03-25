@@ -16,7 +16,7 @@ const { actividad } = require('./parameters')
 const frmUtil = new FrmUtils()
 
 const MailerUtils = require('../utils/MailerUtils')
-const sendMail =  new MailerUtils()
+const sendMail = new MailerUtils()
 
 const cronograma = async (dto, handleError) => {
     try {
@@ -130,16 +130,16 @@ const cronogramaSave = async (dto, handleError) => {
                 //parcea fechas
                 const tmp = obj.rhrs.split('|')
                 for (let iterator of tmp) {
-                    iterator =  iterator.replaceAll(' ','')
-                    const tmp2 = iterator.split('-')                    
+                    iterator = iterator.replaceAll(' ', '')
+                    const tmp2 = iterator.split('-')
                     let ax0 = tmp2[0].split(':')
-                     
+
                     //ax0.replace(/\d{2}:\d{2}/,"$1:$2")
                     tmp2[0] = ax0[0].padStart(2, "0") + ':' + (ax0[1] ? ax0[1].padStart(2, "0") : '00')
-                    
+
                     ax0 = tmp2[1].split(':')
                     tmp2[1] = ax0[0].padStart(2, "0") + ':' + (ax0[1] ? ax0[1].padStart(2, "0") : '00')
-  
+
                     //console.log("\n\n ***************** rango horas:", tmp2,"\n\n")
                     const aux1 = {
                         nombre_actividad: obj.titulo,
@@ -148,7 +148,7 @@ const cronogramaSave = async (dto, handleError) => {
                         full_dia: obj.full_dia,
                         sede: obj.sede
                     }
-                    
+
                     obj_cnf.create_date = new Date()
                     datos.subactividad.push({ ...aux1, ...obj_cnf })
                 }
@@ -339,15 +339,87 @@ const getAllProg = async (dto, handleError) => {
 
     } catch (error) {
         console.log(error);
-        handleError.setMessage("Error de sistema: PRODATSRV")
+        handleError.setMessage("Error de sistema: SAVEDATACTPEOPLESRV")
         handleError.setHttpError(error.message)
     };
 
 }
 
+const personaActividadSave = async (dto, handleError) => {
+
+    try {
+        // obtiene datos de session
+        frmUtil.setToken(dto.token)
+        const obj_cnf = frmUtil.getObjSession()
+        const obj_cnf_mod = frmUtil.getObjSessionForModify()
+
+        //prepara datsos en formato
+        const actividad_id = dto.actividad_id
+        const persona = dto.persona
+
+        //1. verifica existencia de dni y existencia en actividad        
+        qUtil.setTableInstance('cr_actividad_personas')
+        qUtil.setWhere({ actividad_id: actividad_id, dni_persona: persona.dni_persona })
+        await qUtil.findTune()
+        ractividad = qUtil.getResults()
+        if (ractividad.length > 0) {
+            //existe registro->devuelve false
+            return {
+                ok: false,
+                message: "-El suscriptor ya esta registrado-"
+            }
+        } else {
+            //inicia transaccion
+            await qUtil.startTransaction()
+
+            qUtil.setTableInstance('au_persona')
+            await qUtil.findID(persona.dni_persona)
+            const rpersona = qUtil.getResults()
+            if (Object.keys(rpersona).length <= 0) {
+                //2. guarda persona
+                qUtil.setTableInstance('au_persona')
+                qUtil.setDataset({ ...persona, ...obj_cnf })
+                await qUtil.create()
+            } else {
+                //2.1. modificada datos de persona
+                qUtil.setTableInstance('au_persona')
+                qUtil.setDataset({ primer_apellido: persona.primer_apellido, segundo_apellido: persona.segundo_apellido, nombres: persona.nombres, ...obj_cnf_mod })
+                qUtil.setWhere({ dni_persona: persona.dni_persona })
+                await qUtil.modify()
+            }
+            //3. guarda activiad - persona
+            qUtil.setTableInstance('cr_actividad_personas')
+            const payload = {tipo_persona_id: 'A4', 
+                actividad_id: actividad_id, dni_persona: persona.dni_persona,
+                mail_registro: persona.mail,
+                ...obj_cnf
+            }
+            qUtil.setDataset(payload)
+            await qUtil.create()
+
+            //4. pregunta si requiere login
+            //5. crea login-usuario-rol
+            //termina transaccion
+            await qUtil.commitTransaction()
+
+            return {
+                ok: true,
+                message: "Suscripcion realizada con exito"
+            }
+        }
+    } catch (error) {
+        await qUtil.rollbackTransaction()
+        console.log(error);
+        handleError.setMessage("Error de sistema: CRODATSAVESRV")
+        handleError.setHttpError(error.message)
+    };
+
+}
+/**
+
 /**envio de mails */
-const enviarMail = async(dto,handleError)=>{
-    try{
+const enviarMail = async (dto, handleError) => {
+    try {
         const Mailer = require('../utils/MailerUtils')
         const mailer = new Mailer()
         mailer.setFromMail('vichofeo@yahoo.com')
@@ -357,11 +429,11 @@ const enviarMail = async(dto,handleError)=>{
         mailer.sendMail()
 
         return {
-            ok: true,            
+            ok: true,
             message: 'Resultado exitoso. MAiL enviado',
         }
 
-    }catch(error){
+    } catch (error) {
         console.log(error);
         handleError.setMessage("Error de sistema: MAILSENDSRV")
         handleError.setHttpError(error.message)
@@ -372,6 +444,7 @@ module.exports = {
     getDataModelN,
     getDataModelNew,
     getDataCboxLigado, cronogramaSave,
+    personaActividadSave,
     getProgramacion, getAllProg,
     enviarMail
 }
