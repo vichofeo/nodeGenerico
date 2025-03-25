@@ -92,7 +92,33 @@ const PARAMETROS = {
         update: [],
         referer: [ ],
     },
- 
+    actividad_persona:{
+        table: 'au_persona',
+        alias: 'ausr',
+        cardinalidad: "1",
+        noKeyAutomatic: true,
+        included: null, //para el caso de una asociacion con table
+        campos: {                   
+            //tipo_dni:['Tipo Identificacion', true, true, 'C'],  
+            //dni_persona: ['DNI', true, true, 'TN',50],   
+            //dni_complemento: ['Complemento', true, true, 'TT',2],            
+            
+            primer_apellido: ['Primer Apellido', true, true, 'TT',24],
+            segundo_apellido: ['Segundo Apellido', true, false, 'TT',24],
+            nombres: ['Nombres', true, true, 'TT',128],
+            
+            mail: ['Correo Electronico', true, true, 'TM',64],
+            
+        },        
+        key: ['dni_persona'],        
+        ilogic:null,
+        //keyRoot: 'enunciado_root',
+        moreData:[],
+        update: [],
+        referer: [            
+            //{ ref: 'r_is_atributo', apropiacion: 'tipo_dni', campos: ['atributo_id', 'atributo'], condicion: {grupo_atributo:'PERDNITIPO'}, condicional:null, multiple:false }
+        ],
+    } 
 }
 
 //const immutableObject = (obj) =>
