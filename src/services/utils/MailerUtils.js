@@ -43,6 +43,7 @@ module.exports = class MailerUtils {
       host: this.#mailer,
       port: this.#port,
       secure: this.#secure,
+      pool: true,
       auth: {
         //type: 'OAuth2',
         user: this.#user,
@@ -50,6 +51,8 @@ module.exports = class MailerUtils {
       },
       debug: true, // show debug output
       //logger: true // log information in console
+      maxMessages: Infinity, // Allow an unlimited number of messages per connection
+      maxConnections: 5
     })
     //this.#___verify()
   }
@@ -139,7 +142,7 @@ module.exports = class MailerUtils {
   }
   /**
    * 
-   * @param {*} obj :{table,campos:{log,idx},valueidx}
+   * @param {*} obj :{table,campos:{log,estado},valueidx:{key:value}}
    */
   sendMailwLogTable(obj=null) {
     this.#result = {ok:true, message:"Procesando solicitud. por favor cheke log de estado"}
@@ -153,18 +156,22 @@ module.exports = class MailerUtils {
           logger.error("Error Send mail:"+ error)  
           if(obj){
             qUtil.setTableInstance(obj.table)
-            qUtil.setDataset({[obj.campos.log]: `Error: No se pudo enviar el mensaje a ${this.#toMail} ${error}`})
-            qUtil.setWhere({[obj.campos.idx]: obj.valueidx})
+            qUtil.setDataset({[obj.campos.log]: qUtil.literal(`coalesce(${obj.campos.log},'')||'\n\r'|| 'Error: No se pudo enviar el mensaje a ${this.#toMail} ${error}'`),
+              [obj.campos.estado]:'E'
+            })
+            qUtil.setWhere(obj.valueidx)
             await qUtil.modify()
           }
         }else{
           console.log('Email enviado exitosamente desde table: ' + info.response)
           logger.info('Email enviado exitosamente: ' + info.response)          
           if(obj){
-            qUtil.setTableInstance(obj.table)
-            qUtil.setDataset({[obj.campos.log]: `Exito: Mensaje enviado correctamente a ${this.#toMail}`})
-            qUtil.setWhere({[obj.campos.idx]: obj.valueidx})
+            qUtil.setTableInstance(obj.table)                       
             await qUtil.modify()
+            qUtil.setDataset({[obj.campos.log]: qUtil.literal(`coalesce(${obj.campos.log},'')||'\n\r'|| 'Exito: Mensaje enviado correctamente a ${this.#toMail} ${error}'`),
+              [obj.campos.log]:'E'
+            })
+            qUtil.setWhere(obj.valueidx)
           }
         }
        } catch (e) {

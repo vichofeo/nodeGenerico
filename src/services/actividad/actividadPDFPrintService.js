@@ -44,7 +44,7 @@ const ___getInfoAct = async (dto) => {
     })
     qUtil.pushInclude({
         association: 'act_per', required: true,
-        attributes: ['mail_registro', 'dni_persona'],
+        attributes: ['mail_registro', 'dni_persona', 'idx_ap'],
         where: { dni_persona: personas },
         include: [{
             association: 'act_people', required: true,
@@ -81,7 +81,7 @@ const getValuesActWithXY = async (dto, handleError) => {
             //settings
             registro.persona = `${persona.act_people.primer_apellido} ${persona.act_people.segundo_apellido} ${persona.act_people.nombres}`
 
-            qRutils.setLinkUrl(`http://localhost:8080/${persona.dni_persona}/${btoa(dto.idx)}`)
+            qRutils.setLinkUrl(`https://esalud.asuss.gob.bo/certificados/${persona.dni_persona}/${btoa(dto.idx)}`)
             
             await qRutils.generateQrLink()
             registro.qr = qRutils.getQrResult()
@@ -97,7 +97,7 @@ const getValuesActWithXY = async (dto, handleError) => {
                 }
                 imgs.push(result)
             }
-            certificados.push({ mail: persona.mail_registro, certs: imgs })
+            certificados.push({ indexo:persona.idx_ap , mail: persona.mail_registro, certs: imgs })
         }
         const imgs = {}
         for (const img of registro.act_img) {
@@ -130,7 +130,11 @@ const getValuesActWithXY = async (dto, handleError) => {
  */
 const sendCertificadoMail = async (dto, handleError) => {
     try {
+        frmUtil.setToken(dto.token)
+        const obj_cnf = frmUtil.getObjSessionForModify()
+
         const datos = await getValuesActWithXY(dto, handleError)
+        console.log(datos)
         const PdfUtils = require('../utils/PdfUtils')
         const MailerUtils = require('../utils/MailerUtils')
         const pdfUtil = new PdfUtils()
@@ -145,10 +149,28 @@ const sendCertificadoMail = async (dto, handleError) => {
                 mailer.setSubjet('mail de prueba desde con su certificado del seminario')
                 mailer.setMessagePlain("Mensaje de prueba de su servidor con su certificado")
                 mailer.setAdjunto(element.blob, 'myfile.pdf')
-                //await mailer.sendMail()
-                mailer.sendMailwLogTable()
-                console.log(mailer.getResults())
-                registro.push(mailer.getResults())
+                if(result.data.length<=1){
+                    await mailer.sendMail()
+                    //alamcena resultado
+                    const rmail =  mailer.getResults()
+                    let estado =  rmail.ok?  'Y':'E'
+                    let query = `update cr_actividad_personas 
+                    set logsend =  coalesce(logsend, '') ||'\n\r'||'${rmail.message}', send='${estado}',
+                    last_modify_date_time = CURRENT_TIMESTAMP, dni_register='${obj_cnf.dni_register}'
+                    where idx_ap =  ${element.indexo}
+                    ` 
+                    console.log(query)
+                    qUtil.setQuery(query)
+                    await qUtil.excuteUpdate()                    
+                    console.log(mailer.getResults())
+                    registro.push(mailer.getResults())
+                }else{
+                    mailer.sendMailwLogTable({table:'cr_actividad_personas', campos:{log:'logsend',estado:'send'}, valueidx:{idx_ap:element.indexo}, register:obj_cnf})
+                    registro.push({ok:true, message: 'Procesando solicitud'})
+                }
+                
+                
+                
             }
             return {
                 ok: true,

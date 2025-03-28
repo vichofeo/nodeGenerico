@@ -17,9 +17,9 @@ module.exports = (sequelize, DataTypes) => {
     }
     cr_actividad_personas.init(
         {
-
-            actividad_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
-            dni_persona: { type: DataTypes.STRING(25), allowNull: false, primaryKey: true },
+            idx_ap: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
+            actividad_id: { type: DataTypes.INTEGER, allowNull: false },
+            dni_persona: { type: DataTypes.STRING(25), allowNull: false },
             mail_registro: { type: DataTypes.STRING(256), allowNull: true },
             tipo_persona_id: { type: DataTypes.STRING(64), allowNull: true },
             loguet: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             activo: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'Y' },
 
             logsend: { type: DataTypes.TEXT, allowNull: true},
-
+            send: { type: DataTypes.CHAR(1), allowNull: false, defaultValue: 'N' },
 
         },
         {

@@ -23,7 +23,7 @@ module.exports = class PdfUtils {
             const personas = results.data.personas
             const certificados = results.data.certificados
             if (personas.length > 0) {
-              for (const persona of personas) {
+              for (const persona of personas) {                
                 const file_name = persona.mail
                 let index = persona.certs[0].idx
                 let doc = new jsPDF(certificados[index].orientation_page, 'pt', certificados[index].format_page);
@@ -45,7 +45,7 @@ module.exports = class PdfUtils {
                   i++
                 }                
                 
-                imgs.push({mail: persona.mail, blob:doc.output('arraybuffer')})
+                imgs.push({mail: persona.mail, indexo:persona.indexo, blob:doc.output('arraybuffer')})
                 
               }
               this.#result= {ok:true, data:imgs, message:"requerimiento exitoso"}
