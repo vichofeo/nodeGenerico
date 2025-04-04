@@ -331,8 +331,11 @@ module.exports = class FrmsUtils {
       //instancia campos
       this.#qUtils.setTableInstance(referer.ref)
 
-      //atributos de seleccion forma {value, text}
-      this.#qUtils.setAttributes(this.#qUtils.transAttribByComboBox(referer.campos))
+      //atributos de seleccion forma {value, text} 
+      const camposAux= JSON.parse(JSON.stringify(referer.campos))
+      camposAux[1] = this.#qUtils.literal(camposAux[1])
+      console.log("campos:::", camposAux)
+      this.#qUtils.setAttributes(this.#qUtils.transAttribByComboBox(camposAux))
       let where = {}
       if (referer.condicion) {
         where = { ...where, ...referer.condicion }
@@ -349,7 +352,8 @@ module.exports = class FrmsUtils {
 
       referer.included ? this.#qUtils.setInclude(referer.included) : ''
       this.#qUtils.setWhere(where)
-      this.#qUtils.setOrder([referer.campos[1]])
+      //this.#qUtils.setOrder([referer.campos[1]])
+      this.#qUtils.setOrder([camposAux[1]])
       await this.#qUtils.findTune()
       selected = this.#qUtils.searchSelectedForComboBox({
         value: dataIn ? dataIn[referer.apropiacion] : null,
@@ -392,7 +396,7 @@ module.exports = class FrmsUtils {
         const reemplazaAtributos = () =>{
             let query = ""
             if(queryPrimal.includes(sattrib)){
-              let cadena=  `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text`              
+              let cadena=  `${equivalencia[campo][0]} as value, ${equivalencia[campo][1]} as text`
               query = queryPrimal.replaceAll(sattrib, cadena)
             }else if(queryPrimal.includes(sAttribStatic)){
               let cadena = ""

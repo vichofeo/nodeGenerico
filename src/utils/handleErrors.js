@@ -44,9 +44,9 @@ module.exports = class HandleErrors {
         this.#_logger.error(this.#_message + '\n' + error)
     }
     handleErrorResponse(payload={}){
-        console.log("\n\n****Error pa log RESPONSE handleError\n\n")
+        console.log("\n\n****Error pa log RESPONSE handleError\n\n", payload)
         this.#_res.json({ok: false,error: this.#_message, ...payload})
-        this.#_logger.warn(this.#_message + '\n' + payload)
+        this.#_logger.warn(this.#_message + '\n' + JSON.stringify(payload))
         return;
     }
 
@@ -54,7 +54,7 @@ module.exports = class HandleErrors {
         console.log("\n\n****Error pa log RESPONSE sethttpError\n\n", payload)
         this.setCode(203)
         this.#setObjResponse({error: this.#_message, ...payload})
-        this.#_logger.error(this.#_message, +'\n'+ payload)
+        this.#_logger.error(this.#_message, +'\n'+ JSON.stringify(payload))
     }
 
     handleResponse(payload){

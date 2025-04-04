@@ -44,6 +44,38 @@ const PDEPENDENCIES = {
         withInitial:true,
         
     }, 
-    
+    asistencias:{        
+        alias: 'actcboxs',        
+        campos: {
+            actividad_id: ['Actividad', true, true, 'C'],
+            actividad_sid: ['SubActividad', true, true, 'C']
+        }, 
+        ilogic: {
+        },
+        referer: [   
+            { ref: 'cr_actividad', apropiacion: 'actividad_id', campos: ['actividad_id', 'nombre_actividad'], campoForeign: null, condicion: {activo:'Y', actividad_root:null}, condicional: ['institucion_id,$inst'] },     
+            { ref: 'cr_actividad', apropiacion: 'actividad_sid', campos: ['actividad_id', `inicio_proyecto||' - '||nombre_actividad`], campoForeign: 'actividad_root', condicion: {activo:'Y'}, condicional: ['institucion_id,$inst'] }
+            
+        ],
+        primal:{
+            equivalencia:{ },
+            attributes:`p.primer_apellido, p.segundo_apellido, p.nombres, ap.mail_registro, p.dni_persona as dni, send as enviado, logsend as obs`,
+            query:`SELECT DISTINCT  $campoForeign,
+            $a$
+            FROM cr_actividad a , cr_actividad_personas ap, au_persona p
+            WHERE 
+            a.actividad_id = ap.actividad_id and ap.dni_persona=p.dni_persona
+            and a.activo='Y' and  a.institucion_id='$inst' 
+            and a.actividad_id=$campoForeign
+            $w$
+            ORDER BY 1`,
+            headers:[{ value: "primer_apellido", text: "Primer Apellido" }, { value: "segundo_apellido", text: "Segundo Apellido" }, { value: "nombres", text: "Nombres" },
+                { value: "mail_registro", text: "email" }, { value: "enviado", text: "Mail Enviado" }, { value: "obs", text: "Observaciones" }
+            ],      
+            
+        },
+        withInitial:true,
+        
+    }, 
 }
 module.exports = PDEPENDENCIES
