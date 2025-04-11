@@ -281,7 +281,7 @@ CASE
         i2.root IS NULL 
         FROM ae_institucion i2
         WHERE i2.institucion_id='$inst') THEN 1
- WHEN eval.cdemora AND (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
+ WHEN eval.cdemora AND (SELECT $primal and  i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
  THEN 2  
  ELSE 0 END AS hab_conclusion, 
 

@@ -10,7 +10,7 @@ module.exports = {
         },
         env_production: {
           NODE_ENV: 'production',  // Entorno de producción
-          script: 'src/app.js',  // Punto de entrada en producción
+          //script: 'src/app.js',  // Punto de entrada en producción
         },
       },
     ],

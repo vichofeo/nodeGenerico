@@ -6,8 +6,25 @@ const  authMiddleWare = require('./../middlewares/authMiddleware')
 const controller = require('../controllers/aeb/aebController')
 const loaderController = require('../controllers/aeb/aebLoaderController')
 const reportController = require('../controllers/aeb/aebReportsTmpsController')
+const vesController = require('../controllers/aeb/aebVesController')
 
 //const ufamController = require('../controllers/acrehab/evaluacionController')
+const PATH_LOCAL = __dirname
+const multer = require('multer-md5')
+var storage = multer.diskStorage({
+    destination: (req, file, cb)=>{
+        cb(null, './vesp')
+    },
+    filename:(req, file, cb)=>{
+        console.log("El archivo es:::",file)
+        //cb(null, Date.now() + '-' + file.originalname)
+        cb(null, ''+file.originalname)
+        //cb(null, ''+file.md5)
+    }
+})
+const upload = multer({
+    storage
+}).single('uploaded_file')
 
 //admin
 router.get("/:modelo", authMiddleWare, controller.getDataModelN)
@@ -42,7 +59,8 @@ router.put('/xlsx/loading', authMiddleWare, reportController.tmpsDeletetSnis)
 //reporte de snis que cargaron
 router.post('/xlsx/statusFrmsSnis', authMiddleWare, reportController.tmpsReportSnis)
 
-///
+///rutas para cargado de archivos ves
+router.post("/ves/file/upload", authMiddleWare, upload, vesController.uploadFile)
 
 
 

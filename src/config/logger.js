@@ -38,14 +38,14 @@ const logger = winston.createLogger({
       level: 'error',
     }),
   ],
-  exceptionHandlers: [
+  /*exceptionHandlers: [
     new DailyRotateFile({
       filename: 'logs/exceptions-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxSize: '20m',
       maxFiles: '30d',
     }),
-  ],
+  ],*/
 });
 
 module.exports = logger;
