@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   tmp_ames.init(
     {
-      idx: { type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement: true },
+      idx: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true, autoIncrement: true },
 
       numero: { type: DataTypes.STRING, allowNull: true },
       auditor: { type: DataTypes.STRING, allowNull: true },
