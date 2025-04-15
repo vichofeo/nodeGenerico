@@ -54,8 +54,8 @@ const PARAMETROS = {
         update: [],
         referer: [ ],
     },
-    abasregis: {
-        table: 'uf_abastecimiento_registro',
+    regisNew: {
+        table: 'upf_registro',
         alias: 'regis',
         cardinalidad: "1",
         campos: {
@@ -68,7 +68,7 @@ const PARAMETROS = {
         ],
         update: [],
         ilogic: {            
-            periodo: `SELECT TO_CHAR(current_date - interval '1 month','YYYYMM') as value, TO_CHAR(current_date - interval '1 month','YYYY-Month') as text`
+            periodo: `SELECT TO_CHAR(current_date - interval '1 month','YYYY-MM') as value, TO_CHAR(current_date - interval '1 month','YYYY-Month') as text`
             //periodo: `SELECT '202403' as value, '202403 - Marzo' as text`
         },
         referer: [
@@ -78,10 +78,10 @@ const PARAMETROS = {
 
         ],
     },
-    abastecimienton: {
+    registradosn: {
         //'$app', '$inst', '$dni', '$usr'
-        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, uf_abastecimiento_institucion_cnf cnf, uf_abastecimiento_registro eval ',
-        alias: 'abastecimienton',
+        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, upf_file_institucion_cnf cnf, upf_registro eval ',
+        alias: 'registradosn',
         cardinalidad: "n",
         linked: "evaluacion",
         campos: `eval.registro_id as idx, 'evaluacion' as linked,
@@ -127,7 +127,7 @@ END AS glosa
         { value: "glosa", text: "Glosa" },
 
         ],
-        key: ['eval.institucion_id'],
+        key: ['cnf.file_tipo_id'],
         precondicion: [
              'cnf.institucion_id=eval.institucion_id',
             'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',

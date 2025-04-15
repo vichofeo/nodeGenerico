@@ -328,6 +328,7 @@ module.exports = class FrmsUtils {
     console.log("\n\n..............PRIMER SELECTED", selected, "///\n \n ")
 
     for (const referer of objParamModel.referer) {
+      console.log("\n\n..............CON REFERER!!!!\n\n")
       //instancia campos
       this.#qUtils.setTableInstance(referer.ref)
 
@@ -374,6 +375,7 @@ module.exports = class FrmsUtils {
     let CONDITION_PRIMAL = ""
     const swhere =  '$w$'
     if(objParamModel.primal){
+      console.log("\n\n..............ENTRANDO A PRIMAL!!!!!///\n \n ")
       const sattrib = '$a$'
       const sAttribStatic = '$sa$'
       

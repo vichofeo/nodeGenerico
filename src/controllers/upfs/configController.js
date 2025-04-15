@@ -17,7 +17,7 @@ const getEESSsave = async (req, res)=>{
         
     const token = req.headers.authorization
 
-    const result = await service.getEESSsave(req.body,handleError)
+    const result = await service.getEESSsave({...req.body, token:token},handleError)
     handleError.setResponse(result)
     res.status(handleError.getCode()).json(handleError.getResponse())
 }

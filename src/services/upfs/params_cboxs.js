@@ -1,5 +1,6 @@
 //$keySession  
 //extraCondicion:[[campo, valor], [campo2, valor]...]
+//orden de ejecucion : REFERER, PRIMAL, ILOGIC
 "use strict"
 const PDEPENDENCIES = {
   cnf_upfseess:{        
@@ -8,28 +9,23 @@ const PDEPENDENCIES = {
       file_tipo_id: ['ARchivo', true, true, 'C']
     }, 
     ilogic: {
-      file_tipo_id:`SELECT  ft.file_tipo_id ,gr.nombre_grupo_file||' - '||ft.nombre_tipo_archivo||' (*.'||ft.ext||')' AS text
+      file_tipo_id:`SELECT  ft.file_tipo_id as value, gr.nombre_grupo_file||' - '||ft.nombre_tipo_archivo||' (*.'||ft.ext||')' AS text
                 FROM upf_file_grupo gr, upf_file_tipo ft
                 WHERE 
                 gr.grupo_file_id=ft.grupo_file_id
                 AND gr.aplicacion_id='$app'
                 AND ft.activo='Y'
                 ORDER BY 2`,
-    },
-    referer: [],
-    primal:{
-        equivalencia:{ },
-        attributes:``,
-        query:`SELECT 
-        cnf.institucion_id
+      instituciones:`SELECT 
+        cnf.institucion_id as institucion
         FROM upf_file_institucion_cnf cnf
         WHERE                 
          cnf.file_tipo_id='$campoForeign'
-        ORDER BY 1`,
-        headers:[],      
-        
+        ORDER BY 1`          
     },
-    withInitial:true,
+    referer: [],
+    primal:null,
+    withInitial:false,
     
 }, 
     precios: {

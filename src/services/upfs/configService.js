@@ -56,20 +56,23 @@ const getEESSsave = async (dto, handleError) => {
         await qUtil.startTransaction()
         //array de id con ind de eess
         const establecimientos =  dto.eess
+        const tipo_file_id = dto.file_tipo_id
         //obtiene informacion q ya existe
 
-        qUtil.setTableInstance('uf_abastecimiento_institucion_cnf')
+        qUtil.setTableInstance('upf_file_institucion_cnf')
         qUtil.setAttributes(['institucion_id'])
-        //qUtil.setWhere({activo:'Y'})
+        qUtil.setWhere({file_tipo_id: tipo_file_id})
         await qUtil.findTune()
+
         const existentes =  qUtil.getResults().map(obj=>obj.institucion_id)
         const interseccion = existentes.filter(v=>establecimientos.includes(v))
         const diferencia = existentes.filter(v=> !establecimientos.includes(v)) //para eliminar o cambiar de estado
 
+        
         //inserta en lote
         if(establecimientos.length>0){
-            const dataSet =  establecimientos.map(v=>({...obj_cnf, institucion_id:v}))
-            qUtil.setTableInstance('uf_abastecimiento_institucion_cnf')
+            const dataSet =  establecimientos.map(v=>({...obj_cnf, institucion_id:v, file_tipo_id: tipo_file_id}))
+            qUtil.setTableInstance('upf_file_institucion_cnf')
             qUtil.setDataset(dataSet)
             await qUtil.createwLote()
         }
@@ -77,32 +80,36 @@ const getEESSsave = async (dto, handleError) => {
 
         //actualiza estado a Y los coincidentes
         if(interseccion.length>0){
-            qUtil.setTableInstance('uf_abastecimiento_institucion_cnf')
+            
+            qUtil.setTableInstance('upf_file_institucion_cnf')
             qUtil.setDataset({...obj_mdf, activo:'Y'})
-            qUtil.setWhere({institucion_id: interseccion})
+            qUtil.setWhere({institucion_id: interseccion, file_tipo_id: tipo_file_id})
             await qUtil.modify()
         }
         
 
         //obtiene ids utilizados en registro
         if(diferencia.length>0){
-            qUtil.setAttributes('uf_abastecimiento_registro')
+            console.log("diferencia::", diferencia)
+            qUtil.setTableInstance('upf_registro')
             qUtil.setAttributes([[qUtil.distinctData('institucion_id') , 'idx']])
+            qUtil.setWhere({file_tipo_id: tipo_file_id})
             await qUtil.findTune()
+            
             const ids_reg =  qUtil.getResults().map(obj=>obj.idx)
             const dif_reg = diferencia.filter(v=>!ids_reg.includes(v))
             const int_reg = diferencia.filter(v=>ids_reg.includes(v))
             
             //elimina los q no tienen registro
             if(dif_reg.length>0){
-                qUtil.setTableInstance('uf_abastecimiento_institucion_cnf')
-                qUtil.setWhere({institucion_id:dif_reg})
+                qUtil.setTableInstance('upf_file_institucion_cnf')
+                qUtil.setWhere({institucion_id:dif_reg, file_tipo_id: tipo_file_id})
                 await qUtil.deleting()
             }
             if(int_reg.length>0){
-                qUtil.setTableInstance('uf_abastecimiento_institucion_cnf')
+                qUtil.setTableInstance('upf_file_institucion_cnf')
                 qUtil.setDataset({...obj_mdf, activo:'N'})
-                qUtil.setWhere({institucion_id: int_reg})
+                qUtil.setWhere({institucion_id: int_reg, file_tipo_id: tipo_file_id})
                 await qUtil.modify()
             }
 

@@ -3,10 +3,10 @@ const router = express.Router()
 
 const authMiddleWare = require('./../middlewares/authMiddleware')
 
-const controller =  require('./../controllers/ucass/ucassController')
+const controller =  require('./../controllers/upfs/upfsController.js')
 const configController = require('./../controllers/upfs/configController.js')
 
-const abastecimientoController = require('../controllers/ucass/abastecimientoController.js')
+const registroController = require('../controllers/upfs/resgistroController.js')
 const loaderController = require('../controllers/ucass/loaderController.js')
 
 //generico
@@ -23,10 +23,10 @@ router.post("/cbox", authMiddleWare, controller.getDataCboxLigado)
 router.post('/cnf/geteess', authMiddleWare, configController.getEESS)
 router.post('/cnf/cnfsave', authMiddleWare, configController.getEESSsave)
 
-//Abastecimiento control
-router.put('/meds/ctrlAbas', authMiddleWare, abastecimientoController.getControlAbastecimiento)
-router.post('/meds/saveCtrlAbas', authMiddleWare, abastecimientoController.saveRegCtrlAbas)
-router.post('/meds/datosReg', authMiddleWare, abastecimientoController.getDataRegistrador)
+// control de registro por periodos
+router.put('/regis/ctrl', authMiddleWare, registroController.getControlRegis)
+router.post('/regis/saveCtrls', authMiddleWare, registroController.saveRegCtrlRegis)
+router.post('/regis/datosReg', authMiddleWare, registroController.getDataRegistrador)
 
 //rutas para el cargado
 router.post('/loader/initializeLoader', authMiddleWare, loaderController.initialData)

@@ -353,6 +353,18 @@ const getMenuOpsRole = async (dto, handleError) => {
                         qUtil.setResetVars()
 
                         rutas[e.module] = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: obj.frms.nombre_formulario}))
+                    }else if(e.module == 'mupfs'){
+                        qUtil.setTableInstance('upf_file_institucion_cnf')
+                        qUtil.setInclude({
+                            association: 'uffiletipo', required: false,
+                            attributes:['nombre_tipo_archivo']
+                        })
+                        qUtil.setWhere({ institucion_id: obj_cnf.institucion_id, activo:'Y' })
+                        await qUtil.findTune()
+                        const rfrms = qUtil.getResults()
+                        qUtil.setResetVars()
+
+                        rutas[e.module] = rfrms.map((obj, i) => ({ value: `/mupfs/rgf/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo}))
                     }
                     
                 }
