@@ -20,10 +20,14 @@ console.log("desde controller",req.file)
     
                 
         // Ejecutar el script Python
-        const pythonProcess = spawn('python3', [
+        /*const pythonProcess = spawn('python3', [
           path.join(__dirname, '../../py', 'procesarlyn.py'),
           rutaArchivo,
-        ])
+        ])*/
+        const pythonProcess = spawn('python', [
+          path.join(__dirname, '../../py', 'procesar.py'),
+          rutaArchivo.replace(/\//g, '\\') // Convertir barras a formato Windows
+      ])
         console.log("____dirnamae")
     console.log(__dirname)
         let resultado = ''

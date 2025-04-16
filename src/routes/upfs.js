@@ -7,7 +7,7 @@ const controller =  require('./../controllers/upfs/upfsController.js')
 const configController = require('./../controllers/upfs/configController.js')
 
 const registroController = require('../controllers/upfs/resgistroController.js')
-const loaderController = require('../controllers/ucass/loaderController.js')
+const loaderController = require('../controllers/upfs/loaderController')
 
 //generico
 router.get("/:modelo", authMiddleWare, controller.getDataModelN)

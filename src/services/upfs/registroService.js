@@ -62,7 +62,7 @@ const verificaFechasAbasEnProcesamiento = async (r_id) => {
   const obj_session = frmUtil.getObjSession()
   console.log("\n\n...............")
 
-  qUtil.setTableInstance('uf_abastecimiento_registro')
+  qUtil.setTableInstance('upf_registro')
   qUtil.setAttributes([[qUtil.literal(`${obj_cnf.primal} AND concluido::DECIMAL<${estado_conclusion} AND 
                       (CURRENT_DATE<= fecha_climite OR (ctype_plus<>'c0' AND CURRENT_DATE <=flimite_plus))`), 'primal'],
   [qUtil.literal('CURRENT_DATE'), 'fecha']])
@@ -85,7 +85,7 @@ const verificaPermisoAbasEnProcesamiento = async (dto) => {
 
     qUtil.setResetVars()
     console.log("\n\n ***********VERIFICANDO PERMISO PARA SUBIR INFORMACION ********** \n\n")
-    qUtil.setTableInstance('uf_abastecimiento_registro')
+    qUtil.setTableInstance('upf_registro')
     await qUtil.findID(idx)
     const r = qUtil.getResults()
     qUtil.setResetVars()
@@ -230,9 +230,9 @@ const getDataRegistrador = async (dto, handleError) => {
     const obj_cnf = frmUtil.getObjSession()
 
     //extrae informacion de titulos 
-    qUtil.setTableInstance('uf_abastecimiento_registro')
+    qUtil.setTableInstance('upf_registro')
     qUtil.setInclude({
-      association: 'abainstitucion', required: true,
+      association: 'ufrinst', required: true,
       attributes: ['nombre_institucion'],
       include: [{
         association: 'father', required: true,
@@ -245,7 +245,7 @@ const getDataRegistrador = async (dto, handleError) => {
       ]
     })
     qUtil.pushInclude({
-      association: 'abausr', required: true,
+      association: 'ufregister', required: true,
       attributes: ['primer_apellido', 'segundo_apellido', 'nombres'],
     })
 
@@ -254,10 +254,10 @@ const getDataRegistrador = async (dto, handleError) => {
     const result = qUtil.getResults()
 
     const dataresponse = {
-      eg: result.abainstitucion.father.nombre_institucion,
-      eess: result.abainstitucion.nombre_institucion,
-      dpto: result.abainstitucion.dpto.nombre_dpto,
-      usr: `${result.abausr.primer_apellido} ${result.abausr.segundo_apellido} ${result.abausr.nombres}`,
+      eg: result.ufrinst.father.nombre_institucion,
+      eess: result.ufrinst.nombre_institucion,
+      dpto: result.ufrinst.dpto.nombre_dpto,
+      usr: `${result.ufregister.primer_apellido} ${result.ufregister.segundo_apellido} ${result.ufregister.nombres}`,
     }
 
     return {
@@ -270,7 +270,7 @@ const getDataRegistrador = async (dto, handleError) => {
     console.log(error)
     return {
       ok: false,
-      message: 'Error de sistema: NEGOCYCNFFORMS',
+      message: 'Error de sistema: NEGOCYCNINFOReGFFORMS',
       error: error.message,
     }
   }

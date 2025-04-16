@@ -246,21 +246,23 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         update: [],
         referer: [],
     },
-    rprte_abastecimienton:{
+    rprte_registradosn:{
         //'$app', '$inst', '$dni', '$usr'
-        table: 'uf_abastecimiento_registro r, uf_abastecimiento_llenado ll, uf_liname l',
-        alias: 'rprte_abastecimienton',
+        table: 'upf_registro r, uf_abastecimiento ll, uf_liname l',
+        alias: 'rprte_registradosn',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `l.cod_liname, l.medicamento ||' '|| l.concentracion  AS descripcion, l.forma_farmaceutica AS presentacion,
-            ll.consumo_promedio, ll.stock, ll.obs   
+        campos: `l.cod_liname, l.medicamento ||' '|| l.concentracion  AS descripcion, 
+l.forma_farmaceutica AS presentacion,
+to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, ll.consumo_mensual,
+ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock
         `,
 
         camposView: [{ value: "cod_liname", text: "CODIGO/ ITEM" }, { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
             { value: "presentacion", text: "PRESENTACION" },
-        { value: "consumo_promedio", text: "CONSUMO PROMEDIO MENSUAL" },
-        { value: "stock", text: "STOCK" },        
-        { value: "obs", text: "OBSERVACIONES" },
+        { value: "fvencimiento", text: "FECHA VENCIMIENTO" }, { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
+        { value: "ingresos", text: "INGRESOS"}, { value: "egresos", text: "EGRESOS"}, { value: "transferencias", text: "TRANSFERENCIAS"}, 
+        { value: "stock", text: "SALDOS/STOCK"}        
         ],
         key: ['r.registro_id'],
         precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',
