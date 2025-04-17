@@ -24,15 +24,17 @@ const resgitroServices =  require('./registroService.js')
 const initialData = async (dto, handleError) => {
   try {
     const data = LOADERS
-    const d = {}
-    for (const key in data) {
+    const key =  dto.data.model
+    if(data.hasOwnProperty(key)){
+      const d = {}      
+    //for (const key in data) {
       d[key] = {
         file: data[key].file,
         table: data[key].table,
         forFilter: data[key].forFilter,
         applyFilter: data[key].filterByFunc ? true : false,
       }
-    }
+    //}
 
     //obtiene permisos
     const permiso = await resgitroServices.verificaPermisoAbasEnProcesamiento(dto)
@@ -41,6 +43,15 @@ const initialData = async (dto, handleError) => {
       data: d,
       permiso: permiso.data
     }
+
+    }else{
+      return {
+        ok: false,
+        message: "Modelo Inexistente,Proceso detenido."
+        
+      } 
+    }
+    
   } catch (error) {
     console.log(error)
     handleError.setMessage('Error de sistema: LOADINITIALSRV')

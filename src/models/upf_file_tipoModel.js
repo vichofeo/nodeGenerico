@@ -26,7 +26,11 @@ module.exports = (sequelize, DataTypes) => {
             create_date: { type: DataTypes.DATE, allowNull: false },
             last_modify_date_time: { type: DataTypes.DATE, allowNull: false },
             grupo_file_id: { type: DataTypes.STRING(64), allowNull: false },
-            sw_semana: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+            sw_semana: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+
+            modelData: { type: DataTypes.STRING(32), allowNull: false },
+            modelLoad: { type: DataTypes.STRING(32), allowNull: false },
+            modelDataLoad: { type: DataTypes.STRING(32), allowNull: false },
         },
         {
             sequelize,

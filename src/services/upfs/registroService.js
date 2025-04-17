@@ -122,9 +122,7 @@ const verificaPermisoAbasEnProcesamiento = async (dto) => {
 
 const getControlRegis = async (dto) => {
   try {
-
-    const paramLocalModelo = !dto.model ? 'registradosn' : dto.model
-
+//dto.idx: tipo_file_id
     //titulo de la carga
     qUtil.setTableInstance("upf_file_tipo")
     qUtil.setInclude({
@@ -133,6 +131,13 @@ const getControlRegis = async (dto) => {
     })
     await qUtil.findID(dto.idx)
     const tituloFile = qUtil.getResults()
+    delete tituloFile.create_date
+    delete tituloFile.last_modify_date_time
+
+    //const paramLocalModelo = !dto.model ? 'registradosn' : dto.model
+    const paramLocalModelo = !tituloFile.modelData ? 'registradosn' : tituloFile.modelData
+
+    
 
     if (PARAMETROS.hasOwnProperty(paramLocalModelo) && Object.keys(tituloFile).length > 0) {
       dto.modelos = [paramLocalModelo]
@@ -150,6 +155,7 @@ const getControlRegis = async (dto) => {
         data: result,
         role: obj_cnf,
         title: `${tituloFile?.ufgroup?.nombre_grupo_file} - ${tituloFile?.nombre_tipo_archivo} (*.${tituloFile?.ext})`.replaceAll('undefined', '--'),
+        tipo_file: tituloFile,
         message: 'Resultado exitoso. Parametros obtenidos',
       }
     } else {
