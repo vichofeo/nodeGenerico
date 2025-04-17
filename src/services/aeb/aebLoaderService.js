@@ -6,6 +6,7 @@ const LOADERS ={}
 LOADERS.aeb = require('./parametersLoad') //JSON.parse(JSON.stringify(require('./parametersLoad')))
 LOADERS.ucass = require('../ucass/parametersLoad')
 LOADERS.ufam = require('../ufam/parametersLoad')
+LOADERS.upfs = require('../upfs/parametersLoad')
 const defaultEntity = 'aeb'
 
 const FrmUtils = require('./../frms/FrmsUtils')
