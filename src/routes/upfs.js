@@ -36,4 +36,9 @@ router.post('/loader/verify', authMiddleWare, loaderController.verificaPermisoAb
 router.put('/loader/statusLoading', authMiddleWare, loaderController.actualizaEstadoLoader)
 
 router.post('/report/dataLoadingReport', authMiddleWare, loaderController.getDataLoadingReport)
+
+//rutas pra subir archivos xls
+router.post('/loader/xlsx/load', authMiddleWare, loaderController.xlsxLoad)
+router.post('/loader/xlsx/normalize', authMiddleWare, loaderController.xlsxNormalize)
+
 module.exports = router

@@ -63,11 +63,39 @@ const actualizaEstadoLoader = async(req, res)=>{
   
     //res.json(result)
   }
+
+  /**
+   * cargado a BD proveniente de comboFile
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const xlsxLoad = async (req, res) =>{
+      //handleError.setRes(res)    
+      const body =  req.body
+      const token =  req.headers.authorization
+  
+      const result =  await service.xlsxLoad({token:token, data: body}, handleError) 
+      handleError.setResponse(result)
+      res.status(handleError.getCode()).json(handleError.getResponse())
+  }
+
+ const xlsxNormalize = async (req, res) =>{
+     //handleError.setRes(res)    ???
+     const body =  req.body
+     const token =  req.headers.authorization
+ 
+     const result =  await service.xlsxNormalize({token:token, data: body}, handleError) 
+     handleError.setResponse(result)
+     res.status(handleError.getCode()).json(handleError.getResponse())
+ }
+  
 module.exports = {
     
     initialData, dataLoadingReport, getDataLoadingReport,
     loadersComprobate,
     verificaPermisoAbasEnProcesamiento,
-    actualizaEstadoLoader
+    actualizaEstadoLoader,
+
+    xlsxLoad, xlsxNormalize
 
 }

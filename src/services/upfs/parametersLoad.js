@@ -6,7 +6,7 @@ const PARAMETERS = {
         attributes:[["registro_id", 'periodo'], ['count(*)', 'registros']],
         file: ['NRO.', 'CÓDIGO LINAME', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
         table: ['xnro','cod_liname','xmedi1','xpre1','fecha_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
-        validate: [0,1,1,1,1,1,1,1,1,1,1],
+        validate: [0,1,0,0,1,1,1,1,1,1,1],
         forFilter:['fecha_vencimiento'],        
         update:[
              //['stock', 'CAST(stock AS NUMERIC )', 'Verifique campo STOCK que sea numerico y que no este vacio']
