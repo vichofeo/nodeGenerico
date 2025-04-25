@@ -67,11 +67,14 @@ module.exports = (sequelize, DataTypes) => {
             ente_gestor: { type: DataTypes.STRING(128), allowNull: true },
             establecimiento: { type: DataTypes.STRING(512), allowNull: true },
             sw_semana: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
+            
             concluido: { type: DataTypes.STRING(2), allowNull: true, defaultValue: '1' },
             swloadend: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false },
+            
             create_date: { type: DataTypes.DATE, allowNull: true },
             last_modify_date_time: { type: DataTypes.DATE, allowNull: true },
             dni_register: { type: DataTypes.STRING(25), allowNull: true },
+            
             file_name: { type: DataTypes.STRING(128), allowNull: false },
             file_original_name: { type: DataTypes.STRING(512), allowNull: true },
             file_type: { type: DataTypes.STRING(128), allowNull: true },

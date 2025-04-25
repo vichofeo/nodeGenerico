@@ -35,7 +35,18 @@ module.exports = (sequelize, DataTypes) => {
                     foreignKey: 'institucion_id',      // FK en upf_registro (parte 1)
                     otherKey: 'file_tipo_id',         // FK en upf_registro (parte 2)
                     //targetKey: ['institucion_id', 'file_tipo_id'], // PK compuesta en destino
-                  })
+                  }),
+            //asociaciones con registro
+            upf_registro.hasMany(models.upf_registro_file, {
+                as: 'regfile',
+                foreignKey: 'registro_id',      // FK en upf_registro (parte 1)
+                otherKey: 'registro_id',         // FK en upf_registro (parte 2)                
+              }),      
+              upf_registro.hasMany(models.uf_abastecimiento, {
+                as: 'reguf_abastecimiento',
+                foreignKey: 'registro_id',      // FK en upf_registro (parte 1)
+                otherKey: 'registro_id',         // FK en upf_registro (parte 2)                
+              })  
         }
     }
     upf_registro.init(

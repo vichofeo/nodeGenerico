@@ -41,4 +41,10 @@ router.post('/report/dataLoadingReport', authMiddleWare, loaderController.getDat
 router.post('/loader/xlsx/load', authMiddleWare, loaderController.xlsxLoad)
 router.post('/loader/xlsx/normalize', authMiddleWare, loaderController.xlsxNormalize)
 
+
+
+
+
+
+
 module.exports = router

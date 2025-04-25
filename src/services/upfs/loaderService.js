@@ -279,43 +279,60 @@ const actualizaEstadoLoader = async(dto, handleError)=>{
     const obj_cnf = frmUtil.getObjSessionForModify()
     //datos de session
     const idx = dto.data.idx
-    
-    console.log("\n\n",dto,"\n\n")
-    //console.log("\n\n",payload,"\n\n")
-    await qUtil.startTransaction()
-    if(dto.data?.payload?.process){
-      //const payload = dto.data.payload
-      //cambia a estado de en proceso
-      qUtil.setTableInstance("uf_abastecimiento_llenado")
-      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso})      
+    const dataModels = LOADERS
+    if(dataModels[dto.data?.payload?.modelo]){
+      //modelo = "reg"+dataModels[dto.data.payload.modelo].alias
+      modelo = dataModels[dto.data.payload.modelo].alias
+
+      console.log("\n\nESTADO LOADER...",modelo,"\n\n")
+      //console.log("\n\n",payload,"\n\n")
+      await qUtil.startTransaction()
+      let dataSet = {}
+      if(dto.data?.payload?.process){
+        //const payload = dto.data.payload
+        //cambia a estado de en proceso
+        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso}
+        
+      }else{
+        //cambia a estado de en proceso
+        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion}
+        
+      }
+      
+      const updateData = {...dataSet,
+        regfile: {...dataSet},
+        [modelo]: {...dataSet}
+      }      
+      
+      qUtil.setTableInstance(modelo)
+      qUtil.setDataset(updateData)
       qUtil.setWhere({registro_id: idx})
       await qUtil.modify()
 
-      qUtil.setTableInstance('uf_abastecimiento_registro')
-      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time, concluido:estado_proceso})
+      qUtil.setTableInstance('upf_registro_file')
+      qUtil.setDataset(updateData)
       qUtil.setWhere({registro_id: idx})
       await qUtil.modify()
+
+      qUtil.setTableInstance('upf_registro')
+      qUtil.setDataset(updateData)
+      qUtil.setWhere({registro_id: idx})
+      await qUtil.modify()           
+      
+      await qUtil.commitTransaction()
+      return {
+        ok: true,      
+        //data: resultComprobacion,
+        message: 'Resultado exitoso. Parametros obtenidos',
+      }
     }else{
-      //cambia a estado de en proceso
-      qUtil.setTableInstance("uf_abastecimiento_llenado")
-      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion})      
-      qUtil.setWhere({registro_id: idx})
-      await qUtil.modify()
-
-      qUtil.setTableInstance('uf_abastecimiento_registro')
-      qUtil.setDataset({dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time, 
-        concluido:estado_conclusion, fecha_concluido:new Date(), revisado: 8})
-      qUtil.setWhere({registro_id: idx})
-      await qUtil.modify()
+      return {
+        ok: false,
+        message: 'Modelo de datos No Encontrado',        
+      }
     }
     
-
-    await qUtil.commitTransaction()
-    return {
-      ok: true,      
-      //data: resultComprobacion,
-      message: 'Resultado exitoso. Parametros obtenidos',
-    }
+    
 
   } catch (error) {
     qUtil.rollbackTransaction()
@@ -536,7 +553,15 @@ const xlsxNormalize = async (dto, handleError) => {
 
     //datos
     const name_modelos = dto.data.modelos
-    console.log('-----', name_modelos)
+    let infoFiles = null
+    if(dto.data?.fileInfos){
+      infoFiles={}
+      infoFiles.file =  dto.data?.fileInfos.map(o=>o.file_id)
+      infoFiles.regs =  dto.data?.fileInfos.map(o=>o.registro_id)
+    }
+    
+
+    //console.log('-----', name_modelos)
     console.log("************INICIANDO PROCESO DE VERIFICACION *************\n")
     //modelos paramas
     const modelos = LOADERS//dto.data.entity?LOADERS[dto.data.entity]:LOADERS[defaultEntity]
@@ -553,7 +578,7 @@ const xlsxNormalize = async (dto, handleError) => {
     //normaliza
     for (const model of name_modelos) {
       console.log("\n************01 RECOGIENDO MODELO *************\n")
-      console.log('----->', model)
+      console.log(`--------${model}-------`)
       results[model] = []
       const element = modelos[model]
       console.log(element)
@@ -712,28 +737,17 @@ const xlsxNormalize = async (dto, handleError) => {
       try {
         console.log("\n************04.1 UPDATE HASHER AND HASH *************\n")
         //primera actulizacion sobre hasher
-        /*qUtil.setTableInstance(element.alias)
+        qUtil.setTableInstance(element.alias)
         qUtil.setDataset({ hasher: keyStringMd5 })
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
         await qUtil.modify()
 
         await qUtil.startTransaction()
-        qUtil.setDataset({ hash: keyStringMd5 })
-        await qUtil.modify()
+          qUtil.setDataset({ hash: keyStringMd5 })
+          await qUtil.modify()
         await qUtil.commitTransaction()
-        */
-       const whereUpdate = `swloadend=false AND dni_register='${obj_cnf.dni_register}'`
-       let setUpdate = `hasher=${keyString}`
-        let queryUpdate = `UPDATE ${element.alias} SET ${setUpdate} WHERE  ${whereUpdate}`
-        qUtil.setQuery(queryUpdate)        
-        await qUtil.excuteUpdate() 
 
-        await qUtil.startTransaction()
-        setUpdate = `hash=${keyString}`
-        queryUpdate = `UPDATE ${element.alias} SET ${setUpdate} WHERE  ${whereUpdate}`
-        qUtil.setQuery(queryUpdate)        
-        await qUtil.excuteUpdate() 
-        await qUtil.commitTransaction()
+        
 
       } catch (error) {     
         console.log("\n************04.2 FAIL - HASH UNICIDAD *************\n")   
@@ -747,8 +761,7 @@ const xlsxNormalize = async (dto, handleError) => {
         qUtil.setHaving(qUtil.literal('count(*)>1'))
         await qUtil.findTune()
         results[model].push('Existen ' +
-            qUtil.getResults().length +
-            ', registros duplicados O que ya existen en Base de datos.'
+            qUtil.getResults().length + ', registros duplicados O que ya existen en Base de datos.'
         )
         
         //obtiene los registros duplicados
@@ -774,25 +787,42 @@ const xlsxNormalize = async (dto, handleError) => {
     for (const model in results) {
       const modelo = modelos[model]
       const element = results[model]
-      console.log('tabla:::', modelo.alias)
-      qUtil.setTableInstance(modelo.alias)
+      console.log('tabla:::"', modelo.alias.trim(),'"')
+      
       sw[model] = {}
       if (element.length > 0) {
         console.log("\n************05.1 ELIMINA TODO EL CARGADO *************\n")   
+        console.log("\n************05.1.1 ELIMINA DATA *************\n")   
         sw[model].process = false
         //elimina registros malos
+        qUtil.setTableInstance(modelo.alias)
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
         await qUtil.deleting()
+
+        //elimina informacion de archivos
+        if(infoFiles){
+          console.log("\n************05.1.2 ELIMINA FILES *************\n")   
+          qUtil.setTableInstance('upf_registro_file')
+          qUtil.setWhere({file_id:infoFiles.file, registro_id: infoFiles.regs, swloadend: false, dni_register: obj_cnf.dni_register })
+          await qUtil.deleting()
+        }
+
       } else {
         console.log("\n************05.2 CARGADO EXITOSO *************\n")   
         sw[model].process = true
         //se procesan los archivos sin observacion ->swLoadend =  true
-        /*qUtil.setDataset({ swloadend: true })
+        console.log("\n************05.2.1 CARGADO DATA *************\n")   
+        qUtil.setTableInstance(modelo.alias)
+        qUtil.setDataset({ swloadend: true, concluido:'3' })
         qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
-        await qUtil.modify()*/
-        let queryUpdate = `UPDATE ${modelo.alias} SET swloadend=true WHERE swloadend=false AND  dni_register='${obj_cnf.dni_register}'  `
-        qUtil.setQuery(queryUpdate)
-        await qUtil.excuteUpdate()
+        await qUtil.modify()
+
+        console.log("\n************05.2.2 CARGADO FILES *************\n")   
+        qUtil.setTableInstance('upf_registro_file')
+        qUtil.setDataset({ swloadend: true , concluido:'3'})
+        qUtil.setWhere({file_id:infoFiles.file, registro_id: infoFiles.regs, swloadend: false, dni_register: obj_cnf.dni_register })        
+        await qUtil.modify()
+        sw[model].fileInfos = infoFiles
       }
     }
     return {

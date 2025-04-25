@@ -30,6 +30,12 @@ module.exports = (sequelize, DataTypes) => {
       stock_periodo_anterior:{type: DataTypes.DOUBLE, allowNull: false, defaultValue:0},
       nro_lote:{type: DataTypes.STRING(128), allowNull: true},
 
+      concluido: { type: DataTypes.STRING(2), allowNull: false, defaultValue: '1' },
+
+      hash: { type: DataTypes.STRING, allowNull: true, unique: true },
+      hasher: { type: DataTypes.STRING, allowNull: true },
+      swloadend: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
+
       file_id:{type: DataTypes.STRING(64), allowNull: false},
       registro_id:{type: DataTypes.STRING(64), allowNull: false}
     },

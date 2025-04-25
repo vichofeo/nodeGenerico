@@ -11,6 +11,7 @@ const PCBOXS = JSON.parse(pcboxs)
 const LOADERS = require('./parametersLoad.js')
 
 const FrmUtils = require('../frms/FrmsUtils')
+const { where } = require('sequelize')
 const frmUtil = new FrmUtils()
 
 const estado_conclusion = '7'
@@ -86,6 +87,10 @@ const verificaPermisoAbasEnProcesamiento = async (dto) => {
     qUtil.setResetVars()
     console.log("\n\n ***********VERIFICANDO PERMISO PARA SUBIR INFORMACION ********** \n\n")
     qUtil.setTableInstance('upf_registro')
+    qUtil.setInclude({association:'regfile', required:false,
+      attributes:[['file_id','idx'],'file_name',[qUtil.literal("to_char(regfile.create_date,'YYYY-MM-DD')"),'fecha_registro']],
+      where:{swloadend:true}
+    })
     await qUtil.findID(idx)
     const r = qUtil.getResults()
     qUtil.setResetVars()
