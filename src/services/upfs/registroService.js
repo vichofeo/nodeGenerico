@@ -80,15 +80,16 @@ const verificaFechasAbasEnProcesamiento = async (r_id) => {
 }
 const verificaPermisoAbasEnProcesamiento = async (dto) => {
   try {
-
+    frmUtil.setToken(dto.token)
     const obj_cnf = frmUtil.getObjSession()
     const idx = dto.data.reg
 
     qUtil.setResetVars()
     console.log("\n\n ***********VERIFICANDO PERMISO PARA SUBIR INFORMACION ********** \n\n")
+    console.log("\n\n obj_conf:", obj_cnf  , "\n\n")
     qUtil.setTableInstance('upf_registro')
     qUtil.setInclude({association:'regfile', required:false,
-      attributes:[['file_id','idx'],'file_name',[qUtil.literal("to_char(regfile.create_date,'YYYY-MM-DD')"),'fecha_registro']],
+      attributes:[['file_id','idx'],'file_name',[qUtil.literal("to_char(regfile.create_date,'DD/MM/YYYY')"),'fecha_registro']],
       where:{swloadend:true}
     })
     await qUtil.findID(idx)

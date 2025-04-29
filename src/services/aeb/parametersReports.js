@@ -3,6 +3,52 @@
 const { nacimientos } = require("./parametersLoad")
 
 const REPORTS = {
+  hemofilia: {
+    table: 'tmp_hemofilia',
+    tables: 'tmp_hemofilia',
+    alias: 'Datos Hemofilia',
+    attributes: [
+      ['gestion', 'periodo'],
+      ['count(*)', 'registros'],
+    ],
+    campos: `ente_gestor_name, departamento, establecimiento, edad, genero, tipo_hemofilia, tipo_hemorragia, tratamiento_casa, gestion`,
+    headers: [
+      'ENTE GESTOR',
+      'Departamento',      
+      'Nombre el Establecimiento',
+      'EDAD',
+      'Sexo',      
+      'Tipo Hemofilia',
+      'Tipo Hemorragia',
+      'Tratamiento Recibido',
+      'Tratamiento en casa', 'Gestion'
+    ],
+    tipo: 'Count',
+    camposOcultos: [],
+    rows: ['Departamento'],
+    cols: ['ENTE GESTOR'],
+    mdi: 'mdi-hospital-building',
+
+    precondicion: [],
+
+    referer: [],
+    //condicionSolicitud: function(){return `to_char(fecha_dispensacion, 'YYYY')='${dato}'`}
+    metodo: function (dato = Array()) {
+      let sentencia = ''
+      if (Array.isArray(dato)) {
+        dato = dato.map((o) => o.periodo)
+
+        if (dato.length == 1 && dato[0] == 'Todos') sentencia = ['1=1']
+        else
+          sentencia = dato.map(
+            (val) => `gestion='${val}'`
+          )
+
+        sentencia = `( ${sentencia.join(' OR ')} ) `
+      } else sentencia = '1=2'
+      return sentencia
+    },
+  },
   carmelo: {
     table: 'tmp_carmelo',
     tables: 'tmp_carmelo',

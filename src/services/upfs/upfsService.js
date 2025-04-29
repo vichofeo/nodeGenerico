@@ -37,8 +37,8 @@ const getDataModelN = async (dto, handleError) => {
             message: "Requerimiento Exitoso"
         }
     } catch (error) {
-        //console.log(error)
-        console.log("\n\nerror::: EN SERVICES\n")
+        console.log(error)
+        console.log("\n\nerror::: EN SERVICES\n", error.message)
         handleError.setMessage("Error de sistema: BVDATNSRV")
         handleError.setHttpError(error.message)
     };

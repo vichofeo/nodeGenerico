@@ -17,6 +17,7 @@ const estado_revision='15'
 const estado_proceso = '3'
 
 const resgitroServices =  require('./registroService.js')
+const { Console } = require('winston/lib/winston/transports/index.js')
 
 
 
@@ -361,7 +362,7 @@ const xlsxLoad = async (dto, handleError) => {
     //recibe datos por post
     console.log("\n\n*******************************************************")
     console.log("\n\nDTO")
-    console.log("\n\n", dto)
+    //console.log("\n\n", dto)
     console.log("\n\n*******************************************************")
     const datos = dto.data
     const modelos = LOADERS //datos.entity?LOADERS[datos.entity]:LOADERS[defaultEntity]
@@ -393,14 +394,26 @@ const xlsxLoad = async (dto, handleError) => {
     qUtil.setTableInstance('upf_registro_file')
     qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
     await qUtil.deleting()
-
-    //inserta informacion de archivo: upf_registro_file
-    const fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))
-    const payloadFile = Object.assign(datos[model].fileInfo, obj_cnf, {periodo: resultRegistro.periodo, gestion:resultRegistro.periodo.split('-')[0]})
-    qUtil.setDataset(payloadFile)
-    await qUtil.create()
-    const resultFile =  qUtil.getResults()
-    console.log("------------------------------------------------>", resultFile)
+//-----------------------------------------------------------------------------
+    let resultFile =  null
+    let fileInfoBasic  =  null
+try {
+  //inserta informacion de archivo: upf_registro_file
+  qUtil.setTableInstance('upf_registro_file')
+  fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))
+  const payloadFile = Object.assign(datos[model].fileInfo, obj_cnf, {periodo: resultRegistro.periodo, gestion:resultRegistro.periodo.split('-')[0]})
+  qUtil.setDataset(payloadFile)
+  await qUtil.create()
+  resultFile =  qUtil.getResults()
+  console.log("------------------------------------------------>", resultFile)
+} catch (error) {
+  await qUtil.rollbackTransaction()
+  return {
+    ok:false,
+    message:'El archivo que intenta subir, ya se encuentra registrado. Por favor Verifique su informacion.'
+  }
+}
+    
 
     //reEscribe valores a subir
     datos[model].data = datos[model].data.map((obj) => {
@@ -543,7 +556,12 @@ const xlsxLoad = async (dto, handleError) => {
     }
   }
 }
-
+/**
+ * 
+ * @param {*} dto 
+ * @param {*} handleError 
+ * @returns 
+ */
 const xlsxNormalize = async (dto, handleError) => {
   try {
     const prefijo = (campo, valor) =>
@@ -838,12 +856,84 @@ const xlsxNormalize = async (dto, handleError) => {
     console.log('error:::', error)
   }
 }
+
+
+const xlsxDeleting = async (dto, handleError)=>{
+  await qUtil.startTransaction()
+  try {    
+    const prefijo='regfi'
+     //datos de session
+     frmUtil.setToken(dto.token)
+     const obj_cnf = frmUtil.getObjSession()
+
+     const registro_id = dto.data.idx
+     const file_id = dto.data.file_id
+
+     const modelos =  LOADERS
+     const modelo = dto.data.model
+     
+     if(modelos[modelo].alias){
+      const nameTableData =  modelos[modelo].alias
+      const nameModelAsociado =  prefijo+nameTableData      
+
+      //0. verifrica si es eliminacion individual o tod
+      let where = {file_id:file_id, registro_id:registro_id, dni_register: obj_cnf.dni_register}
+      if(file_id=='-1')
+        where = {registro_id:registro_id, dni_register: obj_cnf.dni_register}
+      //busca datos con la asociacion
+      qUtil.setTableInstance('upf_registro_file')
+      qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
+      qUtil.setWhere(where)
+      await qUtil.findTune()
+      let result = qUtil.getResults()      
+      if(result[0].conteo>0){
+        //1. elimina tabla contenedora de datos
+        qUtil.setTableInstance(nameTableData)
+        qUtil.setWhere(where)
+        await qUtil.deleting()
+        //2. elimina tabla de registro de archivos
+        qUtil.setTableInstance('upf_registro_file')
+        qUtil.setWhere(where)
+        await qUtil.deleting()
+
+        await qUtil.commitTransaction()
+        return{
+          ok:true,
+          message: 'Eliminacion exitosa'
+        } 
+      }else{
+        return{
+          ok:false,
+          message: 'Ud. no esta autorizado para efectuar esta tarea.'
+        }        
+      }
+
+     }else{
+      return{
+        ok:false,
+        message: 'Modelo de datos, no existe'
+      }
+     }
+     
+
+
+     //obtiene  useruario para eliminar
+     //qUtil.setTableInstance()
+     //qUtil.deleting()
+  } catch (error) {
+    console.log(error)
+    await qUtil.rollbackTransaction
+    handleError.setMessage('Error de sistema: XLSXDELETINGSRV')
+    handleError.setHttpError(error.message)
+  }
+}
 module.exports = {    
     initialData, dataLoadingReport,
     getDataLoadingReport,
     loadersComprobate, 
     actualizaEstadoLoader,
 
-    xlsxLoad, xlsxNormalize
+    xlsxLoad, xlsxNormalize,
+    xlsxDeleting
  
 }

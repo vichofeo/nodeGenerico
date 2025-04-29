@@ -13,21 +13,16 @@ const PDEPENDENCIES = {
     alias: 'hemofilia',
     campos: {
       departamento: ['DEPARTAMENTO', false, true, 'C'],
-      establecimiento_o: ['ESTABLECIMIENTO CAPTO CASO', false, true, 'C'],
-      nivel_o: ['NIVEL EESS. CAPTO CASO', false, true, 'C'],
+      //establecimiento_o: ['ESTABLECIMIENTO CAPTO CASO', false, true, 'C'],
+      //nivel_o: ['NIVEL EESS. CAPTO CASO', false, true, 'C'],
       eg: ['ENTE GESTOR', false, true, 'C'],
-      establecimiento_t: [
-        'ESTABLECIMIENTO REALIZA TRATAMIENTO',
-        false,
-        true,
-        'C',
-      ],
-      nivel_t: ['NIVEL EESS TRATAMIENTO', false, true, 'C'],
+      establecimiento_t: ['ESTABLECIMIENTO REALIZA TRATAMIENTO',     false,     true,       'C',      ],
+      //nivel_t: ['NIVEL EESS TRATAMIENTO', false, true, 'C'],
 
       gestion: ['GESTION', false, true, 'C'],
       genero: ['GENERO', false, true, 'C'],
 
-      tipo_registro: ['NUEVO / REPETIDO', false, true, 'C'],
+      //tipo_registro: ['NUEVO / REPETIDO', false, true, 'C'],
     },
     ilogic: {
       hemo_casos: `SELECT
@@ -123,17 +118,14 @@ const PDEPENDENCIES = {
     primal: {
       equivalencia: {
         departamento: ['departamento', 'departamento'],
-        establecimiento_o: ['establecimiento_origen', 'establecimiento_origen'],
-        nivel_o: ['nivel_atencion_origen', 'nivel_atencion_origen'],
+        //establecimiento_o: ['establecimiento_origen', 'establecimiento_origen'],
+        //nivel_o: ['nivel_atencion_origen', 'nivel_atencion_origen'],
         eg: ['ente_gestor', 'ente_gestor'],
-        establecimiento_t: [
-          'establecimiento_tratamiento',
-          'establecimiento_tratamiento',
-        ],
-        nivel_t: ['nivel_atencion_tratamiento', 'nivel_atencion_tratamiento'],
+        establecimiento_t: [ 'establecimiento',   'establecimiento',    ],
+        //nivel_t: ['nivel_atencion_tratamiento', 'nivel_atencion_tratamiento'],
         gestion: ['gestion', 'gestion'],
         genero: ['genero', 'genero'],
-        tipo_registro: ['tipo_registro', 'tipo_registro'],
+        //tipo_registro: ['tipo_registro', 'tipo_registro'],
       },
       query: `SELECT DISTINCT $a$
             FROM tmp_hemofilia

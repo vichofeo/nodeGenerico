@@ -35,6 +35,16 @@ const getDataModelNew = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const getDataParaDomIdxModel = async (req, res)=>{
+    const data = req.body
+    const token = req.headers?.authorization
+    const modelo =  req.body.model
+    const paramDoms =  data?.paramDoms ?  data?.paramDoms : undefined
+    const result = await service.getDataModelN({paramDoms, ...data, modelo:modelo, token:token},handleError)    
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 const getDataCboxLigado = async (req, res) =>{    
     const modelo =  req.body.modelo
     const token =  req.headers.authorization
@@ -58,7 +68,7 @@ module.exports = {
     
     
     getDataModel1, 
-    getDataModelN, getDataModelNew, 
+    getDataModelN, getDataModelNew, getDataParaDomIdxModel,
     getDataCboxLigado,
     saveModel
 }

@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
                     targetKey: 'dni_persona'
                 }),
                 upf_registro_file.hasMany(models.uf_abastecimiento, {
-                    as: 'uf_abas',
+                    as: 'regfiuf_abastecimiento',
                     foreignKey: 'file_id',
                     otherKey: 'registro_id',
                     //sourceKey: ['file_id', 'registro_id']

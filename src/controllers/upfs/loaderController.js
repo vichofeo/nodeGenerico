@@ -89,6 +89,17 @@ const actualizaEstadoLoader = async(req, res)=>{
      res.status(handleError.getCode()).json(handleError.getResponse())
  }
   
+
+ const xlsxDeleting = async (req, res) =>{
+    //handleError.setRes(res)    
+    const body =  req.body
+    const token =  req.headers.authorization
+
+    const result =  await service.xlsxDeleting({token:token, data: body}, handleError) 
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
+
 module.exports = {
     
     initialData, dataLoadingReport, getDataLoadingReport,
@@ -96,6 +107,6 @@ module.exports = {
     verificaPermisoAbasEnProcesamiento,
     actualizaEstadoLoader,
 
-    xlsxLoad, xlsxNormalize
+    xlsxLoad, xlsxNormalize, xlsxDeleting
 
 }

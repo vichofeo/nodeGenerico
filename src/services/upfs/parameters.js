@@ -94,7 +94,7 @@ const PARAMETROS = {
         eval.concluido AS concluido_estado, eval.revisado as revision_estado,
         eval.activo,
 
-        CASE WHEN strpos(eval.dni_register,'$dni')>0 or eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
+        CASE WHEN strpos(eval.dni_register,'$dni')>0 AND eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
         TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 0 as hab_conclusion, 0 as hab_revision,
 CASE 
 WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.fecha_climite )) THEN  atr1.atributo       
@@ -266,8 +266,9 @@ ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock
         ],
         key: ['r.registro_id'],
         precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',
-            'll.swloadend =  true' ],
+            'll.swloadend =  true', '$paramDoms' ],
         groupOrder: ` ORDER BY  l.cod_liname `,//null string    
+        paramDoms:[['ll.file_id',0]],
         update: [],
         referer: [  ],
     }

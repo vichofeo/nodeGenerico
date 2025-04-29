@@ -49,7 +49,7 @@ module.exports = class FrmsUtils {
     this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
     const datos = this.#seteaObjWithDataSession()
     
-    console.log('data cnf............', datos)
+    console.log('\n\ndata cnf............::', datos, "\n\n")
     
      
     //const tipo_institucion = institucion.tipo_institucion_id
@@ -60,6 +60,7 @@ module.exports = class FrmsUtils {
     else idx = datos.institucion_id
 
     const modelos = dto.modelos //['institucion', dto.modelo, 'propietario', 'servicios_basicos', 'atencion', 'superficie', 'estructura', 'infraestructuran', 'mobiliarion', 'equipamienton', 'personaln']
+    console.log('\n\nMODELOS............::', modelos, "\n\n")
     //datos identificacions
     const datosResult = {}
 
