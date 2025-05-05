@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
             modelData: { type: DataTypes.STRING(32), allowNull: false },
             modelLoad: { type: DataTypes.STRING(32), allowNull: false },
             modelDataLoad: { type: DataTypes.STRING(32), allowNull: false },
+            typeLoadFile: { type: DataTypes.INTEGER, allowNull: false, defaultValue:10 },
         },
         {
             sequelize,

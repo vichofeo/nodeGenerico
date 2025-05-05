@@ -129,9 +129,10 @@ END AS glosa
         ],
         key: ['cnf.file_tipo_id'],
         precondicion: [
-             'cnf.institucion_id=eval.institucion_id',
-            'eval.dni_register =  p.dni_persona ', 'eval.institucion_id =  i.institucion_id ',
-            'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
+             'eval.dni_register =  p.dni_persona',
+            'cnf.institucion_id =  eval.institucion_id ', 'cnf.file_tipo_id=eval.file_tipo_id ',
+            'cnf.institucion_id =  i.institucion_id',
+            ' i.cod_pais= d.cod_pais', 'i.cod_dpto=d.cod_dpto',
             'i.institucion_root =  eg.institucion_id',
             "eval.institucion_id='$inst'"],
         groupOrder: ` ORDER BY  eval.create_date desc `,//null string    

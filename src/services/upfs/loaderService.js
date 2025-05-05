@@ -8,6 +8,7 @@ const pcboxs = JSON.stringify(require('./params_cboxs'))
 const PCBOXS = JSON.parse(pcboxs)
 
 const LOADERS = require('./parametersLoad.js')
+const loaderUtils = require('../aeb/aebUtilsLoaders.js')
 
 const FrmUtils = require('../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
@@ -48,7 +49,8 @@ const initialData = async (dto, handleError) => {
     }else{
       return {
         ok: false,
-        message: "Modelo Inexistente,Proceso detenido."
+        message: "Modelo Inexistente,Proceso detenido.",
+        xx:data
         
       } 
     }
@@ -374,6 +376,10 @@ const xlsxLoad = async (dto, handleError) => {
       const metodo = modelos[model].filterByFunc.alias
       const params = modelos[model].filterByFunc.params
       const result = loaderUtils[metodo](datos[model], params)
+      console.log("\n\n*******************************************************")
+    console.log("\n\nMODELOOO:::",model, result)
+    //console.log("\n\n", dto)
+    console.log("\n\n*******************************************************")
       if (result.ok) datos[model].data = result.results
       else throw new Error('Formato de archivo incorrecto')
     }//en filterByFunc
@@ -400,7 +406,7 @@ const xlsxLoad = async (dto, handleError) => {
 try {
   //inserta informacion de archivo: upf_registro_file
   qUtil.setTableInstance('upf_registro_file')
-  fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))
+  fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))  
   const payloadFile = Object.assign(datos[model].fileInfo, obj_cnf, {periodo: resultRegistro.periodo, gestion:resultRegistro.periodo.split('-')[0]})
   qUtil.setDataset(payloadFile)
   await qUtil.create()
@@ -431,6 +437,9 @@ try {
     let fin = param
     let sum = 0
     console.log('\n\n datosss:', datos[model].data.length, '\n model ::', model)
+    console.log("\n\n********************************************")
+    console.log("DATOSSSSS:", datos[model])
+    console.log("\n\n----------------------------------------------")
     while (inicio <= datos[model].data.length) {
       //console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
 
