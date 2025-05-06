@@ -426,6 +426,7 @@ try {
       obj.dni_register = obj_cnf.dni_register
       obj.create_date = obj_cnf.create_date
       obj.file_id = resultFile.file_id
+      obj.registro_id = datos[model].fileInfo.registro_id
       return obj
     })
     datos[model].fileInfo = fileInfoBasic
@@ -468,8 +469,7 @@ try {
         let aux = {}
 
         for (const key in modelo.update) {
-          aux = {
-            ...aux,
+          aux = {...aux,
             [modelo.update[key][0]]: qUtil.literal(modelo.update[key][1]),
           }
           mensaje += '\n' + modelo.update[key][2]
@@ -738,14 +738,10 @@ const xlsxNormalize = async (dto, handleError) => {
       for (const index of validates) {
         console.log("\n************03 CAMPOS OBLIGATORIOS*: ",index ," *************\n")
         let whereNull = index > 1    ? qUtil.orWhere([{ [element.table[index]]: null }])
-            : qUtil.orWhere([
-                { [element.table[index]]: null },
-                { [element.table[index]]: '' },
-              ])
+            : qUtil.orWhere([{ [element.table[index]]: null }, { [element.table[index]]: '' }])
         qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
         qUtil.setWhere({
-          swloadend: false,
-          dni_register: obj_cnf.dni_register,
+          swloadend: false, dni_register: obj_cnf.dni_register,
           ...whereNull,
         })
         await qUtil.findTune()
