@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
             dni_register: { type: DataTypes.STRING(25), allowNull: true },
             formulario: { type: DataTypes.STRING, allowNull: true },
             grupo: { type: DataTypes.STRING, allowNull: true },
+            gvariable: {type: DataTypes.STRING, allowNull: false}, 
             variable: { type: DataTypes.STRING, allowNull: true },
             subvariable: { type: DataTypes.STRING, allowNull: true },
             lugar_atencion: { type: DataTypes.STRING, allowNull: true },

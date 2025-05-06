@@ -30,16 +30,16 @@ const PARAMETERS = {
         filterByFunc: aeb_load.snis_301a.filterByFunc
 
     },
-    snis_301b:{        
-            alias:'e_snis301b',
-            attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
-            file: [[[2,1],['frm','INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS DE II Y III NIVEL']], [[5,4], 'departamento'],  [[6,4], 'establecimiento'], [[6,30], 'gestion'], [[6,23],'mes'], [[5,14], 'red'], [[5,23], 'municipio'],[[4,39], 'sub_sector']],
-            table: [ 'formulario', 'grupo', "variable", 'subvariable', 'lugar_atencion','valor'],        
-        validate: [1,1,0,0,0,1],
-        forFilter:  null,//[ array de campos fecha a validar],        
-        update:[],        
-        key:[ 'formulario', 'grupo', "COALESCE(variable,'-1')","COALESCE(lugar_atencion, '-1')" ,"COALESCE(subvariable, '-1')"],
-        keyAux:['formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+    snis_301b: {
+        alias: 'e_snis301b',
+        attributes: [["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],
+        file: [[[2, 1], ['frm', 'INFORME MENSUAL DE PRODUCCIÓN DE SERVICIOS DE II Y III NIVEL']], [[5, 4], 'departamento'], [[6, 4], 'establecimiento'], [[6, 30], 'gestion'], [[6, 23], 'mes'], [[5, 14], 'red'], [[5, 23], 'municipio'], [[4, 39], 'sub_sector']],
+        table: ['formulario', 'grupo', "variable", 'subvariable', 'lugar_atencion', 'valor'],
+        validate: [1, 1, 0, 0, 0, 1],
+        forFilter: null,//[ array de campos fecha a validar],        
+        update: [],
+        key: ['formulario', 'grupo', "COALESCE(variable,'-1')", "COALESCE(lugar_atencion, '-1')", "COALESCE(subvariable, '-1')"],
+        keyAux: ['formulario', 'grupo', 'variable', 'lugar_atencion', 'subvariable', 'valor'],
         filterByFunc: aeb_load.snis_301b.filterByFunc
 
     },
@@ -55,7 +55,18 @@ const PARAMETERS = {
         keyAux:['formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         
         filterByFunc: aeb_load.snis_302a.filterByFunc
-
+    },
+    snis_302b:{
+        alias:'e_snis302b',
+        attributes:[["gestion||'-'||mes", 'periodo'], ['count(*)', 'registros']],        
+        file: [[[1,1],['frm','NOTIFICACIÓN MENSUAL  PARA LA VIGILANCIA EPIDEMIOLOGICA  (ENFERMEDADES NO TRANSMISIBLES Y FACTORES DE RIESGO)']], [[6,7], 'departamento'], [[8,8], 'establecimiento'], [[8,44], 'gestion'], [[8,33],'mes'], [[6,18], 'red'], [[6,30], 'municipio'],[[6,43], 'sub_sector']],
+        table: ['formulario', 'grupo', "variable", 'subvariable', 'lugar_atencion', 'valor'],        
+        validate: [2,1,1,0,0,2],
+        forFilter:  null,//[ array de campos fecha a validar],        
+        update:[],        
+        key:[ 'formulario', 'grupo', "COALESCE(variable,'-1')","COALESCE(lugar_atencion, '-1')" ,"COALESCE(subvariable, '-1')"],
+        keyAux:['formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+       filterByFunc: aeb_load.snis_302b.filterByFunc
     },
 
 

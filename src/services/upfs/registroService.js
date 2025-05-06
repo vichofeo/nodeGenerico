@@ -22,20 +22,24 @@ const estado_revision = '15'
  * 
  * @returns 
  */
-const verificaPrimalRegistro = async (idx) => {
+const verificaPrimalRegistro = async (idx, resultsIdx) => {
   const obj_cnf = await frmUtil.getRoleSession()
   const obj_session = frmUtil.getObjSession()
 
   console.log("obj_cnf", obj_cnf)
   console.log("obj_ss", obj_session)
   //verifica pertinencia de datos segun configuracion de firmularios
+  
+  let limiteCnf = {periodoConsulta: "TO_CHAR(CURRENT_DATE - INTERVAL '1 month','YYYY-MM')",  ldia:'cnf.limite_dia', lplus:'cnf.limite_plus'}
+  if(resultsIdx.sw_semana) 
+    limiteCnf = {periodoConsulta: "TO_CHAR(current_date - interval '1 week', 'IYYY-IW')", ldia:"extract(day from to_date(TO_CHAR(current_date, 'IYYY-IW'),'IYYY-IW') + INTERVAL '1 day')", lplus:"extract(day from to_date(TO_CHAR(current_date, 'IYYY-IW'),'IYYY-IW') + INTERVAL '1 day')"}
   //qUtil.setTableInstance('f_formulario_institucion_cnf')
   console.log("\n\n verifica pertinencia de datos segun configuracion de firmularios\n\n")
   let query = `SELECT COUNT(*) as conteo
               FROM upf_file_institucion_cnf cnf
               WHERE cnf.institucion_id = '${obj_session.institucion_id}' and cnf.file_tipo_id ='${idx}'
-              AND (EXTRACT(DAY FROM NOW()) <= cnf.limite_dia
-              OR (cnf.opening_delay = TO_CHAR(CURRENT_DATE - INTERVAL '1 month','YYYY-MM') AND EXTRACT(DAY FROM NOW()) <= cnf.limite_plus)
+              AND (EXTRACT(DAY FROM NOW()) <= ${limiteCnf.ldia}
+              OR (cnf.opening_delay = ${limiteCnf.periodoConsulta} AND EXTRACT(DAY FROM NOW()) <= ${limiteCnf.lplus})
               )`
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
@@ -46,7 +50,7 @@ const verificaPrimalRegistro = async (idx) => {
   query = `SELECT COUNT(*) AS existencia
           FROM upf_registro
           WHERE institucion_id='${obj_session.institucion_id}' and file_tipo_id='${idx}'
-          AND periodo=TO_CHAR(NOW() - INTERVAL '1 month','YYYY-MM')` //periodo=TO_CHAR(NOW(),'YYYYMM')
+          AND periodo=${limiteCnf.periodoConsulta}` //periodo=TO_CHAR(NOW(),'YYYYMM')
   qUtil.setQuery(query)
   await qUtil.excuteSelect()
 
@@ -147,12 +151,12 @@ const getControlRegis = async (dto) => {
 
     if (PARAMETROS.hasOwnProperty(paramLocalModelo) && Object.keys(tituloFile).length > 0) {
       dto.modelos = [paramLocalModelo]
-      console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ", dto, " &&&&&&&&&&&&\n\n\n")
+      console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ", tituloFile, " &&&&&&&&&&&&\n\n\n")
       frmUtil.setParametros(PARAMETROS)
       await frmUtil.getDataParams(dto)
       const result = frmUtil.getResults()
 
-      const obj_cnf = await verificaPrimalRegistro(dto.idx)
+      const obj_cnf = await verificaPrimalRegistro(dto.idx, tituloFile)
 
 
 
@@ -189,15 +193,33 @@ const saveRegCtrlRegis = async (dto, handleError) => {
     const obj_cnf = frmUtil.getObjSession() //await frmUtil.getRoleSession()
     delete dto.data.last_modify_date_time
 
+    //obtiene sw_semana de dato configuracion de file_tipo
+    qUtil.setTableInstance('upf_file_tipo')
+    await qUtil.findID(dto.data.file_tipo_id)
+    const resultFileTipo =  qUtil.getResults()
+
+    /** *************************************************
+     * construye  fechas de verificacion segun sea el tipo de sarchivo semanal o mensual
+     */
     //obtiene fechas limite de conclusion y revision
-    qUtil.setTableInstance('upf_file_institucion_cnf')
-    qUtil.setAttributes([
+    let atributosCnf = [
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYY-MM') + CAST(limite_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_climite'],
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYY-MM') + CAST(revision_dia-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'fecha_rlimite'],
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYY-MM') + CAST(limite_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'flimite_plus'],
       [qUtil.literal(`(to_date('${dto.data.periodo}','YYYY-MM') + CAST(revision_plus-1 ||'days' AS INTERVAL)) + INTERVAL '1 month'`), 'frevisado_plus'],
       'opening_delay'
-    ])
+    ]
+    if(resultFileTipo.sw_semana){
+      atributosCnf = [        
+        [qUtil.literal(`to_char(TO_DATE('${dto.data.periodo}', 'IYYY-IW') + INTERVAL '1 week' + INTERVAL '1 day', 'YYYY-MM-DD')`), 'fecha_climite'],
+        [qUtil.literal(`to_char(TO_DATE('${dto.data.periodo}', 'IYYY-IW') + INTERVAL '1 week' + INTERVAL '2 day', 'YYYY-MM-DD')`), 'fecha_rlimite'],
+        [qUtil.literal(`to_char(TO_DATE('${dto.data.periodo}', 'IYYY-IW') + INTERVAL '1 week' + INTERVAL '1 day', 'YYYY-MM-DD')`), 'flimite_plus'],
+        [qUtil.literal(`to_char(TO_DATE('${dto.data.periodo}', 'IYYY-IW') + INTERVAL '1 week' + INTERVAL '2 day', 'YYYY-MM-DD')`), 'frevisado_plus'],
+        'opening_delay'
+      ]
+    }
+    qUtil.setTableInstance('upf_file_institucion_cnf')    
+    qUtil.setAttributes(atributosCnf)
     qUtil.setWhere({ institucion_id: dto.data.institucion_id, file_tipo_id: dto.data.file_tipo_id })
     await qUtil.findTune()
     const data_cnfFrm = qUtil.getResults()
@@ -213,7 +235,7 @@ const saveRegCtrlRegis = async (dto, handleError) => {
     }
 
     qUtil.setTableInstance('upf_registro')
-    qUtil.setDataset(Object.assign(obj_cnf, data_cnfFrm[0], dto.data))
+    qUtil.setDataset(Object.assign(obj_cnf, data_cnfFrm[0], dto.data, {sw_semana: resultFileTipo.sw_semana}))
 
     await qUtil.create()
     const result = qUtil.getResults()

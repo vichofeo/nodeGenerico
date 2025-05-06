@@ -377,49 +377,54 @@ const xlsxLoad = async (dto, handleError) => {
       const params = modelos[model].filterByFunc.params
       const result = loaderUtils[metodo](datos[model], params)
       console.log("\n\n*******************************************************")
-    console.log("\n\nMODELOOO:::",model, result)
-    //console.log("\n\n", dto)
-    console.log("\n\n*******************************************************")
+      console.log("\n\nMODELOOO:filterbyfunc::")
+      //console.log("\n\n", dto)
+      console.log("\n\n*******************************************************")
       if (result.ok) datos[model].data = result.results
       else throw new Error('Formato de archivo incorrecto')
     }//en filterByFunc
 
-/*** ********* INICIA GUARDADO ********* */
-//obtiene informacion del registro maestro
+    /*** ********* INICIA GUARDADO ********* */
+    //obtiene informacion del registro maestro
     qUtil.setTableInstance('upf_registro')
     await qUtil.findID(datos[model].fileInfo.registro_id)
-    const resultRegistro =  qUtil.getResults()
+    const resultRegistro = qUtil.getResults()
 
-    
+    console.log("\n\n************DATOS LOAD FILTERBYFUNC*******************************************")
+    //console.log(datos[model].data)
+    console.log("\n\n*******************************************************")
     //elimina registros con flag swloadend=0
     qUtil.setTableInstance(modelos[model].alias)
     qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
     await qUtil.deleting()
-
+    
     //elimina registro de archivo
     qUtil.setTableInstance('upf_registro_file')
     qUtil.setWhere({ swloadend: false, dni_register: obj_cnf.dni_register })
     await qUtil.deleting()
-//-----------------------------------------------------------------------------
-    let resultFile =  null
-    let fileInfoBasic  =  null
-try {
-  //inserta informacion de archivo: upf_registro_file
-  qUtil.setTableInstance('upf_registro_file')
-  fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))  
-  const payloadFile = Object.assign(datos[model].fileInfo, obj_cnf, {periodo: resultRegistro.periodo, gestion:resultRegistro.periodo.split('-')[0]})
-  qUtil.setDataset(payloadFile)
-  await qUtil.create()
-  resultFile =  qUtil.getResults()
-  console.log("------------------------------------------------>", resultFile)
-} catch (error) {
-  await qUtil.rollbackTransaction()
-  return {
-    ok:false,
-    message:'El archivo que intenta subir, ya se encuentra registrado. Por favor Verifique su informacion.'
-  }
-}
-    
+    //-----------------------------------------------------------------------------
+    let resultFile = null
+    let fileInfoBasic = null
+    console.log("\n\n01 ********** INICIA REGISTRO")
+    try {
+      console.log("\n\n01 ********** INICIA REGISTRO")
+      //inserta informacion de archivo: upf_registro_file
+      qUtil.setTableInstance('upf_registro_file')
+      fileInfoBasic = JSON.parse(JSON.stringify(datos[model].fileInfo))
+      const payloadFile = Object.assign(datos[model].fileInfo, obj_cnf, { periodo: resultRegistro.periodo, gestion: resultRegistro.periodo.split('-')[0] })
+      qUtil.setDataset(payloadFile)
+      console.log("\n payload", payloadFile)
+      await qUtil.create()
+      resultFile = qUtil.getResults()
+      console.log("------------------------------------------------>", resultFile)
+    } catch (error) {
+      await qUtil.rollbackTransaction()
+      return {
+        ok: false,
+        message: 'El archivo que intenta subir, ya se encuentra registrado. Por favor Verifique su informacion.'
+      }
+    }
+
 
     //reEscribe valores a subir
     datos[model].data = datos[model].data.map((obj) => {
@@ -439,7 +444,7 @@ try {
     let sum = 0
     console.log('\n\n datosss:', datos[model].data.length, '\n model ::', model)
     console.log("\n\n********************************************")
-    console.log("DATOSSSSS:", datos[model])
+    console.log("DATOSSSSS PARA LA CARGA:")
     console.log("\n\n----------------------------------------------")
     while (inicio <= datos[model].data.length) {
       //console.log(":::::=>", datos[model].length, ':creciendo:', inicio)
@@ -447,7 +452,7 @@ try {
       const tmp = datos[model].data.slice(inicio, fin)
       inicio = fin
       fin = fin + param
-
+      console.log("\n\n", modelos[model].alias, "----------------------------------------------", tmp)
       //INSERCION MASIVA
       qUtil.setTableInstance(modelos[model].alias)
       qUtil.setDataset(tmp)
@@ -469,7 +474,8 @@ try {
         let aux = {}
 
         for (const key in modelo.update) {
-          aux = {...aux,
+          aux = {
+            ...aux,
             [modelo.update[key][0]]: qUtil.literal(modelo.update[key][1]),
           }
           mensaje += '\n' + modelo.update[key][2]
@@ -493,44 +499,44 @@ try {
     }
 
     //** UTILIZA EL CAMPO SUPERUPDATE PARA UNA ACTUQALIZACION AVANZADA con dos tablas */
-    if(modelo?.superUpdate){
+    if (modelo?.superUpdate) {
       let mensaje = ''
       try {
         //inicializa trasnaccionpor update
-        await qUtil.startTransaction()        
+        await qUtil.startTransaction()
         //construye objeto
         let auxSet = []
         let auxWhere = []
-        let t1p=t2p= ''
-        let t1=t2= ''
-        let from=''
-        if(modelo.superUpdate?.referer){
-          t2p='t2.'
-          t2= 't2'
+        let t1p = t2p = ''
+        let t1 = t2 = ''
+        let from = ''
+        if (modelo.superUpdate?.referer) {
+          t2p = 't2.'
+          t2 = 't2'
           t1p = 't1.'
-          t1= 't1'
+          t1 = 't1'
           from = `FROM ${modelo.superUpdate.referer} ${t2}`
         }
 
         //set
         for (const key in modelo.superUpdate?.update) {
-          auxSet.push(` ${modelo.superUpdate.update[key][0]}= ${t2p}${modelo.superUpdate.update[key][1]} `) 
+          auxSet.push(` ${modelo.superUpdate.update[key][0]}= ${t2p}${modelo.superUpdate.update[key][1]} `)
           mensaje += '\n' + modelo.superUpdate.update[key][2]
         }
         //where
         for (const key in modelo.superUpdate?.conditional) {
-          auxWhere.push(` ${t1p}${modelo.superUpdate.conditional[key][0]}= ${t2p}${modelo.superUpdate.conditional[key][1]} `)           
+          auxWhere.push(` ${t1p}${modelo.superUpdate.conditional[key][0]}= ${t2p}${modelo.superUpdate.conditional[key][1]} `)
         }
 
-        if(auxSet.length>0){
+        if (auxSet.length > 0) {
           let query = `UPDATE ${modelos[model].alias} ${t1}
                       SET ${auxSet.join(", ")}
                       ${from}
                       WHERE swloadend= false AND dni_register= '${obj_cnf.dni_register}'
-                      ${auxWhere.length>0? ' AND '+auxWhere.join(' AND '):''}
+                      ${auxWhere.length > 0 ? ' AND ' + auxWhere.join(' AND ') : ''}
                       `
           qUtil.setQuery(query)
-          await qUtil.excuteUpdate()             
+          await qUtil.excuteUpdate()
 
         }
 
@@ -543,15 +549,15 @@ try {
         }
       }
     }
-    
+
     //**** fin super actuallizacion */
-      //---------------------------- *0000 ******************************
-      //** *********** fin guardado **** */
+    //---------------------------- *0000 ******************************
+    //** *********** fin guardado **** */
 
     return {
       ok: true,
       message: 'Procesado Correctamente',
-      data : datos[model].fileInfo//datos[model].data
+      data: datos[model].fileInfo//datos[model].data
     }
   } catch (error) {
     await qUtil.rollbackTransaction()

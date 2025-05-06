@@ -32,6 +32,8 @@ module.exports = (sequelize, DataTypes) => {
             modelLoad: { type: DataTypes.STRING(32), allowNull: false },
             modelDataLoad: { type: DataTypes.STRING(32), allowNull: false },
             typeLoadFile: { type: DataTypes.INTEGER, allowNull: false, defaultValue:10 },
+            mdi_icon: { type: DataTypes.STRING(24), allowNull: false, defaultValue:'mdi-pencil' },
+            color: { type: DataTypes.STRING(24), allowNull: false, defaultValue:'teal' },
         },
         {
             sequelize,

@@ -7,6 +7,7 @@ const REPORTS = {}
 REPORTS.aeb = require('./parametersReports')//JSON.parse(JSON.stringify(require('./parametersReports')))
 REPORTS.ucass = require('../acrehab/parametersReports')
 REPORTS.ufam = require('../ufam/parametersReports')
+REPORTS.upfs = require('../upfs/parametersReports')
 
 const defaultOption = 'aeb'
 /*const theReports= {
