@@ -30,6 +30,20 @@ const PARAMETERS = {
         filterByFunc: aeb_load.snis_301a.filterByFunc
 
     },
+    snis_302a:{
+        alias:'e_snis302a',
+        attributes:[["gestion||'-'||semana", 'periodo'], ['count(*)', 'registros']],        
+        file: [[[1,26],['frm','NOTIFICACIÓN PARA LA VIGILANCIA EPIDEMIOLÓGICA']], [[4,3], 'departamento'], [[5,6], 'establecimiento'], [[5,35], 'gestion'], [[2,87],'semana'], [[4,28], 'red'], [[4,59], 'municipio'],[[5,57], 'sub_sector']],
+        table: ['formulario', 'grupo', "variable", 'subvariable', 'lugar_atencion', 'valor'],        
+        validate: [2,1,1,0,0,2],
+        forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
+        update:[],        
+        key:[ 'formulario', 'grupo', "COALESCE(variable,'-1')","COALESCE(lugar_atencion, '-1')" ,"COALESCE(subvariable, '-1')"],
+        keyAux:['formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        
+        filterByFunc: aeb_load.snis_302a.filterByFunc
+
+    },
 
 
 }

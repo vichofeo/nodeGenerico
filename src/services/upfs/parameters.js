@@ -294,6 +294,50 @@ ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock
         paramDoms:[['ll.file_id',0]],
         update: [],
         referer: [  ],
+    }, 
+    rprte_regs302an:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'upf_registro r, e_snis302a ll',
+        alias: 'rprte_regs302an',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,
+
+        camposView: [
+            { value: "formulario", text: "FORMULARIO" }, { value: "grupo", text: "GRUPO" }, 
+            { value: "variable", text: "VARIABLE" },
+        { value: "lugar_atencion", text: "LUGAR ATENCION" }, { value: "subvariable", text: "SUBVARIABLE" },
+        { value: "valor", text: "VALOR"},        
+        ],
+        key: ['r.registro_id'],
+        precondicion: ['r.registro_id=ll.registro_id',
+            'll.swloadend =  true', '$paramDoms' ],
+        groupOrder: ` ORDER BY  ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable `,//null string    
+        paramDoms:[['ll.file_id',0]],
+        update: [],
+        referer: [  ],
+    },
+    rprte_regs302bn:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'upf_registro r, e_snis302b ll',
+        alias: 'rprte_regs302bn',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,
+
+        camposView: [
+            { value: "formulario", text: "FORMULARIO" }, { value: "grupo", text: "GRUPO" }, 
+            { value: "variable", text: "VARIABLE" },
+        { value: "lugar_atencion", text: "LUGAR ATENCION" }, { value: "subvariable", text: "SUBVARIABLE" },
+        { value: "valor", text: "VALOR"},        
+        ],
+        key: ['r.registro_id'],
+        precondicion: ['r.registro_id=ll.registro_id',
+            'll.swloadend =  true', '$paramDoms' ],
+        groupOrder: ` ORDER BY  ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable `,//null string    
+        paramDoms:[['ll.file_id',0]],
+        update: [],
+        referer: [  ],
     }
 }
 

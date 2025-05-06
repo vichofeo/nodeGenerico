@@ -163,6 +163,7 @@ const getControlRegis = async (dto) => {
         title: `${tituloFile?.ufgroup?.nombre_grupo_file} - ${tituloFile?.nombre_tipo_archivo} (*.${tituloFile?.ext})`.replaceAll('undefined', '--'),
         tipo_file: tituloFile,
         message: 'Resultado exitoso. Parametros obtenidos',
+        
       }
     } else {
       return {
@@ -222,7 +223,7 @@ const saveRegCtrlRegis = async (dto, handleError) => {
     //actualiza cxy del registro enviado
 
 
-    return await getControlRegis({ idx: null, token: dto.token, idx: dto.data.file_tipo_id, model: dto.data.ForeignModel })
+    return await getControlRegis({  token: dto.token, idx: dto.data.file_tipo_id, model: dto.data.ForeignModel })
 
 
 
