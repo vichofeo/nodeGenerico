@@ -199,7 +199,9 @@ module.exports = class FrmsUtils {
       console.log('\n\n P6: !!!!!!!!!!!!EXISTE ILOGIC PRINCIPAL ****** ')
       for (const key in objModel.ilogic) {
         //reenplaz variables por valores de sesion o ya encontrados en valores y con la llve key de la raiz
-        let queryIlogic = objModel.ilogic[key].replaceAll('$'+objModel.key[0], parametros.valores[objModel.key[0]])        
+        let queryIlogic = objModel.ilogic[key].replaceAll('$'+objModel.key[0], parametros.valores[objModel.key[0]])    
+        //reemplaz variable idx con la variable proporcionada
+        queryIlogic = queryIlogic.replaceAll('$idx',idx)    
         queryIlogic=  this.#replaceStringByDataSession(queryIlogic)
         //queryIlogic= this.#replaceStringForQIlogic(queryIlogic, parametros.valores)
 

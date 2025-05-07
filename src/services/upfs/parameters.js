@@ -68,7 +68,13 @@ const PARAMETROS = {
         ],
         update: [],
         ilogic: {            
-            periodo: `SELECT TO_CHAR(current_date - interval '1 month','YYYY-MM') as value, TO_CHAR(current_date - interval '1 month','YYYY-Month') as text`
+            periodo: `SELECT 
+CASE WHEN sw_semana THEN TO_CHAR(current_date - interval '1 week', 'IYYY-IW') 
+ELSE TO_CHAR(current_date - interval '1 month','YYYY-MM') END AS VALUE,
+CASE WHEN sw_semana THEN TO_CHAR(current_date - interval '1 week', 'IYYY-IW semana') 
+ELSE TO_CHAR(current_date - interval '1 month','YYYY-Month') END AS text
+FROM upf_file_tipo
+WHERE file_tipo_id='$idx'`
             //periodo: `SELECT '202403' as value, '202403 - Marzo' as text`
         },
         referer: [
