@@ -1,10 +1,8 @@
-const { where } = require('sequelize');
 const Qutils = require('../../models/queries/Qutils')
 //const tk = require('./../../services/utilService')
 const handleToken =  require('./../../utils/handleToken')
 const { v4: uuidv4 } = require('uuid');
-const { Query } = require('pg');
-const { header } = require('express-validator');
+
 module.exports = class FrmsUtils {
   #parametros
   #qUtils
@@ -82,10 +80,14 @@ module.exports = class FrmsUtils {
     this.#results = datosResult
     
   }
+  async getKeySessionConditionLiteral(objModel, idx){
+    return await this.#analizaKeyWhere(objModel, idx)
+  }
 
   #analizaKeyWhere =  async (objModel, idx)=>{
+    console.log("\n\n\n ************************", objModel ," ************************\n\n\n")
     let where = '1=1'
-    if(objModel.key?.length>0)
+    if(objModel?.key?.length>0)
         where = `${objModel.key[0]} = '${idx}'`
 
     if(objModel.keySession){

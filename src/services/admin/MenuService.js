@@ -296,10 +296,10 @@ const getMenuOpsRole = async (dto, handleError) => {
 
     for (const element of result.rol) {
         for(const e of element.app_rolex.routes){
-            console.log("\n\n\n ............", e)
+            console.log("\n\n\n ............Ruta:", e.module)
             if(!rutas[e.module]) rutas[e.module] = []
 
-            console.log("\n\n\n ............", e.module)
+            console.log("\n\n\n ............Modulo:", e.componente)
             
             icons[e.module] =  e.modulo.icon
             modulos[e.module] =  {name: e.modulo.name_module, description: e.modulo.description, rol: element.app_rolex.name_role, rol_desc: element.app_rolex.description, full_image: e.modulo.full_image }
@@ -364,7 +364,7 @@ const getMenuOpsRole = async (dto, handleError) => {
                         const rfrms = qUtil.getResults()
                         qUtil.setResetVars()
 
-                        rutas[e.module] = rfrms.map((obj, i) => ({ value: `/mupfs/rgf/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo}))
+                        rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/mupfs/rgf/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
                     }
                     
                 }
@@ -374,10 +374,11 @@ const getMenuOpsRole = async (dto, handleError) => {
                     text: e.componente.name_component,
                     desc: e.componente.description                    
                 })
+                //console.log(e.module, "\n\n\n !!!!!!!!!!!!!!!!!!!!!!!!",  rutas[e.module],"!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n\n")
             }
             
         }
-    }
+    }//end for recorrido
 
     return {
         ok: true,

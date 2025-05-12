@@ -7,7 +7,8 @@ const REPORTS = {
     attributes: 'r.periodo, COUNT(*) as registros',
     table: 'upf_registro r, uf_abastecimiento a',
     conditional: "r.registro_id =  a.registro_id AND r.concluido='7'",
-    order: 'GROUP BY 1 ORDER BY 1 DESC',       
+    order: 'GROUP BY 1 ORDER BY 1 DESC', 
+    keySession:{replaceKey:false, campo:'r.institucion_id'},    
 
     tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, uf_abastecimiento ll, uf_liname l',
     alias: 'Datos de Abastecimiento de Farmacias',

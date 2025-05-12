@@ -37,7 +37,8 @@ module.exports = (sequelize, DataTypes) => {
       swloadend: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
 
       file_id:{type: DataTypes.STRING(64), allowNull: false},
-      registro_id:{type: DataTypes.STRING(64), allowNull: false}
+      registro_id:{type: DataTypes.STRING(64), allowNull: false},
+      f_vencimiento: { type: DataTypes.STRING, allowNull: true },
     },
     {
       sequelize,

@@ -47,13 +47,19 @@ const tmpsInitialReport = (dto, handleError) => {
     const element = modelos[dto.model]  
     const tabla = element.table
     const atributos =  element.attributes
-    const where =  element?.conditional ? 'WHERE '+element.conditional:''
+    let where =  element?.conditional ? 'WHERE '+element.conditional:''
+    if(element?.keySession){
+      const whereSession =  await frmUtil.getKeySessionConditionLiteral(element, null)      
+      if(where.length>0) where += ' and ' + whereSession
+      else where = 'WHERE ' + whereSession          
+    }
     const order = element?.order ? element.order:''
     const query = `SELECT ${atributos}
     FROM ${tabla}
     ${where}
     ${order}
     `
+
     qUtil.setQuery(query)
     await qUtil.excuteSelect()
     let result = qUtil.getResults()
@@ -114,21 +120,21 @@ const tmpsInitialReport = (dto, handleError) => {
   }
   const tmpsStatus = async (dto, handleError) => {
     try { 
-      
+      frmUtil.setToken(dto.token)
       let modelos = REPORTS[defaultOption]
       if(dto?.option && REPORTS[dto.option])
         modelos = REPORTS[dto.option]
   
       let response = {}
       
-      if(typeof modelos[dto.model] == 'undefined') throw new Error("Modelo no definido error de diseño")
-      
-        if(modelos[dto.model]?.literal)
-          response = await ___tmpStatusLiteral(modelos,dto)
-          else
-        response =  await ___tmpStatus(modelos, dto)
-      
-     
+      if (typeof modelos[dto.model] == 'undefined') throw new Error("Modelo no definido error de diseño")
+
+      if (modelos[dto.model]?.literal)
+        response = await ___tmpStatusLiteral(modelos, dto)
+      else
+        response = await ___tmpStatus(modelos, dto)
+
+
       return {
         ok: true,
         data: response,
@@ -138,7 +144,7 @@ const tmpsInitialReport = (dto, handleError) => {
       //console.log(error)
       handleError.setMessage('Error de sistema: STATUSINITIALSRV')
       handleError.setHttpError(error.message)
-      console.log('error:::', error)
+      //console.log('error:::', error)
     }
   }
 
@@ -178,6 +184,12 @@ const tmpsInitialReport = (dto, handleError) => {
         }
         if (optionReport[modelo].precondicion && optionReport[modelo].precondicion.length)
             where = `${where} AND ${optionReport[modelo].precondicion.join(' AND ')}`
+
+        //cheka si existe la opcion keySessionpara limitar los resultados segun session institucion
+        if(optionReport[modelo]?.keySession){
+          let whereSession =  await frmUtil.getKeySessionConditionLiteral(optionReport[modelo], null)
+          where += ` AND ${whereSession}`
+        }
 
         //ejecuta query construido
         let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
