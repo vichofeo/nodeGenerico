@@ -8,7 +8,7 @@ const getControlRegis = async(req, res)=>{
   const token =  req.headers.authorization
   const data =  req.body
   const paramDoms =  data?.paramDoms ?  data?.paramDoms : undefined
-  const result = await service.getControlRegis({paramDoms ,idx:data.idx, token: token})
+  const result = await service.getControlRegis({paramDoms ,idx:data.idx, token: token, data: data})
   res.json(result)
 }
 

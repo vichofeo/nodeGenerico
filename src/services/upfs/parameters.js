@@ -150,12 +150,12 @@ END AS glosa
             {ref: 'u_is_atributo as atr4', campos: 'atr4.atributo as rglosa', camporef: 'atr4.atributo_id', camporefForeign: 'eval.rtype_plus'}
         ],
     },
-    abastecimiento_todes: {
+    registrados_todes: {
         //'$app', '$inst', '$dni', '$usr'
         table: `ae_institucion i, al_departamento d, ae_institucion eg, 
         
-        uf_abastecimiento_institucion_cnf cnf
-                    LEFT JOIN (SELECT eval.registro_id as idx,
+        upf_file_institucion_cnf cnf
+                    LEFT JOIN (SELECT eval.registro_id as idx, eval.file_tipo_id, tf.sw_semana,
                 eval.institucion_id,  eval.periodo,
                 p.primer_apellido AS evaluador, 
                 eval.concluido, eval.activo,
@@ -165,6 +165,7 @@ END AS glosa
                 atr1.atributo as conclusion, atr1.color AS conclusion_color,
                 atr2.atributo as revisado, atr2.color AS revisado_color,
                 eval.create_date, 
+
         (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) AS cdemora,
         (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) as prevision,
         (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) as hab_revision,
@@ -186,18 +187,18 @@ WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class
 ELSE '<span class="error">!!Estado de registro no Declarado.</span>'
 END AS glosa
 
-                FROM  au_persona p, uf_abastecimiento_registro eval
+                FROM  au_persona p, upf_file_tipo tf, upf_registro eval
                 LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
                 LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
             
-            LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
-            LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
+                LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
+                LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
                 WHERE 
-                p.dni_persona =  eval.dni_register) AS eval ON (
-                eval.institucion_id =  cnf.institucion_id  
-                AND ($paramDoms)
+                p.dni_persona =  eval.dni_register and tf.file_tipo_id =  eval.file_tipo_id 
+                AND ($paramDoms) ) AS eval 
+                ON ( eval.institucion_id =  cnf.institucion_id 
             )` ,
-        alias: 'abastecimienton',
+        alias: 'monis_todes',
         cardinalidad: "n",
         linked: "evaluacion",
         campos: `eval.idx, 'evaluacion' as linked,
@@ -216,13 +217,16 @@ END AS glosa
         eval.conclusion, eval.conclusion_color , 
         eval.revisado, eval.revisado_color, '|pd-0-pd|' as prdo, 
 CASE
-  WHEN  ($primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYYMM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
-        (SELECT i2.es_unidad AND 
-        i2.tipo_institucion_id='ASUSS' AND 
-        i2.parent_grp_id IS NULL AND 
-        i2.root IS NULL 
+  WHEN  (( COALESCE(eval.idx,'-1')!='-1' AND  not eval.sw_semana) AND  $primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYY-MM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
+        (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL 
         FROM ae_institucion i2
-        WHERE i2.institucion_id='$inst') THEN 1
+        WHERE i2.institucion_id='$inst') 
+    THEN 1
+WHEN  (( COALESCE(eval.idx,'-1')!='-1' AND  eval.sw_semana) AND $primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','IYYY-IW') +  INTERVAL '1 WEEK' + INTERVAL '1 day')) ) AND 
+        (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL 
+        FROM ae_institucion i2
+        WHERE i2.institucion_id='$inst') 
+    THEN 1
  WHEN eval.cdemora AND (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
  THEN 2  
  ELSE 0 END AS hab_conclusion, 
@@ -242,9 +246,9 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         { value: "glosa", text: "Glosa" },
 
         ],
-        key: [],
+        key: ['cnf.file_tipo_id'],
         keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
-        paramDoms:[['eval.periodo',0]],
+        paramDoms:[['eval.periodo',0],['eval.file_tipo_id',1]],
         precondicion: [
              'cnf.institucion_id =  i.institucion_id',            
             'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',

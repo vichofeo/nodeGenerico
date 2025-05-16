@@ -57,22 +57,32 @@ const PDEPENDENCIES = {
     },
     withInitial: false,
   },
-  regsLoaded: {
-    alias: 'cboxs_evals',
-    campos: {
-      periodos: ['Periodos', true, true, 'C']
-
-    },
-    ilogic: {
-
-      periodos: `SELECT distinct fr.periodo AS VALUE,
-            to_char(TO_DATE(fr.periodo, 'YYYYMM'), 'YYYY - Mon') AS text
-            FROM uf_abastecimiento_registro fr
-            WHERE  $keySession            
-            ORDER BY 1 DESC`
-    },
-    keySession: { replaceKey: false, campo: 'fr.institucion_id' },
-    referer: [],
+  cbx_monLoaded: {
+    alias: 'cboxs_evals',                
+        campos: {
+            forms: ['Intrumento de captura datos', true, true, 'C'],            
+            periodos: ['Periodos', true, true, 'C']
+            
+        }, 
+        ilogic: {
+            forms:`SELECT distinct t.file_tipo_id AS VALUE, 
+          t.nombre_tipo_archivo ||' ('||CASE WHEN t.sw_semana THEN 'SEMANAL' ELSE  'MENSUAL'END ||')' as text 
+          FROM upf_file_tipo t, upf_registro r
+          WHERE $keySession
+          AND t.file_tipo_id =  r.file_tipo_id
+          AND r.activo='Y' AND t.activo= 'Y'
+          ORDER BY 2`,
+            periodos:`SELECT r.periodo AS value, 
+                  CASE WHEN t.sw_semana THEN to_char(TO_DATE(r.periodo, 'IYYY-IW'), 'IYYY- semana - IW')
+                  ELSE TO_CHAR(TO_DATE(r.periodo,'YYYY-MM'), 'YYYY - Mon') END AS text
+                  FROM upf_file_tipo t, upf_registro r
+                  WHERE $keySession AND t.file_tipo_id ='$forms'
+                  AND t.file_tipo_id =  r.file_tipo_id
+                  AND r.activo='Y' AND t.activo= 'Y'
+                  ORDER BY 1 DESC `
+        },
+        keySession:{replaceKey:false, campo:'r.institucion_id'},
+        referer: [],
   }
 
 

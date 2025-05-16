@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         variable: { type: DataTypes.STRING(4), allowNull: false },
         subvariable: { type: DataTypes.STRING(4), allowNull: false },
             
-        medicamento: { type: DataTypes.STRING(120), allowNull: false, defaultValue: '1' },
+        medicamento: { type: DataTypes.STRING(120), allowNull: false,  },
         forma_farmaceutica: { type: DataTypes.STRING(120), allowNull: false},
         concentracion: { type: DataTypes.STRING(56), allowNull: false },
         clasificacion_atq: { type: DataTypes.STRING(56), allowNull: false },      

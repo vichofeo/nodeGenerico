@@ -18,7 +18,7 @@ const estado_revision='15'
 const estado_proceso = '3'
 
 const resgitroServices =  require('./registroService.js')
-const { Console } = require('winston/lib/winston/transports/index.js')
+
 
 
 
@@ -212,22 +212,23 @@ ORDER BY 4,3,2`
 
 const loadersComprobate = async(dto, handleError)=>{
   try {
+    
     //datos de session
     const data = dto.data
     frmUtil.setToken(dto.token)
-    const obj_cnf = frmUtil.getObjSession()
+    const obj_cnf = frmUtil.getObjSession()    
     const resp =  await frmUtil.getGroupIdsInstitucion()    
     const whereInst = resp.length>0 ? {institucion_id: resp} : {}
 
     //queries para validez de botona reporte
     const resultComprobacion = {}
-    qUtil.setTableInstance("uf_abastecimiento_institucion_cnf")
+    qUtil.setTableInstance("upf_file_institucion_cnf")
     qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
-    qUtil.setWhere({...whereInst})
+    qUtil.setWhere({...whereInst})    
     await qUtil.findTune()
     resultComprobacion.frm_inst = qUtil.getResults()[0].conteo
 
-    qUtil.setTableInstance("uf_abastecimiento_registro")
+    qUtil.setTableInstance("upf_registro")
     qUtil.setAttributes([[qUtil.literal('count(*)'), 'conteo']])
     qUtil.setWhere({...whereInst,  periodo: data.periodos, concluido:qUtil.cMayorIgualQue('7'), revisado:qUtil.cMayorIgualQue('15')})
     await qUtil.findTune()
@@ -270,7 +271,7 @@ const loadersComprobate = async(dto, handleError)=>{
     console.log(error)
     return {
       ok: false,
-      message: 'Error de sistema: RPTCMPBFARMSTESRV',
+      message: 'Error de sistema: RPTCMPBFUPDSTESRV',
       error: error.message,
     }
   }
@@ -297,8 +298,8 @@ const actualizaEstadoLoader = async(dto, handleError)=>{
         dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso}
         
       }else{
-        //cambia a estado de en proceso
-        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion}
+        //cambia a estado de de proceso a concluido
+        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion, fecha_concluido: obj_cnf.last_modify_date_time}
         
       }
       

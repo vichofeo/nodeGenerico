@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       cod_liname:{type: DataTypes.STRING(25), allowNull: true},
       fecha_vencimiento:{type: DataTypes.DATEONLY, allowNull: true},
       reg_sanitario:{type: DataTypes.STRING(128), allowNull: true},
+      
+      medicamento: { type: DataTypes.STRING(120), allowNull: false  },
+      forma_farmaceutica: { type: DataTypes.STRING(120), allowNull: false},
+
       consumo_mensual:{type: DataTypes.DOUBLE, allowNull: false, defaultValue:0},
       ingresos:{type: DataTypes.DOUBLE, allowNull: false, defaultValue:0},
       egresos:{type: DataTypes.DOUBLE, allowNull: false, defaultValue:0},

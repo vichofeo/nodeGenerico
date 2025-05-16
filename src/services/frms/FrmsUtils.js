@@ -85,7 +85,7 @@ module.exports = class FrmsUtils {
   }
 
   #analizaKeyWhere =  async (objModel, idx)=>{
-    console.log("\n\n\n ************************", objModel ," ************************\n\n\n")
+    console.log("\n\n\n ************************ KEY::", objModel?.key ," ************************\n\n\n")
     let where = '1=1'
     if(objModel?.key?.length>0)
         where = `${objModel.key[0]} = '${idx}'`
@@ -110,6 +110,7 @@ module.exports = class FrmsUtils {
     let from = objModel.table
     //let where = objModel.key.length > 0 ? `${objModel.key[0]} = '${idx}'` : '1=1 '
     let where = await this.#analizaKeyWhere(objModel, idx)
+    console.log('\n\n\n::::::::::::::WHEREkeY', where)
     let groupOrder =  objModel.groupOrder ? objModel.groupOrder : '' 
 
     let leftjoin = ''

@@ -145,13 +145,14 @@ const getControlRegis = async (dto) => {
     delete tituloFile.last_modify_date_time
 
     //const paramLocalModelo = !dto.model ? 'registradosn' : dto.model
-    const paramLocalModelo = !tituloFile.modelData ? 'registradosn' : tituloFile.modelData
+    let paramLocalModelo = !tituloFile.modelData ? 'registradosn' : tituloFile.modelData
+    if(dto?.data?.sw_todes) paramLocalModelo =  'registrados_todes'
 
     
 
     if (PARAMETROS.hasOwnProperty(paramLocalModelo) && Object.keys(tituloFile).length > 0) {
       dto.modelos = [paramLocalModelo]
-      console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ", tituloFile, " &&&&&&&&&&&&\n\n\n")
+      console.log("\n\n\n&&&&&&&&&&&& PROCESADOR GENERICO MODELO: ", paramLocalModelo, " &&&&&&&&&&&&\n\n\n")
       frmUtil.setParametros(PARAMETROS)
       await frmUtil.getDataParams(dto)
       const result = frmUtil.getResults()
@@ -283,6 +284,10 @@ const getDataRegistrador = async (dto, handleError) => {
       association: 'ufregister', required: true,
       attributes: ['primer_apellido', 'segundo_apellido', 'nombres'],
     })
+    qUtil.pushInclude({
+      association: 'ufestado', required: true,
+      //attributes: ['primer_apellido', 'segundo_apellido', 'nombres'],
+    })
 
     await qUtil.findID(dto.data.idx)
 
@@ -293,6 +298,11 @@ const getDataRegistrador = async (dto, handleError) => {
       eess: result.ufrinst.nombre_institucion,
       dpto: result.ufrinst.dpto.nombre_dpto,
       usr: `${result.ufregister.primer_apellido} ${result.ufregister.segundo_apellido} ${result.ufregister.nombres}`,
+      //d: result,
+      fecha_limite: new Date(result.fecha_climite).toLocaleDateString('es-BO'),
+      fecha_concluido: result.fecha_concluido ? new Date(result.fecha_concluido).toLocaleDateString('es-BO') :  '',
+      fecha_inicio: new Date(result.create_date).toLocaleDateString('es-BO'),
+      estado: {estado:result.ufestado.atributo, color:result.ufestado.color }
     }
 
     return {
