@@ -14,13 +14,33 @@ const REPORTS = {
               LEFT JOIN  uf_liname l  ON (ll.cod_liname=l.cod_liname )`,
     alias: 'Datos de Abastecimiento de Farmacias',
     campos: `eg.nombre_institucion AS eg, d.nombre_dpto AS dpto, i.nombre_institucion AS eess,SUBSTR(r.periodo,1,4) as gestion,  r.periodo, TO_CHAR(TO_DATE(r.periodo, 'YYYY-MM'), 'month') as mes,
-    ll.cod_liname, ll.medicamento ||' '|| COALESCE(l.concentracion,'')  AS descripcion, ll.forma_farmaceutica AS presentacion, 
+    ll.cod_liname, ll.grupo, ll.variable, ll.subvariable,
+    ll.medicamento ||' '|| COALESCE(l.concentracion,'')  AS descripcion, ll.forma_farmaceutica AS presentacion, 
     COALESCE(l.cod_liname,'-NO-REGISTRADO-') as c_liname, COALESCE(l.medicamento,'') ||' '|| COALESCE(l.concentracion,'')  AS dsc_liname, COALESCE(l.forma_farmaceutica,'') AS frm_liname,
-    to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, ll.consumo_mensual, ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock`,
+    to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, ll.consumo_mensual, ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock,
+    case ll.consumo_mensual  WHEN 0 THEN 0  else round ((ll.saldo_stock/ll.consumo_mensual)::DECIMAL) END as tmes,
+    
+    CASE  WHEN (ll.fecha_vencimiento - CURRENT_DATE)>60
+                THEN 'Vigente'
+                WHEN (ll.fecha_vencimiento - CURRENT_DATE)>0 and (ll.fecha_vencimiento - CURRENT_DATE) <=60
+                THEN 'Vencimiento proximo'
+                WHEN (ll.fecha_vencimiento - CURRENT_DATE)<0
+                THEN 'Vencido'
+                ELSE 'N/A' END  AS alertax23,
+    CASE ll.consumo_mensual WHEN  0 THEN 'Sobre Stock'
+          ELSE CASE WHEN (ll.saldo_stock/ll.consumo_mensual)=0 THEN 'Stock cero' 
+          WHEN (ll.saldo_stock/ll.consumo_mensual)>0 AND  (ll.saldo_stock/ll.consumo_mensual)<= 3 THEN 'Sub-Stock'
+          WHEN (ll.saldo_stock/ll.consumo_mensual)>3 THEN 'Normo Stock'
+          ELSE '-Indeterminado-' END 
+END AS alertaxs23
+    `,
     headers: ['ENTE GESTOR', 'DEPARTAMENTO', 'ESTABLECIMIENTO SALUD', 'GESTION','PERIODO', 'MES',
-      'CODIGO/ ITEM', 'DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION', 'PRESENTACION', 
+      'CODIGO/ ITEM', 'GRUPO', 'VARIABLE', 'SUBVARIABLE',
+      'DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION', 'PRESENTACION', 
       'COD-LINAME', 'DESC-MED-LINAME', 'PRESEN-LINAME', 
-      'FECHA VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS', 'EGRESOS', 'TRANSFERENCIAS', 'SALDOS/STOCK'],
+      'FECHA VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS', 'EGRESOS', 'TRANSFERENCIAS', 'SALDOS/STOCK',
+      'TIEMPO EN MESES', 'ESTADO VIGENCIA', 'ESTADO STOCK'
+    ],
     tipo: 'Sum',
     camposOcultos: ['CONSUMO MENSUAL', 'INGRESOS', 'EGRESOS', 'TRANSFERENCIAS', 'SALDOS/STOCK'],
     rows: ['COD-LINAME', 'DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION', 'PRESENTACION', 'FECHA VENCIMIENTO', 'REGISTRO SANITARIO'],
@@ -59,13 +79,16 @@ const REPORTS = {
           FROM e_snis301a s, upf_registro r
           WHERE r.registro_id = s.registro_id
           and s.swloadend = TRUE  and r.concluido='7'
+          AND $keySession
           GROUP BY 1,2
           ORDER BY 1
           ) AS t1`,
     parseAttrib: ['1'],
     conditional: null,
     order: 'GROUP BY 1 ORDER BY 1',
-    tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, e_snis301a ll', 
+    keySession: { replaceKey: false, campo: 'r.institucion_id' },
+
+    tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, e_snis301a ll',     
     campos: `eg.nombre_institucion AS eg, d.nombre_dpto AS dpto, i.nombre_institucion AS eess, SUBSTR(r.periodo,1,4) as gestion,  r.periodo, TO_CHAR(TO_DATE(r.periodo, 'YYYY-MM'), 'month') as mes,
     ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,
     headers: ['ENTE GESTOR', 'DEPARTAMENTO', 'ESTABLECIMIENTO SALUD', 'GESTION','PERIODO', 'MES',
@@ -112,12 +135,14 @@ const REPORTS = {
           FROM e_snis301b s, upf_registro r
           WHERE r.registro_id = s.registro_id
           and s.swloadend = TRUE  and r.concluido='7'
+          AND $keySession
           GROUP BY 1,2
           ORDER BY 1
           ) AS t1`,
     parseAttrib: ['1'],
     conditional: null,
     order: 'GROUP BY 1 ORDER BY 1',
+    keySession: { replaceKey: false, campo: 'r.institucion_id' },
     tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, e_snis301b ll',
     campos: `eg.nombre_institucion AS eg, d.nombre_dpto AS dpto, i.nombre_institucion AS eess, SUBSTR(r.periodo,1,4) as gestion,  r.periodo, TO_CHAR(TO_DATE(r.periodo, 'YYYY-MM'), 'month') as mes,
     ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,
@@ -165,12 +190,14 @@ const REPORTS = {
           FROM e_snis302a s, upf_registro r
           WHERE r.registro_id = s.registro_id
           and s.swloadend = TRUE  and r.concluido='7'
+          AND $keySession
           GROUP BY 1,2
           ORDER BY 1
           ) AS t1`,    
     parseAttrib: ['1'],
     conditional: null,
     order: 'GROUP BY 1 ORDER BY 1',
+    keySession: { replaceKey: false, campo: 'r.institucion_id' },
     tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, e_snis302a ll',
     campos: `eg.nombre_institucion AS eg, d.nombre_dpto AS dpto, i.nombre_institucion AS eess, SUBSTR(r.periodo,1,4) as gestion,  r.periodo, TO_CHAR(TO_DATE(r.periodo, 'IYYY-IW'), 'month') as mes,
     ll.formulario, ll.grupo, ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,
@@ -213,6 +240,7 @@ const REPORTS = {
           FROM e_snis302b s, upf_registro r
           WHERE r.registro_id = s.registro_id
           and s.swloadend = TRUE  and r.concluido='7'
+          AND $keySession
           GROUP BY 1,2
           ORDER BY 1
           ) AS t1`,
@@ -224,6 +252,7 @@ const REPORTS = {
     parseAttrib: ['1'],
     conditional: null,
     order: 'GROUP BY 1 ORDER BY 1',
+    keySession: { replaceKey: false, campo: 'r.institucion_id' },
     tables: 'ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r, e_snis302b ll',
     campos: `eg.nombre_institucion AS eg, d.nombre_dpto AS dpto, i.nombre_institucion AS eess, SUBSTR(r.periodo,1,4) as gestion,  r.periodo, TO_CHAR(TO_DATE(r.periodo, 'YYYY-MM'), 'month') as mes,
     ll.formulario, ll.grupo, ll.gvariable , ll.variable, ll.lugar_atencion, ll.subvariable, ll.valor`,

@@ -19,50 +19,60 @@ const FrmUtils = require('./../frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
 const tmpsInitialReport = (dto, handleError) => {
-    try {
-      let data = REPORTS[defaultOption]
+  try {
+    let data = REPORTS[defaultOption]
 
-      
-      if(dto?.option && REPORTS[dto.option])
+
+    if (dto?.option && REPORTS[dto.option])
       data = REPORTS[dto.option]
-      console.log("intial report opcion", data)
-      const d = {}
-      for (const key in data) {
-        d[key] = { title: data[key].alias }
-      }
-  
-      return {
-        ok: true,
-        data: d,
-      }
-    } catch (error) {
-      console.log(error)
-      handleError.setMessage('Error de sistema: LOADINITIALSRV')
-      handleError.setHttpError(error.message)
-      console.log('error:::', error)
+    console.log("intial report opcion", data)
+    const d = {}
+    for (const key in data) {
+      d[key] = { title: data[key].alias }
     }
-  }
 
+    return {
+      ok: true,
+      data: d,
+    }
+  } catch (error) {
+    console.log(error)
+    handleError.setMessage('Error de sistema: LOADINITIALSRV')
+    handleError.setHttpError(error.message)
+    console.log('error:::', error)
+  }
+}
+
+const ___tmpCheckKeySessionInQuery = async (modelo, campos, from, where, order = '', leftjoin = '') => {
+  let query = `${campos} ${from} ${leftjoin} ${where} ${order}  `
+  let whereSession = ''
+  if (modelo?.keySession) {
+    whereSession = await frmUtil.getKeySessionConditionLiteral(modelo, null)
+    //verifica si exste la variable de session    
+    if (query.indexOf('$keySession') < 0)
+      where += ` AND ${whereSession}`
+  }
+  //construye query    
+  query = `SELECT ${campos} 
+                    FROM ${from} ${leftjoin} 
+                    WHERE ${where}
+                    ${order}`
+  query = query.replaceAll('$keySession', whereSession)
+
+  return query
+} 
   const ___tmpStatusLiteral = async(modelos, dto)=>{
     const element = modelos[dto.model]  
     const tabla = element.table
     const atributos =  element.attributes
-    let where =  element?.conditional ? 'WHERE '+element.conditional:''
-    if(element?.keySession){
-      const whereSession =  await frmUtil.getKeySessionConditionLiteral(element, null)      
-      if(where.length>0) where += ' and ' + whereSession
-      else where = 'WHERE ' + whereSession          
-    }
+    let where =  element?.conditional ? element.conditional:'1=1'
     const order = element?.order ? element.order:''
-    const query = `SELECT ${atributos}
-    FROM ${tabla}
-    ${where}
-    ${order}
-    `
-
+        
+    let query =  await ___tmpCheckKeySessionInQuery(element, atributos, tabla, where, order)
     qUtil.setQuery(query)
     await qUtil.excuteSelect()
     let result = qUtil.getResults()
+
     if(element.parseAttrib && Array.isArray(element.parseAttrib)){
       result =  result.map(obj=>{
         const keys =  Object.keys(obj)            
@@ -164,11 +174,12 @@ const tmpsInitialReport = (dto, handleError) => {
         
 
         //construye query de datos
-        console.log("*****************************************::::::::::::::", datoCondicion)
+        console.log("*******************TEMP-REPORT**********************::::::::::::::", datoCondicion)
         
         let campos = optionReport[modelo].campos
         let from = optionReport[modelo].tables
         let where = optionReport[modelo].metodo(datoCondicion) + ' '
+        let order = ''
 
         let leftjoin = ''
         for (let i = 0; i < optionReport[modelo].referer.length; i++) {
@@ -186,14 +197,7 @@ const tmpsInitialReport = (dto, handleError) => {
             where = `${where} AND ${optionReport[modelo].precondicion.join(' AND ')}`
 
         //cheka si existe la opcion keySessionpara limitar los resultados segun session institucion
-        if(optionReport[modelo]?.keySession){
-          let whereSession =  await frmUtil.getKeySessionConditionLiteral(optionReport[modelo], null)
-          where += ` AND ${whereSession}`
-        }
-
-        //ejecuta query construido
-        let query = `SELECT ${campos} FROM ${from} ${leftjoin} WHERE ${where}`
-        
+        let query = await ___tmpCheckKeySessionInQuery(optionReport[modelo], campos, from, where, order, leftjoin)
         qUtil.setQuery(query)
         await qUtil.excuteSelect()
 

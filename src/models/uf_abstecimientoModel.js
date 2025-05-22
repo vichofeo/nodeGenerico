@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
         dni_register:{type: DataTypes.STRING(25), allowNull: true},
  
       cod_liname:{type: DataTypes.STRING(25), allowNull: true},
+
+      grupo: { type: DataTypes.STRING(4), allowNull: false },
+        variable: { type: DataTypes.STRING(4), allowNull: false },
+        subvariable: { type: DataTypes.STRING(4), allowNull: false },
+
+
       fecha_vencimiento:{type: DataTypes.DATEONLY, allowNull: true},
       reg_sanitario:{type: DataTypes.STRING(128), allowNull: true},
       

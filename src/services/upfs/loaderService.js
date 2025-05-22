@@ -289,18 +289,15 @@ const actualizaEstadoLoader = async(dto, handleError)=>{
       modelo = dataModels[dto.data.payload.modelo].alias
 
       console.log("\n\nESTADO LOADER...",modelo,"\n\n")
+      console.log("\n\nESTADO LOADER ESTADO PROCESO...",typeof dto.data?.payload.process,"\n\n")
       //console.log("\n\n",payload,"\n\n")
       await qUtil.startTransaction()
       let dataSet = {}
-      if(dto.data?.payload?.process){
-        //const payload = dto.data.payload
-        //cambia a estado de en proceso
-        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso}
-        
+      if(typeof dto.data?.payload?.process=='boolean'){        
+          dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_proceso}                  
       }else{
         //cambia a estado de de proceso a concluido
-        dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion, fecha_concluido: obj_cnf.last_modify_date_time}
-        
+          dataSet = {dni_register: obj_cnf.dni_register, last_modify_date_time: obj_cnf.last_modify_date_time  ,concluido:estado_conclusion, fecha_concluido: obj_cnf.last_modify_date_time}
       }
       
       const updateData = {...dataSet,

@@ -5,14 +5,20 @@ const PARAMETERS = {
     abastecimiento: {
         alias:'uf_abastecimiento',
         attributes:[["registro_id", 'periodo'], ['count(*)', 'registros']],
-        file: ['NRO.', 'CÓDIGO LINAME', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
-        table: ['xnro','cod_liname','medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
-        validate: [0,1,1,1,1,1,1,1,1,1,1],
+        //file: ['NRO.', 'CÓDIGO LINAME', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
+        //table: ['xnro','cod_liname','medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
+        file: ['NRO.', 'GRUPO', 'VARIABLE', 'SUBVARIABLE', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
+        table: ['xnro','grupo', 'variable', 'subvariable', 'medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
+        validate: [0,1,1,1,1,1,1,1,1,1,1,1,1],
         forFilter:['FECHA DE VENCIMIENTO'],        
-        update:[['fecha_vencimiento',"TO_DATE(f_vencimiento, 'DD/MM/YYYY')",'Verifique el formato de fecha vencimiento sea DD/MM/YYYY']
+        update:[['fecha_vencimiento',"TO_DATE(f_vencimiento, 'DD/MM/YYYY')",'Verifique el formato de fecha vencimiento sea DD/MM/YYYY'],
+        ['cod_liname', `UPPER(grupo)||'-'||LPAD(variable, 2, '0')||'-'||LPAD(subvariable, 2, '0')`, 'No se puedo autogenerar el codigo liname'],
+        ['grupo', `UPPER(grupo)`, 'No se pudo actualizar el grupo'], 
+        ['variable', `LPAD(variable, 2, '0')`, 'No se pudo actualizar la variable'], 
+        ['subvariable', `LPAD(subvariable, 2, '0')`, 'No se pudo actualizar la subvariable']
              //['stock', 'CAST(stock AS NUMERIC )', 'Verifique campo STOCK que sea numerico y que no este vacio']
             ],
-        key:['registro_id', 'file_id', 'cod_liname'],        
+        key:['registro_id', 'cod_liname'],        
         keyAux: ['cod_liname','consumo_mensual','saldo_stock','transferencias'],
         gender: null//['paciente', 'genero','f_genero']
     },     

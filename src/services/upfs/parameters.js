@@ -257,27 +257,89 @@ THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
         update: [],
         referer: [],
     },
-    rprte_registradosn:{
+    rprte_abastecimienton:{
         //'$app', '$inst', '$dni', '$usr'
         table: 'upf_registro r, uf_abastecimiento ll, uf_liname l',
-        alias: 'rprte_registradosn',
+        alias: 'rprte_abastecimienton',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `l.cod_liname, l.medicamento ||' '|| l.concentracion  AS descripcion, 
-l.forma_farmaceutica AS presentacion,
-to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, ll.consumo_mensual,
-ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock
+        campos: `l.cod_liname, 
+                l.medicamento ||' '|| l.concentracion  AS descripcion, 
+                l.forma_farmaceutica AS presentacion,
+                to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, 
+    CASE  WHEN (ll.fecha_vencimiento - CURRENT_DATE)<0
+                THEN 'Periodo Vigencia CONCLUIDO'
+                ELSE 'Restan: '||(ll.fecha_vencimiento - CURRENT_DATE) || ' dias.'
+                END AS "vigencia",
+    CASE  WHEN (ll.fecha_vencimiento - CURRENT_DATE)>60
+                THEN 'Vigente'
+                WHEN (ll.fecha_vencimiento - CURRENT_DATE)>0 and (ll.fecha_vencimiento - CURRENT_DATE) <=60
+                THEN 'Vencimiento proximo'
+                WHEN (ll.fecha_vencimiento - CURRENT_DATE)<0
+                THEN 'Vencido'
+                ELSE 'N/A' END  AS alertax23,
+                
+                ll.reg_sanitario, ll.consumo_mensual,
+                ll.ingresos, ll.egresos, ll.transferencias, ll.saldo_stock AS stock, 
+
+CASE ll.consumo_mensual WHEN  0 THEN 4
+ELSE CASE WHEN (ll.saldo_stock/ll.consumo_mensual)=0 THEN 3 
+			 WHEN (ll.saldo_stock/ll.consumo_mensual)>0 AND  (ll.saldo_stock/ll.consumo_mensual)<= 3 THEN 2
+			 WHEN (ll.saldo_stock/ll.consumo_mensual)>3 THEN 1
+ELSE -1 END 
+END AS alertaxs23, 
+ARRAY[['success','warning','error', 'purple'],
+['Normo Stock: ítems provistos hasta los 12 meses', 'Sub-Stock: ítems  dotados hasta 3 meses', 'Stock cero: ítems sin Saldos', 'Sobre Stock: ítems que sobre pasan los 12 meses']] AS alertaxs23_text,
+
+case ll.consumo_mensual  WHEN 0 THEN 0  else round ((ll.saldo_stock/ll.consumo_mensual)::DECIMAL, 2) END as tmes
+
         `,
 
-        camposView: [{ value: "cod_liname", text: "CODIGO/ ITEM" }, { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
+        camposView: [{ value: "cod_liname", text: "CODIGO/ ITEM" },             
+            { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
             { value: "presentacion", text: "PRESENTACION" },
-        { value: "fvencimiento", text: "FECHA VENCIMIENTO" }, { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
+        { value: "alertax23", text: "ESTADO VIGENCIA" }, 
+        { value: "vigencia", text: "VIGENCIA" }, { value: "fvencimiento", text: "FECHA VENCIMIENTO" }, 
+
+        { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, 
+        {value: "alertaxs23", text: "ESTADO STOCK"},
+        { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
         { value: "ingresos", text: "INGRESOS"}, { value: "egresos", text: "EGRESOS"}, { value: "transferencias", text: "TRANSFERENCIAS"}, 
-        { value: "stock", text: "SALDOS/STOCK"}        
+        { value: "stock", text: "SALDOS/STOCK"}, { value: "tmes", text: "TIEMPO EN MESES"}         
         ],
         key: ['r.registro_id'],
         precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',
             'll.swloadend =  true', '$paramDoms' ],
+        groupOrder: ` ORDER BY  l.cod_liname `,//null string    
+        paramDoms:[['ll.file_id',0]],
+        update: [],
+        referer: [],
+    },
+    rprte_abas_plantillan:{
+        table: 'upf_registro r, uf_abastecimiento ll, uf_liname l',
+        alias: 'rprte_abas_plantillan',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `l.grupo, l.variable, l.subvariable,
+                l.medicamento ||' '|| l.concentracion  AS descripcion, 
+                l.forma_farmaceutica AS presentacion,
+                to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, 
+                '' as consumo_mensual,
+                '' as ingresos, '' as egresos, '' as transferencias, '' as stock, saldo_stock as stock_ant
+        `,
+
+        camposView: [
+            { value: "grupo", text: "GRUPO" }, { value: "variable", text: "VARIABLE" }, { value: "subvariable", text: "SUBVARIABLE" },
+            { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
+            { value: "presentacion", text: "PRESENTACION" },
+        { value: "fvencimiento", text: "FECHA VENCIMIENTO" }, { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
+        { value: "ingresos", text: "INGRESOS"}, { value: "egresos", text: "EGRESOS"}, { value: "transferencias", text: "TRANSFERENCIAS"}, 
+        { value: "stock", text: "SALDOS/STOCK"}, { value: "stock_ant", text: "STOCK ANTERIOR"}
+        ],
+        key: ['r.file_tipo_id'],
+        precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',
+            'll.swloadend =  true', "r.institucion_id='$inst'",
+        `r.periodo= to_char(TO_DATE('|pd-0-pd|', 'YYYY-MM-DD') - INTERVAL '1 MONTH', 'YYYY-MM')` ],
         groupOrder: ` ORDER BY  l.cod_liname `,//null string    
         paramDoms:[['ll.file_id',0]],
         update: [],
