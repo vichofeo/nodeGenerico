@@ -1,3 +1,4 @@
+const parameters =  require('./parameters')
 //$keySession  
 //extraCondicion:[[campo, valor], [campo2, valor]...]
 //orden de ejecucion : REFERER, PRIMAL, ILOGIC
@@ -83,7 +84,83 @@ const PDEPENDENCIES = {
         },
         keySession:{replaceKey:false, campo:'r.institucion_id'},
         referer: [],
-  }
+  },
+  cbx_abas_data_table:{        
+        alias: 'actcboxsabas',        
+        campos: {
+          eg: ['ENTE GESTOR', false, true, 'C'],
+          dpto: ['DEPARTAMENTO', false, true, 'C'],      
+          eess: ['ESTABLECIMIENTO', false, true, 'C'],          
+          periodo: ['PERIODO', false, true, 'C'],
+        }, 
+        ilogic: {
+          eg:`SELECT  DISTINCT eg.institucion_id AS value, eg.nombre_corto AS text
+              FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
+              WHERE $keySession
+              AND t.file_tipo_id =  r.file_tipo_id
+              and r.institucion_id =  i.institucion_id
+              AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+              AND i.institucion_root =  eg.institucion_id 
+              AND t."modelLoad"='abastecimiento'
+              ORDER BY 2`,
+          dpto:`SELECT  DISTINCT dpto.cod_dpto AS value, dpto.nombre_dpto  AS text
+FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
+WHERE $keySession
+AND t.file_tipo_id =  r.file_tipo_id
+and r.institucion_id =  i.institucion_id
+AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND i.institucion_root =  eg.institucion_id 
+AND t."modelLoad"='abastecimiento'
+AND eg.institucion_id='$campoForeign'
+ORDER BY 2`,
+         eess:`SELECT  DISTINCT r.institucion_id AS value, i.nombre_institucion  AS text
+FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
+WHERE $keySession
+AND t.file_tipo_id =  r.file_tipo_id
+and r.institucion_id =  i.institucion_id
+AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND i.institucion_root =  eg.institucion_id 
+AND t."modelLoad"='abastecimiento'
+AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$campoForeign'
+ORDER BY 2`, 
+          periodo: `SELECT DISTINCT r.periodo AS value, to_char(to_date(r.periodo,'YYYY-MM'), 'YYYY-MONTH') AS text
+FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
+WHERE  $keySession
+AND t.file_tipo_id =  r.file_tipo_id
+and r.institucion_id =  i.institucion_id
+AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND i.institucion_root =  eg.institucion_id
+AND t."modelLoad"='abastecimiento'
+AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$dpto' and i.institucion_id='$campoForeign'
+ORDER BY 1 desc
+          `,
+          dataTable:`SELECT 
+          FROM upf_file_tipo t, ae_institucion i, al_departamento dpto, ae_institucion eg, ${parameters.rprte_abastecimienton.table} 
+          WHERE $keySession
+          AND t.file_tipo_id =  r.file_tipo_id
+and r.institucion_id =  i.institucion_id
+AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND i.institucion_root =  eg.institucion_id
+AND t."modelLoad"='abastecimiento'
+          AND ${parameters.rprte_abastecimienton.precondicion.join(' AND ').replaceAll('$paramDoms', '1=1')}
+          AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$dpto' 
+          and i.institucion_id='$eess' and r.periodo='$periodo'
+          `
+        },
+        keySession:{replaceKey:false, campo:'i.institucion_id'},
+        referer: [ ],
+        primal:{
+            equivalencia:{  },
+            attributes:`${parameters.rprte_abastecimienton.campos} `,
+            query:`SELECT 1 as x21`,
+            headers:[{ value: "primer_apellido", text: "Primer Apellido" }, { value: "segundo_apellido", text: "Segundo Apellido" }, { value: "nombres", text: "Nombres" },
+                { value: "mail_registro", text: "email" }, { value: "enviado", text: "Mail Enviado" }, { value: "obs", text: "Observaciones" }
+            ],      
+            
+        },
+        withInitial:false,
+        
+    }, 
 
 
 }
