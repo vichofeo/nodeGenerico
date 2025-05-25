@@ -266,5 +266,81 @@ GROUP BY 1) AS tbl`
     },
     withInitial: true,
   },
+  ss_nuemo: {
+    alias: 'ss_nuemo',
+    campos: cmps,
+    ilogic: {
+      ss_nuemo: `SELECT gestion, SUM(valor) as value
+FROM tmp_infecciones 
+WHERE 
+infeccion='NEUMONIA' $w$
+GROUP BY gestion
+ORDER BY 1 DESC
+LIMIT 3   `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+        dpto: ['dpto', 'dpto']       
+
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ss_iras: {
+    alias: 'ss_iras',
+    campos: cmps,
+    ilogic: {
+      ss_iras: `SELECT gestion, SUM(valor) as value
+FROM tmp_infecciones 
+WHERE 
+infeccion='IRAS' $w$
+GROUP BY gestion
+ORDER BY 1 DESC
+LIMIT 3   `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ss_edas: {
+    alias: 'ss_edas',
+    campos: cmps,
+    ilogic: {
+      ss_edas: `SELECT gestion, SUM(valor) as value
+FROM tmp_infecciones 
+WHERE 
+infeccion='EDAS' $w$
+GROUP BY gestion
+ORDER BY 1 DESC
+LIMIT 3   `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 }
 module.exports = PDEPENDENCIES

@@ -375,7 +375,7 @@ module.exports = class FrmsUtils {
 
     //procesa si existe primal  Un solo query para combodependencia
     /**
-     * ===================== SECCION DE QUERYS PRIMO, UN SOLO QUERY PAARA TODOS LOS COMBOS =====================
+     * ===================== SECCION DE QUERYS PRIMAL, UN SOLO QUERY PAARA TODOS LOS COMBOS =====================
      *                        **********************************************************
      */
     let CONDITION_PRIMAL = ""
@@ -396,6 +396,7 @@ module.exports = class FrmsUtils {
         //pregunta si existe la posicion 6 para combomultiple
         //const tempo = dataIn ? dataIn[campo] : {} 
         let swMultipleBoxLocal = (parametros.campos[campo] && parametros.campos[campo][6]) ? true: false
+        let swWithInitialLocal = (parametros.campos[campo] && parametros.campos[campo][7]) ? false: true
         let tempo = dataIn[campo] ? dataIn[campo] : swMultipleBoxLocal?[]:'-1'//{}
         let tempSelectedIn = tempo
         if(swMultipleBoxLocal && Array.isArray(tempo)) tempo =  tempo.map(val=>({value:val}))
@@ -422,6 +423,9 @@ module.exports = class FrmsUtils {
         query = query.replaceAll('$campoForeign', selected.value)                
         //reemplza variables de sesion enel query: $inst, $dni, etc
         query= this.#replaceStringByDataSession(query)
+        //reeeplaza $keyseesion id de eess
+        query = await this.#replaceKeysSessionInQILogic(query, objParamModel, '-1')
+
 
         console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         console.log("selectedINN:",tempSelectedIn)
@@ -435,7 +439,7 @@ module.exports = class FrmsUtils {
         this.#qUtils.setQuery(query)
         await this.#qUtils.excuteSelect()
         let result = this.#qUtils.getResults()
-        if(result.length>0 &&  objParamModel.withInitial) result.unshift(this.#qUtils.getInitialOpCbox())
+        if(result.length>0 &&  objParamModel.withInitial && swWithInitialLocal) result.unshift(this.#qUtils.getInitialOpCbox())
         
         //selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
         selected = swMultipleBoxLocal ? 
@@ -471,7 +475,9 @@ module.exports = class FrmsUtils {
       }
       CONDITION_PRIMAL = pWhere
       //*****************VERIFICA SI SE TRATA DE DEVOLVER  DATOS PARA DATATABLE*/
+      let sw_data_table=0
       if(objParamModel.primal.attributes && Array.isArray(objParamModel.primal.headers) && objParamModel.primal.headers.length>0){
+        sw_data_table = 1
         //existe orden para sacara datos para table data
         let query = queryPrimal.replaceAll(swhere, CONDITION_PRIMAL)
         query = query.replaceAll(sattrib, objParamModel.primal.attributes)
@@ -480,12 +486,19 @@ module.exports = class FrmsUtils {
         query= this.#replaceStringByDataSession(query)
         //remplaza con variables de Entrada ej: $nameCampo
         query = query.replaceAll('$campoForeign', selected.value)
+        //reeeplaza $keyseesion id de eess
+        query = await this.#replaceKeysSessionInQILogic(query, objParamModel, '-1')
+        
+
         //ejecuta query
         this.#qUtils.setQuery(query)
         await this.#qUtils.excuteSelect()
         let result = this.#qUtils.getResults()        
         parametros.dataTable={items:result, headers:objParamModel.primal.headers}
       }
+      //solo devuelve headers si existe
+      if(Array.isArray(objParamModel.primal.headers) && objParamModel.primal.headers.length>0 && sw_data_table<=0) 
+        parametros.headers=objParamModel.primal.headers
     }
     // ------------------------- 0 FIN PRIMAL 0------------------
     /**
@@ -497,6 +510,7 @@ module.exports = class FrmsUtils {
       for (const key in objParamModel.ilogic) {
         console.log('\n!!!!!!!!!!!!EXISTE  CBOXDEPENDENCY ILOGIC::!!!!!!! llave:', key,'\n\n')
         let swMultipleBoxLocal = (parametros.campos[key] && parametros.campos[key][6]) ? true: false
+        let swWithInitialLocal = (parametros.campos[key] && parametros.campos[key][7]) ? false: true
 
         let queryIlogic = objParamModel.ilogic[key] 
 
@@ -526,7 +540,7 @@ module.exports = class FrmsUtils {
 
         const result = this.#qUtils.getResults()
         //pregunta si va poner valor inicial -TODOS-
-        if(result.length>0 &&  objParamModel.withInitial && parametros.campos[key]) result.unshift(this.#qUtils.getInitialOpCbox())
+        if(result.length>0 &&  objParamModel.withInitial && parametros.campos[key] && swWithInitialLocal) result.unshift(this.#qUtils.getInitialOpCbox())
 
         //selected = this.#qUtils.searchSelectedInDataComboBox(result,{ value: tempo })
         selected = swMultipleBoxLocal ? 

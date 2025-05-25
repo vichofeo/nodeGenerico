@@ -88,77 +88,101 @@ const PDEPENDENCIES = {
   cbx_abas_data_table:{        
         alias: 'actcboxsabas',        
         campos: {
-          eg: ['ENTE GESTOR', false, true, 'C'],
-          dpto: ['DEPARTAMENTO', false, true, 'C'],      
-          eess: ['ESTABLECIMIENTO', false, true, 'C'],          
-          periodo: ['PERIODO', false, true, 'C'],
+          eg: ['ENTE GESTOR', false, true, 'C', , , 'M'],
+          dpto: ['DEPARTAMENTO', false, true, 'C', , , 'M'],      
+          eess: ['ESTABLECIMIENTO', false, true, 'C', , , 'M'],          
+          periodo: ['PERIODO', false, true, 'C', , , , true],
         }, 
-        ilogic: {
-          eg:`SELECT  DISTINCT eg.institucion_id AS value, eg.nombre_corto AS text
-              FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
-              WHERE $keySession
-              AND t.file_tipo_id =  r.file_tipo_id
-              and r.institucion_id =  i.institucion_id
-              AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
-              AND i.institucion_root =  eg.institucion_id 
-              AND t."modelLoad"='abastecimiento'
-              ORDER BY 2`,
-          dpto:`SELECT  DISTINCT dpto.cod_dpto AS value, dpto.nombre_dpto  AS text
-FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
-WHERE $keySession
-AND t.file_tipo_id =  r.file_tipo_id
-and r.institucion_id =  i.institucion_id
-AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
-AND i.institucion_root =  eg.institucion_id 
-AND t."modelLoad"='abastecimiento'
-AND eg.institucion_id='$campoForeign'
-ORDER BY 2`,
-         eess:`SELECT  DISTINCT r.institucion_id AS value, i.nombre_institucion  AS text
-FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
-WHERE $keySession
-AND t.file_tipo_id =  r.file_tipo_id
-and r.institucion_id =  i.institucion_id
-AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
-AND i.institucion_root =  eg.institucion_id 
-AND t."modelLoad"='abastecimiento'
-AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$campoForeign'
-ORDER BY 2`, 
+        ilogic: {          
           periodo: `SELECT DISTINCT r.periodo AS value, to_char(to_date(r.periodo,'YYYY-MM'), 'YYYY-MONTH') AS text
 FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
 WHERE  $keySession
-AND t.file_tipo_id =  r.file_tipo_id
+and t.file_tipo_id =  r.file_tipo_id
 and r.institucion_id =  i.institucion_id
 AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
 AND i.institucion_root =  eg.institucion_id
 AND t."modelLoad"='abastecimiento'
-AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$dpto' and i.institucion_id='$campoForeign'
-ORDER BY 1 desc
+$w$
+order by 1 desc
           `,
-          dataTable:`SELECT 
-          FROM upf_file_tipo t, ae_institucion i, al_departamento dpto, ae_institucion eg, ${parameters.rprte_abastecimienton.table} 
-          WHERE $keySession
-          AND t.file_tipo_id =  r.file_tipo_id
+          dataTable:`SELECT codigo, descripcion, presentacion, 
+CASE  WHEN (fvencimiento - CURRENT_DATE)<0
+THEN 'Periodo Vigencia CONCLUIDO'
+ELSE 'Restan: '||(fvencimiento - CURRENT_DATE) || ' dias.'
+END AS "vigencia",
+CASE  WHEN (fvencimiento - CURRENT_DATE)>60
+THEN 'Vigente'
+WHEN (fvencimiento - CURRENT_DATE)>0 and (fvencimiento - CURRENT_DATE) <=60
+THEN 'Vencimiento proximo'
+WHEN (fvencimiento - CURRENT_DATE)<0
+THEN 'Vencido'
+ELSE 'N/A' END  AS alertax23,
+TO_CHAR(fvencimiento, 'DD/MM/YYYY') AS fvencimiento,
+consumo, ingreso, egreso, transferencia, stock,
+CASE consumo WHEN  0 THEN 4
+ELSE CASE WHEN (stock/consumo)=0 THEN 3 
+			 WHEN (stock/consumo)>0 AND  (stock/consumo)<= 3 THEN 2
+			 WHEN (stock/consumo)>3 THEN 1
+ELSE -1 END 
+END AS alertaxs23,
+ARRAY[['success','warning','error', 'purple'],
+['Normo Stock', 'Sub-Stock', 'Stock cero', 'Sobre Stock']] AS alertaxs23_text,
+case consumo  WHEN 0 THEN 0  else round ((stock/consumo)::NUMERIC, 2) END as tmes
+FROM (
+SELECT 
+coalesce(l.cod_liname,'-NO LINAME-') AS codigo, 
+CASE WHEN l.cod_liname IS NOT NULL THEN l.medicamento ||' '|| l.concentracion ELSE ll.cod_liname ||' '|| ll.medicamento END AS descripcion,
+l.forma_farmaceutica AS presentacion, ll.fecha_vencimiento AS fvencimiento,                 
+round(SUM(ll.consumo_mensual)::NUMERIC,2) AS consumo,
+round(SUM(ll.ingresos)::numeric,2) AS ingreso, 
+round(SUM(ll.egresos)::numeric,2) AS egreso, 
+round(SUM(ll.transferencias)::numeric,2) AS transferencia, 
+round(SUM(ll.saldo_stock)::numeric,2) AS stock
+FROM ae_institucion i, al_departamento dpto, ae_institucion eg, upf_file_tipo t,
+upf_registro r, uf_abastecimiento ll
+LEFT JOIN uf_liname l ON (ll.cod_liname=l.cod_liname )
+WHERE t.file_tipo_id =  r.file_tipo_id
 and r.institucion_id =  i.institucion_id
 AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
 AND i.institucion_root =  eg.institucion_id
 AND t."modelLoad"='abastecimiento'
-          AND ${parameters.rprte_abastecimienton.precondicion.join(' AND ').replaceAll('$paramDoms', '1=1')}
-          AND eg.institucion_id='$eg' AND dpto.cod_dpto  = '$dpto' 
-          and i.institucion_id='$eess' and r.periodo='$periodo'
+AND r.registro_id=ll.registro_id and 
+ll.swloadend =  TRUE AND r.periodo='$campoForeign'
+$w$
+group BY 1,2,3,4) AS tbl
+ORDER BY 1,6,2
           `
         },
         keySession:{replaceKey:false, campo:'i.institucion_id'},
         referer: [ ],
         primal:{
-            equivalencia:{  },
-            attributes:`${parameters.rprte_abastecimienton.campos} `,
-            query:`SELECT 1 as x21`,
-            headers:[{ value: "primer_apellido", text: "Primer Apellido" }, { value: "segundo_apellido", text: "Segundo Apellido" }, { value: "nombres", text: "Nombres" },
-                { value: "mail_registro", text: "email" }, { value: "enviado", text: "Mail Enviado" }, { value: "obs", text: "Observaciones" }
+            equivalencia:{
+              eg:['eg.institucion_id','eg.nombre_corto'],
+              dpto:['dpto.cod_dpto', 'dpto.nombre_dpto'],
+              eess:['r.institucion_id', 'i.nombre_institucion'],
+              },
+            attributes:null,//`${parameters.rprte_abastecimienton.campos} `,
+             query:`
+SELECT DISTINCT $a$
+          FROM upf_file_tipo t, upf_registro r, ae_institucion i, al_departamento dpto, ae_institucion eg
+WHERE  $keySession and 
+t.file_tipo_id =  r.file_tipo_id
+and r.institucion_id =  i.institucion_id
+AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND i.institucion_root =  eg.institucion_id
+AND t."modelLoad"='abastecimiento'
+$w$
+order by 2
+`,
+            headers:[{ value: "codigo", text: "CODIGO LINAME" }, { value: "descripcion", text: "DESCRIPCION" }, { value: "presentacion", text: "PRESENTACION" },
+                { value: "alertax23", text: "ESTADO VIGENCIA" }, { value: "vigencia", text: "VIGENCIA" }, { value: "fvencimiento", text: "FECHA VENCIMIENTO" },
+                { value: "alertaxs23", text: "ESTADO STOCK" },
+                { value: "consumo", text: "CONSUMO MENSUAL" }, { value: "ingreso", text: "INGRESOS" }, { value: "egreso", text: "EGRESOS" }, { value: "transferencia", text: "TRANSFERENCIAS" },
+                { value: "stock", text: "SALDOS/STOCK" }, { value: "tmes", text: "TIEMPO EN MESES" }
             ],      
             
         },
-        withInitial:false,
+        withInitial:true,
         
     }, 
 

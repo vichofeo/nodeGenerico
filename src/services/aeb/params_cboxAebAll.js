@@ -5,6 +5,7 @@ const cmps = {
     dpto: ['Departamento', false, true, 'C', , , 'M'],
     eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
   }
+  const infecciones_dash =  require('./params_cboxsDash')
   //extraCondicion:[[campo, valor], [campo2, valor]...]
   'use strict'
   const PDEPENDENCIES = {     
@@ -458,6 +459,192 @@ $w$
           eg: ['t.eg', 't.eg'],
           dpto: ['t.dpto', 't.dpto'],
           eess: ['t.eess', 't.eess'],
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+
+    aneumonia: {
+      alias: 'aneumonia',
+      campos: cmps,
+      ilogic: {        
+        infec_casos: infecciones_dash.dash_neumonia.ilogic.infec_casos,
+        infec_dpto: infecciones_dash.dash_neumonia.ilogic.infec_dpto,
+        infec_gestion: infecciones_dash.dash_neumonia.ilogic.infec_gestion,
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    aneumonia_qf: {
+      alias: 'aneumonia_qf',
+      campos: cmps,
+      ilogic: {
+        infec_quartil: infecciones_dash.dash_neumonia.ilogic.infec_quartil,
+        infec_frecuencia: infecciones_dash.dash_neumonia.ilogic.infec_frecuencia,      
+        
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    aneumonia_dpto: {
+      alias: 'aneumonia_dpto',
+      campos: cmps,
+      ilogic: {
+        infec_dpto_q: infecciones_dash.dash_neumonia.ilogic.infec_dpto_q
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+
+    airas: {
+      alias: 'airas',
+      campos: cmps,
+      ilogic: {        
+        infec_casos: infecciones_dash.dash_iras.ilogic.infec_casos,
+        infec_dpto: infecciones_dash.dash_iras.ilogic.infec_dpto,
+        infec_gestion: infecciones_dash.dash_iras.ilogic.infec_gestion,
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    airas_qf: {
+      alias: 'airas_qf',
+      campos: cmps,
+      ilogic: {
+        infec_quartil: infecciones_dash.dash_iras.ilogic.infec_quartil,
+        infec_frecuencia: infecciones_dash.dash_iras.ilogic.infec_frecuencia,      
+        
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    airas_dpto: {
+      alias: 'airas_dpto',
+      campos: cmps,
+      ilogic: {
+        infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+
+    aedas: {
+      alias: 'aedas',
+      campos: cmps,
+      ilogic: {        
+        infec_casos: infecciones_dash.dash_edas.ilogic.infec_casos,
+        infec_dpto: infecciones_dash.dash_edas.ilogic.infec_dpto,
+        infec_gestion: infecciones_dash.dash_edas.ilogic.infec_gestion,
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    aedas_qf: {
+      alias: 'aedas_qf',
+      campos: cmps,
+      ilogic: {
+        infec_quartil: infecciones_dash.dash_edas.ilogic.infec_quartil,
+        infec_frecuencia: infecciones_dash.dash_edas.ilogic.infec_frecuencia,      
+        
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    aedas_dpto: {
+      alias: 'aedas_dpto',
+      campos: cmps,
+      ilogic: {
+        infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
         },
         query: `SELECT $sa$`,
         headers: [{}],
