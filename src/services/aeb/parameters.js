@@ -33,15 +33,16 @@ const PARAMETROS = {
         cardinalidad: "n",
         linked: "snis",
         campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
-        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
-        p.primer_apellido||' '||p.nombres AS usr  `,
+        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS mes,
+        p.primer_apellido||' '||p.nombres AS usr,
+        CASE t.dni_register WHEN  '$dni' THEN TRUE  ELSE false END  as accion  `,
 
         camposView: [{ value: "gestion", text: "Gestion" }, { value: "departamento", text: "Departamento" }, { value: "ente", text: "Ente Gestor" }, { value: "establecimiento", text: "Establecimiento de Salud" },
-        { value: "meses", text: "Periodos" },
-        { value: "usr", text: "Usuario" } ],
+        { value: "mes", text: "Periodos" },
+        { value: "usr", text: "Usuario" },  {value:'accion', text:'Accion'} ],
         key: [],
         precondicion: ['t.dni_register = p.dni_persona'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr, t.dni_register 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
@@ -53,15 +54,16 @@ const PARAMETROS = {
         cardinalidad: "n",
         linked: "snis",
         campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
-        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
-        p.primer_apellido||' '||p.nombres AS usr  `,
+        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS mes,
+        p.primer_apellido||' '||p.nombres AS usr,
+        CASE t.dni_register WHEN  '$dni' THEN TRUE  ELSE false END  as accion  `,
 
         camposView: [{ value: "gestion", text: "Gestion" }, { value: "departamento", text: "Departamento" }, { value: "ente", text: "Ente Gestor" }, { value: "establecimiento", text: "Establecimiento de Salud" },
-        { value: "meses", text: "Periodos" },
-        { value: "usr", text: "Usuario" } ],
+        { value: "mes", text: "Periodos" },
+        { value: "usr", text: "Usuario" }, {value:'accion', text:'Accion'} ],
         key: [],
         precondicion: ['t.dni_register = p.dni_persona'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr, t.dni_register 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],
@@ -95,15 +97,16 @@ const PARAMETROS = {
         cardinalidad: "n",
         linked: "snis",
         campos: `t.gestion, t.departamento, t.ente_gestor_name AS ente, t.establecimiento,
-        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS meses,
-        p.primer_apellido||' '||p.nombres AS usr  `,
+        string_agg(distinct t.mes, ', ' ORDER BY t.mes) AS mes,
+        p.primer_apellido||' '||p.nombres AS usr,
+        CASE t.dni_register WHEN  '$dni' THEN TRUE  ELSE false END  as accion  `,
 
         camposView: [{ value: "gestion", text: "Gestion" }, { value: "departamento", text: "Departamento" }, { value: "ente", text: "Ente Gestor" }, { value: "establecimiento", text: "Establecimiento de Salud" },
-        { value: "meses", text: "Periodos" },
-        { value: "usr", text: "Usuario" } ],
+        { value: "mes", text: "Periodos" },
+        { value: "usr", text: "Usuario" }, {value:'accion', text:'Accion'} ],
         key: [],
         precondicion: ['t.dni_register = p.dni_persona'],
-        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr 
+        groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr, t.dni_register 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],
         referer: [ ],

@@ -432,6 +432,48 @@ case ll.consumo_mensual  WHEN 0 THEN 0  else round ((ll.saldo_stock/ll.consumo_m
         paramDoms:[['ll.file_id',0]],
         update: [],
         referer: [  ],
+    },
+    rprte_carmelon:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'upf_registro r, e_carmelo ll',
+        alias: 'rprte_carmelon',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `ll.ente_gestor, ll.establecimiento, to_char(ll.fecha_dispensacion, 'DD/MM/YYYY') AS fecha, ll.genero, ll.edad`,
+
+        camposView: [
+            { value: "ente_gestor", text: "E.G." }, { value: "establecimiento", text: "ESTABLECIMIENTO" }, 
+            { value: "fecha", text: "FECHA DISPENCIACION" }, { value: "genero", text: "SEXO" },
+            { value: "edad", text: "EDAD" }        
+        ],
+        key: ['r.registro_id'],
+        precondicion: ['r.registro_id=ll.registro_id',
+            'll.swloadend =  true', '$paramDoms' ],
+        groupOrder: ` ORDER BY  ll.fecha_dispensacion, ll.genero, ll.edad `,//null string    
+        paramDoms:[['ll.file_id',0]],
+        update: [],
+        referer: [  ],
+    },
+    rprte_nutri_maman:{
+        //'$app', '$inst', '$dni', '$usr'
+        table: 'upf_registro r, e_nutri_mama ll',
+        alias: 'rprte_nutri_maman',
+        cardinalidad: "n",
+        linked: "evaluacion",
+        campos: `ll.ente_gestor, ll.establecimiento, to_char(ll.fecha_dispensacion, 'DD/MM/YYYY') AS fecha, ll.semana_gestacion, ll.edad`,
+
+        camposView: [
+            { value: "ente_gestor", text: "E.G." }, { value: "establecimiento", text: "ESTABLECIMIENTO" }, 
+            { value: "fecha", text: "FECHA DISPENCIACION" }, { value: "semana_gestacion", text: "SEMANA GESTACION" },
+            { value: "edad", text: "EDAD" }        
+        ],
+        key: ['r.registro_id'],
+        precondicion: ['r.registro_id=ll.registro_id',
+            'll.swloadend =  true', '$paramDoms' ],
+        groupOrder: ` ORDER BY  ll.fecha_dispensacion, ll.semana_gestacion, ll.edad `,//null string    
+        paramDoms:[['ll.file_id',0]],
+        update: [],
+        referer: [  ],
     }
 }
 

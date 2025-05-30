@@ -271,8 +271,8 @@ const tmpsDeletetSnis =  async (dto, handleError)=>{
     */
     if(data?.semana && data.periodoSelected.length>0)
       periodo = {semana: data.periodoSelected}
-    else if(data?.periodo && data.periodoSelected.length>0)
-      periodo = {periodo: data.periodoSelected}
+    else if(data?.mes && data.periodoSelected.length>0)
+      periodo = {mes: data.periodoSelected}
     
     
     if(tablas[index] && periodo && data.accion==true){
@@ -292,7 +292,7 @@ const tmpsDeletetSnis =  async (dto, handleError)=>{
       message= "Registro Eliminado Correctamente."
     }else{
       ok=false
-      message="No se pudo eliminar registro posiblemente desa borrar mas de un periodo/semana"
+      message="No se pudo eliminar registro posiblemente desa borrar mas de un mes/semana"
     }
     
     await qUtil.commitTransaction()
@@ -301,6 +301,7 @@ const tmpsDeletetSnis =  async (dto, handleError)=>{
       message: message
     }
   } catch (error) {
+    
     await qUtil.rollbackTransaction()
     handleError.setMessage('Error de sistema: DESTROYSNISSRV')
       handleError.setHttpError(error.message)
