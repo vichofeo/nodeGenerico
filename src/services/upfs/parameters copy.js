@@ -86,115 +86,173 @@ WHERE file_tipo_id='$idx'`
     },
     registradosn: {
         //'$app', '$inst', '$dni', '$usr'
-        table: `ae_institucion i, al_departamento d, ae_institucion eg,
-        upf_file_institucion_cnf cnf
-        LEFT JOIN 
-(SELECT eval.institucion_id, eval.registro_id AS idx, 'evaluacion' as linked,
-CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN true ELSE false END AS editar,
-p.primer_apellido as evaluador, eval.periodo, eval.activo, eval.create_date, 
-to_char(eval.create_date, 'DD/MM/YYYY') AS f_creacion,
-eval.concluido, atr1.atributo AS concluido_e, atr1.color AS concluido_c, 
-eval.revisado, atr2.atributo AS revisado_e, atr2.color AS revisado_c,
-eval.ctype_plus AS c_plus,  atr3.atributo AS c_plus_e, atr3.color AS c_plus_c,
-eval.rtype_plus AS r_plus, atr4.atributo AS r_plus_e, atr4.color AS r_plus_c,
-
-(date(eval.create_date)<= CURRENT_DATE AND CURRENT_DATE<= eval.fecha_climite) AS fregistro,
-(eval.fecha_climite< CURRENT_DATE AND CURRENT_DATE<= eval.flimite_plus) AS fregistro_plus,
-(date(eval.create_date)<= CURRENT_DATE AND CURRENT_DATE<= eval.fecha_rlimite) AS frev,
-(eval.fecha_rlimite< CURRENT_DATE AND CURRENT_DATE<= eval.frevisado_plus) AS frev_plus
-
-FROM  au_persona p, upf_file_tipo tf, upf_registro eval
-LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido)
-LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
-
-LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
-LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
-WHERE
-p.dni_persona =  eval.dni_register and tf.file_tipo_id =  eval.file_tipo_id
-AND (eval.file_tipo_id='$idx')
-) AS eval ON ( eval.institucion_id =  cnf.institucion_id) 
-        `,
+        table: 'ae_institucion i, al_departamento d, ae_institucion eg, au_persona p, upf_file_institucion_cnf cnf, upf_registro eval ',
         alias: 'registradosn',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `d.nombre_dpto AS dpto, eg.nombre_corto AS eg,
-        i.institucion_id as institucion, i.nombre_institucion AS establecimiento, '' as glosa,
-        eval.*
+        campos: `eval.registro_id as idx, 'evaluacion' as linked,
+
+        d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
+        p.primer_apellido AS evaluador,
+
+         eval.periodo,
+        
+        eval.concluido AS concluido_estado, eval.revisado as revision_estado,
+        eval.activo,
+
+        CASE WHEN strpos(eval.dni_register,'$dni')>0 AND eval.institucion_id ='$inst' THEN false ELSE true END AS ver,
+        TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 0 as hab_conclusion, 0 as hab_revision,
+CASE 
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.fecha_climite )) THEN  atr1.atributo       
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus <> 'c0' )) THEN  atr1.atributo ||'\n'|| atr3.atributo     
+
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun'
+WHEN (eval.concluido::DECIMAL<7 AND CURRENT_DATE>  eval.flimite_plus) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun. <span class="red--text">En demora indefinida.</span>'
+
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) THEN 'Formulario debidamente llenado para revision departamental.'
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) THEN 'Formulario debidamente llenado con demora en la verificacion.'
+WHEN (eval.revisado::DECIMAL=8 AND CURRENT_DATE> eval.frevisado_plus ) THEN 'Formulario debidamente llenado. <span class="red--text">En demora indefinida.</span>'
+
+WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class="teal--text">El formulario esta llenado de forma completa. El consolidado departamental se ha enviado/entregado satisfactoriamente  </span>'
+|| CASE WHEN eval.ctype_plus<> 'c0' THEN '\n Obs.: '||atr3.atributo ELSE '' END
+|| CASE WHEN eval.rtype_plus<> 'r0' THEN '\n Obs.: '||atr4.atributo ELSE '' END
+ELSE case when eval.concluido::DECIMAL<7 then '' else 
+'<span class="error">!!Estado de registro no Declarado.</span>' end
+END AS glosa        
         `,
 
-        camposView: [{ value: "dpto", text: "Dpto" }, { value: "eg", text: "E.G." }, { value: "establecimiento", text: "Establecimiento" },
+        camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
         { value: "periodo", text: "Periodo Registro" },
         { value: "evaluador", text: "Responsable" },        
-        { value: "editar", text: "Accion" },
+        { value: "ver", text: "Accion" },
 
-        { value: "f_creacion", text: "Creacion" },        
-        { value: "concluido", text: " " },
+        { value: "creacion", text: "Creacion" },
+        //{value:'creador', text:'Creado Por'},
+        { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
         { value: "glosa", text: "Glosa" },
 
         ],
         key: ['cnf.file_tipo_id'],
-        precondicion: ["cnf.institucion_id='$inst'",
-            'cnf.institucion_id =  i.institucion_id', 
-            'i.cod_pais =  d.cod_pais' , 'i.cod_dpto =  d.cod_dpto' ,
-            'i.institucion_root =  eg.institucion_id',  "cnf.activo='Y'"
-        ],
+        precondicion: [
+             'eval.dni_register =  p.dni_persona',
+            'cnf.institucion_id =  eval.institucion_id ', 'cnf.file_tipo_id=eval.file_tipo_id ',
+            'cnf.institucion_id =  i.institucion_id',
+            ' i.cod_pais= d.cod_pais', 'i.cod_dpto=d.cod_dpto',
+            'i.institucion_root =  eg.institucion_id',
+            "eval.institucion_id='$inst'"],
         groupOrder: ` ORDER BY  eval.create_date desc `,//null string    
         update: [],
-        referer: [],
+        referer: [ 
+            {ref: 'u_is_atributo as atr1', campos: 'atr1.atributo as conclusion, atr1.color as conclusion_color', camporef: 'atr1.atributo_id', camporefForeign: 'eval.concluido'},
+            {ref: 'u_is_atributo as atr2', campos: 'atr2.atributo as revisado, atr2.color as revisado_color', camporef: 'atr2.atributo_id', camporefForeign: 'eval.revisado'},
+            {ref: 'u_is_atributo as atr3', campos: 'atr3.atributo as cglosa', camporef: 'atr3.atributo_id', camporefForeign: 'eval.ctype_plus'},
+            {ref: 'u_is_atributo as atr4', campos: 'atr4.atributo as rglosa', camporef: 'atr4.atributo_id', camporefForeign: 'eval.rtype_plus'}
+        ],
     },
     registrados_todes: {
         //'$app', '$inst', '$dni', '$usr'
-        table: `ae_institucion i, al_departamento d, ae_institucion eg,
+        table: `ae_institucion i, al_departamento d, ae_institucion eg, 
+        
         upf_file_institucion_cnf cnf
-        LEFT JOIN 
-(SELECT eval.institucion_id, eval.registro_id AS idx, 'evaluacion' as linked,
-CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN true ELSE false END AS editar,
-p.primer_apellido as evaluador, eval.periodo, eval.activo, eval.create_date, 
-to_char(eval.create_date, 'DD/MM/YYYY') AS f_creacion,
-eval.concluido, atr1.atributo AS concluido_e, atr1.color AS concluido_c, 
-eval.revisado, atr2.atributo AS revisado_e, atr2.color AS revisado_c,
-eval.ctype_plus AS c_plus,  atr3.atributo AS c_plus_e, atr3.color AS c_plus_c,
-eval.rtype_plus AS r_plus, atr4.atributo AS r_plus_e, atr4.color AS r_plus_c,
+                    LEFT JOIN (SELECT eval.registro_id as idx, eval.file_tipo_id, tf.sw_semana,
+                eval.institucion_id,  eval.periodo,
+                p.primer_apellido AS evaluador, 
+                eval.concluido, eval.activo,
+                CASE WHEN strpos(eval.dni_register,'$dni')>0 THEN false ELSE true END AS ver,
+                TO_CHAR(eval.create_date, 'dd/mm/yyyy') as creacion, 
+                eval.concluido AS concluido_estado, eval.revisado as revision_estado,
+                atr1.atributo as conclusion, atr1.color AS conclusion_color,
+                atr2.atributo as revisado, atr2.color AS revisado_color,
+                eval.create_date, 
 
-(date(eval.create_date)<= CURRENT_DATE AND CURRENT_DATE<= eval.fecha_climite) AS fregistro,
-(eval.fecha_climite< CURRENT_DATE AND CURRENT_DATE<= eval.flimite_plus) AS fregistro_plus,
-(date(eval.create_date)<= CURRENT_DATE AND CURRENT_DATE<= eval.fecha_rlimite) AS frev,
-(eval.fecha_rlimite< CURRENT_DATE AND CURRENT_DATE<= eval.frevisado_plus) AS frev_plus
+        (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) AS cdemora,
+        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) as prevision,
+        (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) as hab_revision,
+  
+        CASE
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.fecha_climite )) THEN  atr1.atributo       
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus <> 'c0' )) THEN  atr1.atributo ||'\n'|| atr3.atributo     
 
-FROM  au_persona p, upf_file_tipo tf, upf_registro eval
-LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido)
-LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
+WHEN (eval.concluido::DECIMAL<7 AND (CURRENT_DATE > eval.fecha_climite AND CURRENT_DATE <= eval.flimite_plus AND eval.ctype_plus = 'c0')) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun.'
+WHEN (eval.concluido::DECIMAL<7 AND CURRENT_DATE>  eval.flimite_plus) THEN 'El formulario esta llenado de manera incompleta y no se entregó aun. <span class="red--text">En demora indefinida.</span>'
 
-LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
-LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
-WHERE
-p.dni_persona =  eval.dni_register and tf.file_tipo_id =  eval.file_tipo_id
-AND ($paramDoms)
-) AS eval ON ( eval.institucion_id =  cnf.institucion_id)`,
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE<= eval.fecha_rlimite OR(CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus <>'r0'))) THEN 'El formulario esta llenado de forma completa, para revision departamental.' ||'\n'|| atr3.atributo
+WHEN (eval.revisado::DECIMAL=8 AND (CURRENT_DATE> eval.fecha_rlimite AND  CURRENT_DATE <= eval.frevisado_plus AND eval.rtype_plus = 'r0')) THEN 'El formulario esta llenado de forma completa, con demora en la verificacion.'
+WHEN (eval.revisado::DECIMAL=8 AND CURRENT_DATE> eval.frevisado_plus ) THEN 'El formulario debidamente llenado, pero no ha sido verificado por el departamental. <span class="red--text">En demora indefinida.</span>'
+
+WHEN (eval.concluido::DECIMAL=7 AND eval.revisado::DECIMAL=15) THEN '<span class="teal--text">Formulario debidamente llenado y consolidado departamental, se ha enviado/entregado satisfactoriamente .</span>'
+|| CASE WHEN eval.ctype_plus<> 'c0' THEN ' Obs.: '||atr3.atributo ELSE '' END
+|| CASE WHEN eval.rtype_plus<> 'r0' THEN ' Obs.: '||atr4.atributo ELSE '' END
+ELSE '<span class="error">!!Estado de registro no Declarado.</span>'
+END AS glosa
+
+                FROM  au_persona p, upf_file_tipo tf, upf_registro eval
+                LEFT JOIN u_is_atributo as atr1 ON (atr1.atributo_id = eval.concluido) 
+                LEFT JOIN u_is_atributo as atr2 ON (atr2.atributo_id = eval.revisado)
+            
+                LEFT JOIN u_is_atributo as atr3 ON (atr3.atributo_id = eval.ctype_plus)
+                LEFT JOIN u_is_atributo as atr4 ON (atr4.atributo_id = eval.rtype_plus)
+                WHERE 
+                p.dni_persona =  eval.dni_register and tf.file_tipo_id =  eval.file_tipo_id 
+                AND ($paramDoms) ) AS eval 
+                ON ( eval.institucion_id =  cnf.institucion_id 
+            )` ,
         alias: 'monis_todes',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `d.nombre_dpto AS dpto, eg.nombre_corto AS eg,
-        i.institucion_id as institucion, i.nombre_institucion AS establecimiento, '' as glosa,
-        eval.*`,
+        campos: `eval.idx, 'evaluacion' as linked,
 
-        camposView: [{ value: "dpto", text: "Dpto" }, { value: "eg", text: "E.G." }, { value: "establecimiento", text: "Establecimiento" },
+        d.nombre_dpto, eg.nombre_corto, 
+        i.institucion_id as institucion, i.nombre_institucion,
+        
+         
+        eval.evaluador, eval.periodo, 
+        eval.concluido, eval.activo,
+        eval.ver,
+
+        eval.creacion, 
+        eval.concluido_estado, eval.revision_estado,
+(eval.prevision AND (SELECT COUNT(*) FROM ae_institucion i3 WHERE i3.parent_grp_id= '$inst' AND i3.tipo_institucion_id= 'EESS')>0 ) AS prevision,
+        eval.conclusion, eval.conclusion_color , 
+        eval.revisado, eval.revisado_color, '|pd-0-pd|' as prdo, 
+CASE
+  WHEN  (( COALESCE(eval.idx,'-1')!='-1' AND  not eval.sw_semana) AND  $primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','YYYY-MM') + CAST(cnf.limite_plus-1 ||'days' AS INTERVAL)+ INTERVAL '1 month')) ) AND 
+        (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL 
+        FROM ae_institucion i2
+        WHERE i2.institucion_id='$inst') 
+    THEN 1
+WHEN  (( COALESCE(eval.idx,'-1')!='-1' AND  eval.sw_semana) AND $primal AND eval.ver IS NULL AND ((CURRENT_DATE <= to_date('|pd-0-pd|','IYYY-IW') +  INTERVAL '1 WEEK' + INTERVAL '1 day')) ) AND 
+        (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL 
+        FROM ae_institucion i2
+        WHERE i2.institucion_id='$inst') 
+    THEN 1
+ WHEN eval.cdemora AND (SELECT i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL FROM ae_institucion i2 WHERE i2.institucion_id='$inst') 
+ THEN 2  
+ ELSE 0 END AS hab_conclusion, 
+
+ CASE WHEN $primal AND hab_revision AND (SELECT COUNT(*) FROM ae_institucion i2 WHERE i2.institucion_id='$inst' AND i2.es_unidad AND i2.tipo_institucion_id='ASUSS' AND i2.parent_grp_id IS NULL AND i2.root IS NULL) >0
+THEN 1 ELSE 0 END  AS hab_revision, eval.glosa, cnf.opening_delay as delay
+        `,
+
+        camposView: [{ value: "nombre_dpto", text: "Dpto" }, { value: "nombre_corto", text: "E.G." }, { value: "nombre_institucion", text: "Establecimiento" },
         { value: "periodo", text: "Periodo Registro" },
-        { value: "evaluador", text: "Responsable" },        
-        { value: "editar", text: "Accion" },
-
-        { value: "f_creacion", text: "Creacion" },        
-        { value: "concluido", text: " " },
+        { value: "evaluador", text: "Evaluador" },
+        
+        { value: "ver", text: "Accion" },
+        { value: "creacion", text: "Creacion" },        
+        { value: "conclusion", text: " " },
         { value: "revisado", text: " " },
-        { value: "glosa", text: "Glosa" }
+        { value: "glosa", text: "Glosa" },
+
         ],
         key: ['cnf.file_tipo_id'],
         keySession:{replaceKey:false, campo:'i.institucion_id'}, //null or undefined
         paramDoms:[['eval.periodo',0],['eval.file_tipo_id',1]],
-        precondicion: ['cnf.institucion_id =  i.institucion_id', 
-            'i.cod_pais =  d.cod_pais' , 'i.cod_dpto =  d.cod_dpto' ,
-            'i.institucion_root =  eg.institucion_id',  "cnf.activo='Y'"], //$paramDoms variable
+        precondicion: [
+             'cnf.institucion_id =  i.institucion_id',            
+            'i.cod_pais =  d.cod_pais ', ' i.cod_dpto =  d.cod_dpto',
+            'i.institucion_root =  eg.institucion_id'], //$paramDoms variable
         groupOrder: ` ORDER BY  eval.create_date `,//null string    
         update: [],
         referer: [],
@@ -416,50 +474,6 @@ case ll.consumo_mensual  WHEN 0 THEN 0  else round ((ll.saldo_stock/ll.consumo_m
         paramDoms:[['ll.file_id',0]],
         update: [],
         referer: [  ],
-    },
-
-    /********************para reporte horizonrtal */
-    rh_mensualn:{
-        table: `ae_institucion i, ae_institucion eg, al_departamento d, upf_registro r
-LEFT JOIN u_is_atributo as a1 ON (a1.atributo_id = r.concluido)`,
-        alias: 'rh_mensualn',
-        cardinalidad: "n",
-        linked: "eess",
-        campos: `d.cod_dpto, d.nombre_dpto, eg.nombre_corto, i.nombre_institucion,
-SUM(CASE WHEN substr(r.periodo,6,2)::DECIMAL =3 THEN 1 ELSE 0 END ) AS MARZO,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =1 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS ENE,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =2 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS FEB,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =3 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS MAR,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =4 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS ABR,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =5 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS MAY,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =6 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS JUN,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =7 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS JUL,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =8 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS AGO,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =9 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS SEP,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =10 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS OCT,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =11 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS NOV,
-string_agg(CASE WHEN substr(r.periodo,6,2)::DECIMAL =12 THEN a1.atributo||'|'||a1.color ELSE null END, '|' ) AS DIC`,
-
-        camposView: [
-        { value: "cod_liname", text: "Codigo" }, 
-        { value: "medicamento", text: "Medicamento" }, 
-        { value: "forma_farmaceutica", text: "Forma Farmacéutica" }, 
-        { value: "concentracion", text: "Concentración" },
-        { value: "clasificacion_atq", text: "Clasific. A.T.Q." },
-        { value: "uso", text: "Uso Restringido" },
-        { value: "aclaracion", text: "Aclaración de Particularidades" } 
-    ],
-        key: ['r.file_tipo_id'],
-        paramDoms:[['r.periodo',0],['r.file_tipo_id',1]],
-        precondicion: ['r.institucion_id=i.institucion_id', 'i.institucion_root =  eg.institucion_id',
-            'i.cod_pais =  d.cod_pais',  'i.cod_dpto  =  d.cod_dpto',
-            `substr(r.periodo,0,5)=substr('|pd-0-pd|',0,5)`, `r.file_tipo_id='|pd-1-pd|'`
-             ],
-        groupOrder: ` GROUP BY 1,2,3,4
-                    ORDER BY 1,3,4 `,//null string    
-        update: [],
-        referer: [ ],
-
     }
 }
 

@@ -137,6 +137,7 @@ module.exports = class FrmsUtils {
     query =  await this.#replaceStingByDataRoleSession(query)
     query =  this.#replaceStringByDataParamDoms(dto, objModel ,query)
     query =  this.#replaceTagWithPDomOrDtoValues(dto, objModel, query)
+    query = query.replaceAll('$idx',idx)
 
     this.#qUtils.setQuery(query)
     await this.#qUtils.excuteSelect()
