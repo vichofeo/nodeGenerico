@@ -262,21 +262,23 @@ case ll.consumo_mensual  WHEN 0 THEN 0  else round ((ll.saldo_stock/ll.consumo_m
         alias: 'rprte_abas_plantillan',
         cardinalidad: "n",
         linked: "evaluacion",
-        campos: `l.grupo, l.variable, l.subvariable,
+        campos: `row_number() OVER (ORDER BY l.cod_liname) as nro,
+        l.grupo, l.variable, l.subvariable,
                 l.medicamento ||' '|| l.concentracion  AS descripcion, 
                 l.forma_farmaceutica AS presentacion,
-                to_char(ll.fecha_vencimiento,'dd/mm/yyyy') AS fvencimiento, ll.reg_sanitario, 
+                to_char(ll.fecha_vencimiento,'DD/MM/YYYY') AS fvencimiento, ll.reg_sanitario, 
                 '' as consumo_mensual,
                 '' as ingresos, '' as egresos, '' as transferencias, '' as stock, saldo_stock as stock_ant
         `,
 
-        camposView: [
+        camposView: [{ value: "nro", text: "NRO." },
             { value: "grupo", text: "GRUPO" }, { value: "variable", text: "VARIABLE" }, { value: "subvariable", text: "SUBVARIABLE" },
             { value: "descripcion", text: "DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION" }, 
-            { value: "presentacion", text: "PRESENTACION" },
-        { value: "fvencimiento", text: "FECHA VENCIMIENTO" }, { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
-        { value: "ingresos", text: "INGRESOS"}, { value: "egresos", text: "EGRESOS"}, { value: "transferencias", text: "TRANSFERENCIAS"}, 
-        { value: "stock", text: "SALDOS/STOCK"}, { value: "stock_ant", text: "STOCK ANTERIOR"}
+            { value: "presentacion", text: "FORMA FARMACÉUTICAS/PRESENTACION" },
+        { value: "fvencimiento", text: "FECHA DE VENCIMIENTO" }, 
+        { value: "reg_sanitario", text: "REGISTRO SANITARIO" }, { value: "consumo_mensual", text: "CONSUMO MENSUAL"},
+        { value: "ingresos", text: "INGRESOS/ENTRADAS"}, { value: "egresos", text: "EGRESOS/SALIDAS"}, { value: "transferencias", text: "TRANSFERENCIAS"}, 
+        { value: "stock", text: "STOCK / SALDOS"}, { value: "stock_ant", text: "STOCK ANTERIOR"}
         ],
         key: ['r.file_tipo_id'],
         precondicion: ['r.registro_id=ll.registro_id', 'll.cod_liname=l.cod_liname',

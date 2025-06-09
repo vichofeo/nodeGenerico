@@ -7,7 +7,7 @@ const PARAMETERS = {
         attributes:[["registro_id", 'periodo'], ['count(*)', 'registros']],
         //file: ['NRO.', 'CÓDIGO LINAME', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
         //table: ['xnro','cod_liname','medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
-        file: ['NRO.', 'GRUPO', 'VARIABLE', 'SUBVARIABLE', 'MEDICAMENTO', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK/ SALDOS'],
+        file: ['NRO.', 'GRUPO', 'VARIABLE', 'SUBVARIABLE', 'DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK / SALDOS'],
         table: ['xnro','grupo', 'variable', 'subvariable', 'medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
         validate: [0,1,1,1,1,1,1,1,1,1,1,1,1],
         forFilter:['FECHA DE VENCIMIENTO'],        
