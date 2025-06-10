@@ -56,9 +56,9 @@ const PARAMETROS = {
         noKeyAutomatic: true,
         included: null, //para el caso de una asociacion con table
         campos: {            
-            component: ['Codigo Componente', false, true, 'TT',24],   
-            route_access:['Ruta de acceso', true, true, 'TT', 32],
-            name_component:['Nombre componente', true, false, 'TT', 50],
+            component: ['Codigo Componente', false, true, 'TT',32],   
+            route_access:['Ruta de acceso', true, true, 'TT', 80],
+            name_component:['Nombre componente', true, false, 'TT', 80],
             base_folder:['Ruta Folder', true, false, 'TT', 80],
             prop:['Requiere props (solo /:id)', true, false, 'SW', 1],                     
             description: ['Descripcion', true, true, 'TA',250],            

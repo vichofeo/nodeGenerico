@@ -296,7 +296,7 @@ const getMenuOpsRole = async (dto, handleError) => {
 
     for (const element of result.rol) {
         for(const e of element.app_rolex.routes){
-            console.log("\n\n\n ............Ruta:", e.module)
+            console.log("\n\n\n ::::::::::::Ruta:", e.module)
             if(!rutas[e.module]) rutas[e.module] = []
 
             console.log("\n\n\n ............Modulo:", e.componente)
@@ -329,7 +329,7 @@ const getMenuOpsRole = async (dto, handleError) => {
                      * ************* HAY Q OPTIMIZAR ESTA SECCION DE CODIGO OJO NABITO *******************
                      * ********************
                      */
-                    //busca por query solo valido para mapas y snis
+                    //busca por query solo valido para mapas y snis y cargado exceles
                     const tmod='!*!'
                     const tcom='|&|'
                     //e.module, e.component
@@ -353,18 +353,22 @@ const getMenuOpsRole = async (dto, handleError) => {
                         qUtil.setResetVars()
 
                         rutas[e.module] = rfrms.map((obj, i) => ({ value: `/frm/ll/${obj.formulario_id}`, text: obj.frms.nombre_formulario}))
-                    }else if(e.module == 'mupfs'){
+                    }else if(e.module == 'uctrlabasxls'){//modulo para ucass
                         qUtil.setTableInstance('upf_file_institucion_cnf')
                         qUtil.setInclude({
-                            association: 'uffiletipo', required: false,
-                            attributes:['nombre_tipo_archivo']
+                            association: 'uffiletipo', required: true,
+                            attributes:['nombre_tipo_archivo'],
+                            include:{association: 'ufgroup', required: true,
+                                attributes: ['nombre_grupo_file'],
+                                where:{aplicacion_id:'2d3b2461-876e-499d-bb05-42dbf5fbea5a'}
+                            }
                         })
                         qUtil.setWhere({ institucion_id: obj_cnf.institucion_id, activo:'Y' })
                         await qUtil.findTune()
                         const rfrms = qUtil.getResults()
                         qUtil.setResetVars()
 
-                        rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/mupfs/rgf/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
+                        rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/uctrlabasxls/ctrlu/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
                     }
                     
                 }
