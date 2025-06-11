@@ -367,9 +367,8 @@ const getMenuOpsRole = async (dto, handleError) => {
                         await qUtil.findTune()
                         const rfrms = qUtil.getResults()
                         qUtil.setResetVars()
-
                         rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/uctrlabasxls/ctrlu/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
-                    }
+                    } 
                     
                 }
             }else{
