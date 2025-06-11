@@ -123,6 +123,32 @@ const saveUsr = async (dto) => {
     }
     await qUtil.commitTransaction()
 
+    //envia mail
+    if(obj.mail){
+      const Mailer = require('../utils/MailerUtils')
+        const mailer = new Mailer()
+        mailer.setFromMail('vichofeo@yahoo.com')
+        mailer.setToMail(obj.mail)
+        mailer.setSubjet('Credenciales SubSistema de Control de Medicamentos')
+        mailer.setMessagePlain(`Estas son sus credenciales de sistema
+          
+          Login: ${obj.login}
+          Password: ${obj.passs}
+
+          Copie y pegue la siguiente direccion web en su navegador:
+
+          https://esalud.asuss.gob.bo/login
+
+
+          Se recomienda cambiar password
+          `)
+        await mailer.sendMail()
+        const rmail =  mailer.getResults()
+        //rmail.ok/
+    }
+    
+
+
     return {
       ok: true,
       //r: result,

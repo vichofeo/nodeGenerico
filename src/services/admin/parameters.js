@@ -208,6 +208,7 @@ const PARAMETROS = {
             genero: ['Genero', true, true, 'TP', 2],
             discapacidad: ['Alguna Discapacidad', true, true, 'TP', 2],
             telefono: ['Telefono', true, true, 'TP', 2],
+            mail: ['e-mail Oficial', true, true, 'TP', 2],
             register: ['Registrado', true, true, 'TP', 2],
         },        
         key: ['dni_persona'],        
