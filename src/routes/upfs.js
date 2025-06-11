@@ -19,7 +19,7 @@ router.post('/savemodel', authMiddleWare, controller.saveModel)
 
 
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
-
+router.post("/agrupado", authMiddleWare, controller.getGroupedModels) 
 
 //configuracion establecimientos
 router.post('/cnf/geteess', authMiddleWare, configController.getEESS)
