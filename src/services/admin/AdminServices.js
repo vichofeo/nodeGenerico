@@ -129,8 +129,10 @@ const saveUsr = async (dto) => {
         const mailer = new Mailer()
         mailer.setFromMail('vichofeo@yahoo.com')
         mailer.setToMail(obj.mail)
-        mailer.setSubjet('Credenciales SubSistema de Control de Medicamentos')
-        mailer.setMessagePlain(`Estas son sus credenciales de sistema
+        mailer.setSubjet('ASUSS - esalud: Credenciales SubSistema de Control de Medicamentos')
+        mailer.setMessagePlain(`
+          Hola : ${obj.primer_apellido} ${obj.segundo_apellido} ${obj.nombres}
+          Estas son sus credenciales de sistema
           
           Login: ${obj.login}
           Password: ${obj.passs}

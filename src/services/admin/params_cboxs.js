@@ -36,8 +36,10 @@ const PDEPENDENCIES = {
             role:['Rol', false, true, 'C'],
         }, 
         ilogic: {institucion_id:`SELECT 
-                                distinct i.institucion_id AS value, i.tipo_institucion_id||'-'||i.nombre_institucion AS text
+                                distinct i.institucion_id AS value, 
+                                UPPER(COALESCE(d.nombre_dpto, ''))||' - '||i.tipo_institucion_id||' - '||i.nombre_institucion AS text
                                 FROM ape_aplicacion_institucion ai, ae_institucion i 
+                                LEFT JOIN al_departamento d ON (i.cod_pais=d.cod_pais AND i.cod_dpto=d.cod_dpto)
                                 WHERE ai.institucion_id=i.institucion_id
                                 ORDER BY 2`,
                 aplicacion_id: `SELECT distinct app.aplicacion_id as value, app.nombre_aplicacion as text

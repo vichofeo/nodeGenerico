@@ -325,6 +325,7 @@ const getMenuOpsRole = async (dto, handleError) => {
                     
                    }//fin for de sub accesos por agrupado
                 }else{
+                    console.log("\n\n !!!!!!!", e.module ,"!!!!!! \n\n")
                     /*********************
                      * ************* HAY Q OPTIMIZAR ESTA SECCION DE CODIGO OJO NABITO *******************
                      * ********************
@@ -368,7 +369,24 @@ const getMenuOpsRole = async (dto, handleError) => {
                         const rfrms = qUtil.getResults()
                         qUtil.setResetVars()
                         rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/uctrlabasxls/ctrlu/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
-                    } 
+                    } else if(e.module == 'mupfs'){//modulo para ucass
+                        console.log("\n\n ENTRANDO A MUPFS \n\n")
+                        qUtil.setTableInstance('upf_file_institucion_cnf')
+                        qUtil.setInclude({
+                            association: 'uffiletipo', required: true,
+                            attributes:['nombre_tipo_archivo'],
+                            include:{association: 'ufgroup', required: true,
+                                attributes: ['nombre_grupo_file'],
+                                where:{aplicacion_id:'21f19d11-b069-4b0d-9fee-f6dba302e3ac'}
+                            }
+                        })
+                        qUtil.setWhere({ institucion_id: obj_cnf.institucion_id, activo:'Y' })
+                        await qUtil.findTune()
+                        const rfrms = qUtil.getResults()
+                        console.log("\n\n ", rfrms ," \n\n")
+                        qUtil.setResetVars()
+                        rutas[e.module] = rutas[e.module].concat(rfrms.map((obj, i) => ({ value: `/mupfs/upfsa/${obj.file_tipo_id}`, text: obj.uffiletipo.nombre_tipo_archivo})))
+                    }
                     
                 }
             }else{
@@ -385,7 +403,7 @@ const getMenuOpsRole = async (dto, handleError) => {
 
     return {
         ok: true,
-        //data2: result,
+        data2: result,
         more_data: moreData,
         rutas: {rutas: rutas, icons: icons, modules: modulos},
         xx: tcmQueryDat,
