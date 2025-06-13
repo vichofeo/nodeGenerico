@@ -332,8 +332,8 @@ const PARAMETERS = {
         forFilter:  null,//['Fecha de Vacunación','Fecha de Nacimiento'],        
         update:[],
         superUpdate: {referer: 'tmp_equivalencia', update:[['eg','eg','Problemas con Ente gestor.'], ['dpto','dpto', 'Problemas con Dpto'], ['eess','eess']], conditional:[['ente_gestor_name','ente_gestor_name'],['departamento','departamento'],['establecimiento','establecimiento']]},
-        key:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
-        keyAux:['departamento', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
+        key:['departamento', 'municipio','ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', "COALESCE(variable,'-1')",'lugar_atencion' ,"COALESCE(subvariable, '-1')"],
+        keyAux:['departamento', 'municipio', 'ente_gestor_name', 'establecimiento', 'gestion', 'semana', 'formulario', 'grupo', 'variable','lugar_atencion' ,'subvariable', 'valor'],
         //gender: ['nombre', 'genero','f_genero']
         filterByFunc:{
             alias:'parserSnis302A' ,
