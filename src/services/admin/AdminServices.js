@@ -5,7 +5,7 @@ const cnf_cboxs = JSON.stringify(require('./params_cboxs'))
 const PCBOXS = JSON.parse(cnf_cboxs)
 
 
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const FrmUtils = require('./../frms/FrmsUtils')

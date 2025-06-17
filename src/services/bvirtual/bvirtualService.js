@@ -1,7 +1,7 @@
 //const pdfConverter = require('pdf-poppler')
 const path = require('path')
 
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const FrmUtils = require('./../frms/FrmsUtils')

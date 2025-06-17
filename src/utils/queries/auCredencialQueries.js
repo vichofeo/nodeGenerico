@@ -1,4 +1,4 @@
-const db = require('../index')
+const db = require('../../models/index')
 
 const credencialModel = db.apu_credencial
 

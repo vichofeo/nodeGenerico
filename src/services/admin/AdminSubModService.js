@@ -1,4 +1,4 @@
-const subModuloModel = require('./../../models/queries/apControllerQueries')
+const subModuloModel = require('./../../utils/queries/apControllerQueries')
 
 
 const listar = async () => {

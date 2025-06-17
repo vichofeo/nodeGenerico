@@ -1,4 +1,4 @@
-const Qutils = require('../../models/queries/Qutils')
+const Qutils = require('../../utils/queries/Qutils')
 //const tk = require('./../../services/utilService')
 const handleToken =  require('./../../utils/handleToken')
 const { v4: uuidv4 } = require('uuid');

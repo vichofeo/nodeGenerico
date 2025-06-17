@@ -1,5 +1,5 @@
 const HandleErrors = require('../../utils/handleErrors')
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const handleJwt = require('./../../utils/handleJwt')

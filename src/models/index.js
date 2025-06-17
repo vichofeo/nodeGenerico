@@ -16,17 +16,42 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-fs.readdirSync(__dirname).filter(file => {
+/*fs.readdirSync(__dirname).filter(file => {
     return (
       file.indexOf('.') !== 0 && file !== basename &&  file.slice(-3) === '.js' &&   
       file.indexOf('.test.js') === -1
     );
-  })
-  .forEach(file => {
+  }).forEach(file => {
     //console.log(path.join(__dirname, file))
     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
     //console.log("MODELO::::", model)
     db[model.name] = model;
+  });*/
+
+  // Función para filtrar archivos .js válidos
+const isModelFile = (file) => {
+  return (
+    file.endsWith('.js') && !file.startsWith('.') &&  file !== basename &&  !file.includes('.test.js')
+  );
+};
+// Leer archivos en el directorio actual (raíz)
+fs.readdirSync(__dirname)
+  .filter(file => isModelFile(file))
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  });
+
+// Lee archivos en subdirectorios (1 nivel de profundidad)
+fs.readdirSync(__dirname, { withFileTypes: true })
+  .filter(dirent => dirent.isDirectory()) // Solo carpetas
+  .forEach(dir => {
+    fs.readdirSync(path.join(__dirname, dir.name))
+      .filter(file => isModelFile(file))
+      .forEach(file => {
+        const model = require(path.join(__dirname, dir.name, file))(sequelize, Sequelize.DataTypes);
+        db[model.name] = model;
+      });
   });
 
 Object.keys(db).forEach(modelName => {

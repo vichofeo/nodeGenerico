@@ -1,5 +1,5 @@
 
-const db = require('./../index')
+const db = require('../../models/index')
 const personaModel = db.au_persona
 
 

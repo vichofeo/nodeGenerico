@@ -1,4 +1,4 @@
-const QueriesUtils = require('../../models/queries/QueriesUtils')
+const QueriesUtils = require('../../utils/queries/QueriesUtils')
 const { QueryTypes } = require("sequelize");
 
 const db = require('../../models/index')

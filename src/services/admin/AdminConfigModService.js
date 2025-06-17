@@ -1,4 +1,4 @@
-const QueriesUtils = require('../../models/queries/QueriesUtils')
+const QueriesUtils = require('../../utils/queries/QueriesUtils')
 
 const db = require('../../models/index')
 const { v4: uuidv4 } = require('uuid');

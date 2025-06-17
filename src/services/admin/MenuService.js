@@ -2,11 +2,11 @@ const PARAMETROS = require('../../config/parameters')
 const { AGRUPADO } = require('../../config/agrupado')
 const { REPORTS } = require('../../config/reports')
 
-const QueriesUtils = require('../../models/queries/QueriesUtils')
+const QueriesUtils = require('../../utils/queries/QueriesUtils')
 
 
 const handleToken = require("./../../utils/handleToken")
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil =  new QUtils()
 
 const FrmUtils = require('./../frms/FrmsUtils')

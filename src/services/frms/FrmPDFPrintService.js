@@ -18,7 +18,7 @@
 const FrmUtils = require('./FrmsUtils')
 const frmUtil = new FrmUtils()
 
-const QUtils = require('../../models/queries/Qutils')
+const QUtils = require('../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const ___getInfoRegistroFrm= async (dto)=>{

@@ -1,4 +1,4 @@
-const moduloModel = require('./../../models/queries/apModuloQueries')
+const moduloModel = require('./../../utils/queries/apModuloQueries')
 
 const listar = async () => {
   try {

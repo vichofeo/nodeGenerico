@@ -1,6 +1,6 @@
 const { QueryTypes } = require("sequelize");
 const db = require('../models/index');
-const QueriesUtils = require("../models/queries/QueriesUtils");
+const QueriesUtils = require("../utils/queries/QueriesUtils");
 const sequelize = db.sequelize
 
 const recibe = async (req, res) => {

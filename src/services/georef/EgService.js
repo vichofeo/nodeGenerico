@@ -7,13 +7,13 @@
  */
 const { v4: uuidv4 } = require('uuid');
 
-const QueriesUtils = require('../../models/queries/QueriesUtils')
+const QueriesUtils = require('../../utils/queries/QueriesUtils')
 const { QueryTypes, UUIDV4, Association, where } = require("sequelize")
 
 const db = require('../../models/index')
 const tk = require('./../utilService')
 
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const FrmUtils = require('./../frms/FrmsUtils')

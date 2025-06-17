@@ -4,7 +4,7 @@
  */
 const { v4: uuidv4 } = require('uuid');
 
-const QueriesUtils = require('../../models/queries/QueriesUtils')
+const QueriesUtils = require('../../utils/queries/QueriesUtils')
 const { QueryTypes, UUIDV4 } = require("sequelize")
 
 const db = require('../../models/index')

@@ -1,14 +1,14 @@
 const db = require('./../models/index')
-const QueriesUtils = require('./../models/queries/QueriesUtils')
+const QueriesUtils = require('./../utils/queries/QueriesUtils')
 
-const QUtils =  require('./../models/queries/Qutils')
+const QUtils =  require('./../utils/queries/Qutils')
 const qUtil =  new QUtils()
 
 const FrmUtils = require('./frms/FrmsUtils')
 const frmUtil = new FrmUtils()
 
 
-const credencialModel = require('./../models/queries/auCredencialQueries')
+const credencialModel = require('./../utils/queries/auCredencialQueries')
 
 //const tk = require('./../services/utilService')
 

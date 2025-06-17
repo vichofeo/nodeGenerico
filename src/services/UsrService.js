@@ -1,4 +1,4 @@
-const usrModel = require('./../models/queries/auPersonaQueries')
+const usrModel = require('./../utils/queries/auPersonaQueries')
 
 const jwt = require('jsonwebtoken')
 const config = require('./../config/config.cnf')

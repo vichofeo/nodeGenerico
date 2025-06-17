@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 const logger = require('../../config/logger')
-const QUtils = require('./../../models/queries/Qutils')
+const QUtils = require('./../../utils/queries/Qutils')
 const qUtil = new QUtils()
 module.exports = class MailerUtils {
 

@@ -1,5 +1,5 @@
 const { QueryTypes, UUIDV4, Op } = require('sequelize')
-const db = require('../index')
+const db = require('../../models/index')
 const tk = require('./../../services/utilService')
 
 module.exports = class Qutils {

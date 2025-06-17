@@ -9,7 +9,7 @@ const PARAMETROS = JSON.parse(parametros)
 const FrmUtils = require('./FrmsUtils')
 const frmUtil = new FrmUtils()
 
-const QUtils = require('../../models/queries/Qutils')
+const QUtils = require('../../utils/queries/Qutils')
 const qUtil = new QUtils()
 
 const { v4: uuidv4 } = require('uuid')
