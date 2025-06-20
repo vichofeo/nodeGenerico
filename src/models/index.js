@@ -34,6 +34,11 @@ const isModelFile = (file) => {
     file.endsWith('.js') && !file.startsWith('.') &&  file !== basename &&  !file.includes('.test.js')
   );
 };
+// Función para filtrar directorios que no sean "QueryUtils"
+const isModelDirectory = (dirent) => {
+  return dirent.isDirectory() && dirent.name.toLowerCase() !== 'queries';
+};
+
 // Leer archivos en el directorio actual (raíz)
 fs.readdirSync(__dirname)
   .filter(file => isModelFile(file))
@@ -44,11 +49,12 @@ fs.readdirSync(__dirname)
 
 // Lee archivos en subdirectorios (1 nivel de profundidad)
 fs.readdirSync(__dirname, { withFileTypes: true })
-  .filter(dirent => dirent.isDirectory()) // Solo carpetas
+  .filter(dirent => isModelDirectory(dirent))
   .forEach(dir => {
     fs.readdirSync(path.join(__dirname, dir.name))
       .filter(file => isModelFile(file))
       .forEach(file => {
+        //pm2console.log("Loading model:", file);
         const model = require(path.join(__dirname, dir.name, file))(sequelize, Sequelize.DataTypes);
         db[model.name] = model;
       });
