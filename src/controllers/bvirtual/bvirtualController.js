@@ -106,7 +106,16 @@ const editFile = async (req, res)=>{
     res.status(handleError.getCode()).json(handleError.getResponse())
 }
 
+const getVacun = async (req, res)=>{
+        
+    const token = req.headers.authorization
+    const idx =  req.params.idx
+    const body =  req.body
 
+    const result = await service.getVacun({token:token, idx: idx, ...body},handleError)
+    handleError.setResponse(result)
+    res.status(handleError.getCode()).json(handleError.getResponse())
+}
 
 module.exports = {
     searchFiles, suggestFiles,
@@ -114,5 +123,5 @@ module.exports = {
 
     getDataFiles, uploadFile, deleteFile,
     getFile, editFile,
-    
+    getVacun
 }

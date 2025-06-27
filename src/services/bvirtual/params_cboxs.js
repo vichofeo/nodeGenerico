@@ -31,5 +31,51 @@ const PDEPENDENCIES = {
             
         ],
     },
+    cbx_vacum_table:{        
+        alias: 'cbx_vacum_table',        
+        campos: {
+          //departamento: ['Departamento', false, true, 'C', , , 'M'],
+          departamento: ['Departamento', false, true, 'C'],
+          institucion: ['Ente Gestor', false, true, 'C'],      
+          
+        }, 
+        ilogic: {          
+          
+          dataTable:`
+          SELECT 
+v.departamento, v.municipio, v.institucion, v.establecimiento, direccion, lat, lng,
+v.telefono, v.horarios
+FROM tmp_vacunatorio v
+WHERE 1=1
+$w$
+order by v.departamento, v.municipio, v.institucion, v.establecimiento
+          `
+        },
+        keySession:{},
+        referer: [ ],
+        primal:{
+            equivalencia:{
+              departamento:['v.departamento','v.departamento'],
+              institucion:['v.institucion', 'v.institucion'],
+              
+              },
+            attributes:null,//`${parameters.rprte_abastecimienton.campos} `,
+             query:`
+             SELECT DISTINCT $a$
+FROM tmp_vacunatorio v
+WHERE 1=1
+$w$
+order by 2
+`,
+            headers:[{ value: "departamento", text: "DEPARTAMENTO" }, { value: "municipio", text: "MUNICIPIO" }, 
+            { value: "institucion", text: "ENTE GESTOR" }, 
+            { value: "establecimiento", text: "ESTABLECIMIENTO SALUD" },
+        { value: "direccion", text: "DIRECCIÓN" }
+            ],      
+            
+        },
+        withInitial:true,
+        
+    }, 
 }
 module.exports = PDEPENDENCIES

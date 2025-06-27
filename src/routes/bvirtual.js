@@ -43,6 +43,9 @@ router.post("/fr",  bvFreeController.getFrFiles)
 router.get("/fr/:idx/get",  bvFreeController.getFrFile)
 router.put("/fr/:idx/getb64",  bvController.getFile)
 
+router.put("/fr/vacunatorio",  bvController.getVacun)
+router.post("/fr/cbox", controller.getDataCboxLigado) 
+
 //folder
 router.get("/folders/f/get", authMiddleWare, bvController.getDataFolders)
 router.post("/folders/save", authMiddleWare, bvController.saveDataFolders)

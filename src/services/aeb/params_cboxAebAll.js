@@ -467,11 +467,29 @@ $w$
       withInitial: true,
     },
 
-    aneumonia: {
-      alias: 'aneumonia',
+    aneumonia_count: {
+      alias: 'aneumonia_count',
       campos: cmps,
       ilogic: {        
-        infec_casos: infecciones_dash.dash_neumonia.ilogic.infec_casos,
+        infec_casos: infecciones_dash.dash_neumonia.ilogic.infec_casos,        
+      },
+      referer: [],
+      primal: {
+        equivalencia: {
+          gestion: ["gestion", "gestion"],
+          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
+          dpto: ['dpto', 'dpto']  
+        },
+        query: `SELECT $sa$`,
+        headers: [{}],
+        attributes: null,
+      },
+      withInitial: true,
+    },
+    aneumonia_gral: {
+      alias: 'aneumonia_gral',
+      campos: cmps,
+      ilogic: {
         infec_dpto: infecciones_dash.dash_neumonia.ilogic.infec_dpto,
         infec_gestion: infecciones_dash.dash_neumonia.ilogic.infec_gestion,
       },

@@ -637,6 +637,32 @@ const res = await poppler.pdfToCairo(file, out_file, options);
 console.log("Convirtiendo....", res)//.toString('base64'))
 }
 
+
+const getVacun = async (dto, handleError) => {
+  try {
+    let query = `SELECT 
+v.departamento, v.municipio, v.institucion, v.establecimiento, coalesce(v.zona,'')||' '|| coalesce(v.avenida,'') as direccion, lat, lng
+FROM tmp_vacunatorio v
+WHERE v.avenida IS NOT NULL or v.zona IS NOT null`
+qUtil.setQuery(query)
+await qUtil.excuteSelect()
+const result =  qUtil.getResults()
+return{
+  ok: true,
+  data: result,
+  headers: [{ value: "departamento", text: "Departamento" }, { value: "municipio", text: "Municipio" }, 
+            { value: "institucion", text: "Ente Gestor" }, 
+            { value: "establecimiento", text: "Establecimiento de Salud" },
+        { value: "direccion", text: "Direccion" },
+         ]
+}
+  } catch (error) {
+    await qUtil.rollbackTransaction()
+    console.log('\n\nerror::: EN SERVICES GETfILE\n', error)
+    handleError.setMessage('Error de sistema: BVIRTGETFILE64SRV')
+    handleError.setHttpError(error.message)
+  }
+}
 module.exports = {
   searchFiles, suggestFiles,
   getDataFolders,
@@ -650,5 +676,6 @@ module.exports = {
 
   getFile,editFile,
 
-  getFrFiles
+  getFrFiles, 
+  getVacun
 }

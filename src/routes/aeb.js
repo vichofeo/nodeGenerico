@@ -34,6 +34,7 @@ router.get("/:idx/:modelo", authMiddleWare, controller.getDataModel1)
 router.post("/cbox", authMiddleWare, controller.getDataCboxLigado) 
 router.post("/agrupado", authMiddleWare, controller.getGroupedModels) 
 
+router.post("/fr/cbox", controller.getDataCboxLigado)
 
 //router.post("/eval/tpac/report", authMiddleWare, evalController.tpacReport)
 //rutas para LOUDER xlsm
