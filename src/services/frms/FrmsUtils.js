@@ -327,6 +327,7 @@ module.exports = class FrmsUtils {
     let parametros = {}
     parametros.campos = objParamModel.campos
     parametros.valores = {}
+    parametros.main_title = objParamModel?.title_obj ? objParamModel.title_obj: undefined
 
     //recorre referer
     this.#qUtils.setResetVars()

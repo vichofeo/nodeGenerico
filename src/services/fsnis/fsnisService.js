@@ -15,7 +15,7 @@ const eessModel = db.ae_institucion
 //json de configuracion para la generacion de combos dependientes
 const COMBOSSNIS = {
     campos_db: [['eg.institucion_id', 'eg.nombre_corto'], ['ente.institucion_id', 'ente.nombre_institucion'],
-                ['snis.gestion', 'snis.gestion'], ['snis.mes', "to_char(snis.mes,'00')||'-'||snis.mes_name"], ['snis.mes', "to_char(snis.mes,'00')||'-'||snis.mes_name"],
+                ['snis.gestion', 'snis.gestion'], ['snis.mes', "lpad(snis.mes,2,'0')||'-'||snis.mes_name"], ['snis.mes', "lpad(snis.mes,2,'0')||'-'||snis.mes_name"],
                 ['snis.formulario', 'snis.formulario'], ['snis.grupo', 'snis.grupo']],
     labels: ['Ente Gestor', 'Establecimiento de salud', 'Gestion', 'Mes Inicial', 'Mes Final', 'Formulario', 'Grupo'],
     name_cbo: ['eg', 'eess', 'gestion', 'mesini', 'mesfin', 'frm', 'grp'],

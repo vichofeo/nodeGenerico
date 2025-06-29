@@ -5,6 +5,7 @@ const cmps = {
   dpto: ['Departamento', false, true, 'C', , , 'M'],
   eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
 }
+/** TARJETAS PRINCIPALES DE DASHBOARD */
 //extraCondicion:[[campo, valor], [campo2, valor]...]
 'use strict'
 const PDEPENDENCIES = {
@@ -152,7 +153,36 @@ GROUP BY 1) AS tbl`
     },
     withInitial: true,
   },
+/** ******************** ************************* *****************
+ * tarjetas izquierda 
+ * */
+  ss_vacunatorio: {
+    alias: 'ss_vacunatorio',
+    campos: {
+      eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+      dpto: ['Departamento', false, true, 'C', , , 'M'],
+      eess: ['Establecimiento de Salud', false, true, 'C', , , 'M']
+    },
+    ilogic: {
+      ss_vacunatorio: `SELECT COUNT(*) AS "Total"
+                      FROM tmp_vacunatorio
+                      WHERE 1=1 $w$
+              `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {        
+        eg: ['eg', "eg"],
+        dpto: ['dpto', 'dpto'],
+        eess: ['eess', 'eess'],
 
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
   ss_def_nac: {
     alias: 'ss_def_nac',
     campos: cmps,

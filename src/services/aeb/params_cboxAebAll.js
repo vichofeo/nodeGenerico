@@ -467,6 +467,7 @@ $w$
       withInitial: true,
     },
 
+    //canales endemicos
     aneumonia_count: {
       alias: 'aneumonia_count',
       campos: cmps,
@@ -670,6 +671,46 @@ $w$
       },
       withInitial: true,
     },
+
+    //VCUNATORIOS
+    avacunatorio:{        
+        alias: 'avacunatorio',        
+        campos: {eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+    dpto: ['Departamento', false, true, 'C', , , 'M'],
+    eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
+        }, 
+        ilogic: {     
+          dataTable:`
+          SELECT 
+v.departamento, v.municipio, v.institucion, v.establecimiento, direccion, lat, lng,
+v.telefono, v.horarios
+FROM tmp_vacunatorio v
+WHERE 1=1
+$w$
+order by v.departamento, v.municipio,  v.institucion, v.establecimiento
+          `
+        },
+        keySession:{},
+        referer: [ ],
+        primal:{
+            equivalencia:{
+              eg:['v.eg','v.eg'],
+              dpto:['v.dpto','v.dpto'],
+              eess:['v.eess', 'v.eess']              
+              },
+            attributes:null,//`${parameters.rprte_abastecimienton.campos} `,
+             query:`
+             SELECT DISTINCT $sa$`,
+            headers:[{ value: "departamento", text: "DEPARTAMENTO" }, 
+            { value: "institucion", text: "ENTE GESTOR" }, 
+            { value: "establecimiento", text: "ESTABLECIMIENTO SALUD" },
+        //{ value: "direccion", text: "DIRECCIÓN" }
+            ],      
+            
+        },
+        withInitial:true,
+        
+    }, 
   }
   module.exports = PDEPENDENCIES
   
