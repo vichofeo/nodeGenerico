@@ -11,6 +11,7 @@ const PDEPENDENCIES = {
   ufam_air: {
     alias: 'ufam_air',
     campos: cmps,
+    title_obj:{title:'UFAM Nro DE AUDITORIAS MEDICAS AMES - INAS - RRAME', subtitle:'Comprendidas en el periodo'},
     ilogic: {
       ufam_air: `SELECT eg.nombre_corto as ente_gestor, 'RRAME' AS grupo, t.gestion_ejecucion as gestion, COUNT(*) AS value
                 FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
@@ -44,6 +45,35 @@ const PDEPENDENCIES = {
                 GROUP BY 1,2,3
                 ORDER BY 1,2,3
                 `,
+                entre_periodos:`SELECT 
+min(TO_CHAR(coalesce(amin, '1900-01-01'), 'YYYY-Month')) AS amin,
+max(TO_CHAR(coalesce(amax, '1900-01-01'), 'YYYY-Month')) AS amax
+FROM(
+SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
+FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
+WHERE 
+t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
+AND i.institucion_root = eg.institucion_id 
+AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+$w$
+UNION 
+SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
+FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
+                WHERE 
+                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
+                AND i.institucion_root = eg.institucion_id 
+                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto 
+                $w$
+UNION 
+SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
+FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
+                WHERE 
+                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
+                AND i.institucion_root = eg.institucion_id 
+                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                $w$
+                ) AS tbl
+WHERE amin IS NOT null`
     },
     referer: [],
     primal: {

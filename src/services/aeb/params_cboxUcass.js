@@ -11,6 +11,7 @@ const PDEPENDENCIES = {
   ucass_ah: {
     alias: 'ucass_ah',
     campos: cmps,
+    title_obj:{title:'HABILITACIONES / ACREDITACIONES', subtitle:'Ralizada en el periodo'},
     ilogic: {
       ucass_ah: `SELECT 
 COALESCE(TO_CHAR(ah.fecha_ra,'YYYY'),'1900') AS gestion,
@@ -34,8 +35,14 @@ al_departamento dpto,  r_is_atributo a2, r_is_atributo a3
     $w$
     GROUP BY 1,2,3
      ORDER BY 1,2,3
-
                 `,
+                entre_periodos: `SELECT
+min(TO_CHAR(coalesce(ah.fecha_ra, '1900-01-01'), 'YYYY-Month')) AS amin,
+max(TO_CHAR(coalesce(ah.fecha_ra, '1900-01-01'), 'YYYY-Month')) AS amax
+FROM r_institucion_salud_acrehab ah, ae_institucion i
+WHERE 
+ah.institucion_id = i.institucion_id
+ $w$`
     },
     referer: [],
     primal: {

@@ -11,7 +11,7 @@ const PDEPENDENCIES = {
   ufsmt_frma: {
     alias: 'ufsmt_frma',
     campos: cmps,
-    title_obj:{title:'REPORTE DE LAS ATENCIONES Y ACTIVIDADES REALIZADAS EN EL MES', subtitle:'Periodo de Reporte'},
+    title_obj:{title:'ATENCIONES Y ACTIVIDADES REALIZADAS', subtitle:'Periodo de Reporte'},
     ilogic: {      
       ufsmt_frma: `SELECT 
                 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
@@ -73,7 +73,7 @@ AND r.concluido='7' $w$`
   ufsmt_frmb: {
     alias: 'ufsmt_frmb',
     campos: cmps,
-    title_obj:{title:'REPORTE DE LAS 10 PRINCIPALES ATENCIONES DE ENFERMEDAD PROFESIONAL Y/O RELACIONADAS AL TRABAJO, CON MAYOR FRECUENCIA EN EL MES  ', subtitle:'Periodo de Reporte'},
+    title_obj:{title:'LAS 10 PRINCIPALES ATENCIONES DE ENFERMEDAD PROFESIONAL Y/O RELACIONADAS AL TRABAJO, CON MAYOR FRECUENCIA  ', subtitle:'Periodo de Reporte'},
     ilogic: {      
       ufsmt_frmb: `SELECT 
                 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
