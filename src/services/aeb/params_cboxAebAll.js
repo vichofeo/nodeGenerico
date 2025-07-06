@@ -1,19 +1,20 @@
 const cmps = {
-    gestion: ['GESTION', false, true, 'C'],
-    periodo: ['MES', false, true, 'C', , , 'M'],
-    eg: ['Ente Gestor', false, true, 'C', , , 'M'],
-    dpto: ['Departamento', false, true, 'C', , , 'M'],
-    eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
-  }
-  const infecciones_dash =  require('./params_cboxsDash')
-  //extraCondicion:[[campo, valor], [campo2, valor]...]
-  'use strict'
-  const PDEPENDENCIES = {     
-    adefuncion: {
-      alias: 'adefuncion',
-      campos: cmps,
-      ilogic: {      
-        adefuncion: `SELECT 
+  gestion: ['GESTION', false, true, 'C'],
+  periodo: ['MES', false, true, 'C', , , 'M'],
+  eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+  dpto: ['Departamento', false, true, 'C', , , 'M'],
+  eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
+}
+const infecciones_dash = require('./params_cboxsDash')
+//extraCondicion:[[campo, valor], [campo2, valor]...]
+'use strict'
+const PDEPENDENCIES = {
+  adefuncion: {
+    alias: 'adefuncion',
+    campos: cmps,
+    title_obj:{title:'10 PRINCIPALES CAUSAS DE DEFUNCION', subtitle:'En el periodo de'},
+    ilogic: {
+      adefuncion: `SELECT 
 coalesce(t.causa_directa, 'Unknow')  AS grupo, 
  dpto.nombre_dpto as subgrupo,
 eg.nombre_corto AS "institucion",
@@ -57,42 +58,57 @@ $w$
 AND coalesce(t.causa_directa, 'Unknow') =  tt2.causa_directa
 GROUP BY 1,2, 3, 4,5
 ORDER BY 1,2,3
-        `
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
-          eg: ['i.institucion_root', 'i.institucion_root'],
-          dpto: ['i.cod_dpto', 'i.cod_dpto'],
-          eess: ['i.institucion_id', 'i.institucion_id'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+        `,
+    entre_periodos:`SELECT to_char(MIN(t.fecha_defuncion),'DD/MM/YYYY') AS amin, to_char(MAX(t.fecha_defuncion),'DD/MM/YYYY') AS amax
+FROM tmp_defunciones t, ae_institucion i,
+(SELECT coalesce(t.causa_directa, 'Unknow') as causa_directa, COUNT(*)
+FROM tmp_defunciones t, ae_institucion i
+WHERE 
+t.eess =  i.institucion_id 
+$w$
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 10) AS tt2
+WHERE 
+t.eess =  i.institucion_id 
+$w$
+AND coalesce(t.causa_directa, 'Unknow') =  tt2.causa_directa`    
     },
-    adef_lineas: {
-      alias: 'adef_lineas',
-      campos: cmps,
-      ilogic: {      
-        adef_lineas: `
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  adef_lineas: {
+    alias: 'adef_lineas',
+    campos: cmps,
+    title_obj:{title:'NUMERO DE DEFUNCIONES', subtitle:'En el periodo de'},
+    ilogic: {
+      adef_lineas: `
         SELECT TO_CHAR(t.fecha_defuncion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
                 TO_CHAR((select MAX(fecha_defuncion) FROM tmp_defunciones),'DD/MM/YYYY') AS obs
                 FROM tmp_defunciones t
                 WHERE 1=1 $w$
                 GROUP BY 1
                 ORDER BY 1
-        `, 
-        adef_dpto:`SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
+        `,
+      adef_dpto: `SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
       FROM tmp_defunciones t, al_departamento d , ae_institucion eg
 		WHERE d.cod_dpto = t.dpto	and t.eg=eg.institucion_id
 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
-      adef_etario:`SELECT 
+      adef_etario: `SELECT 
                 t.sexo as ejex,
                 SUM(CASE WHEN tedad >=0 and tedad<=5 THEN 1 ELSE 0 END)AS "00-05",
                 SUM(CASE WHEN tedad >5 and tedad<=10 THEN 1 ELSE 0 END) AS "05-10",
@@ -117,41 +133,45 @@ $w$
                 EXTRACT(YEAR FROM age(t.fecha_defuncion , t.fecha_nacimiento)) AS tedad
                 WHERE 1=1 
 					      $w$
-                GROUP BY t.sexo`
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['i.dpto', 'i.dpto'],
-          eess: ['i.eess', 'i.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+                GROUP BY t.sexo`,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_defuncion),'DD/MM/YYYY') AS amin, to_char(MAX(t.fecha_defuncion),'DD/MM/YYYY') AS amax
+       FROM tmp_defunciones t
+                WHERE 1=1 $w$`          
     },
-    anac_lineas: {
-      alias: 'anac_lineas',
-      campos: cmps,
-      ilogic: {      
-        anac_lineas: ` SELECT TO_CHAR(t.fecha_nacimiento, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['i.dpto', 'i.dpto'],
+        eess: ['i.eess', 'i.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  anac_lineas: {
+    alias: 'anac_lineas',
+    campos: cmps,
+    title_obj:{title:'NUMERO DE NACIMIENTOS', subtitle:'En el periodo de'},
+    ilogic: {
+      anac_lineas: ` SELECT TO_CHAR(t.fecha_nacimiento, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
                 TO_CHAR((select MAX(fecha_nacimiento) FROM tmp_nacimientos),'DD/MM/YYYY') AS obs
                 FROM tmp_nacimientos t
                 WHERE 1=1 $w$
                 GROUP BY 1
                 ORDER BY 1       
-        `, 
-        anac_dpto:`SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
+        `,
+      anac_dpto: `SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
       FROM tmp_nacimientos t, al_departamento d , ae_institucion eg
 		WHERE d.cod_dpto = t.dpto	and t.eg=eg.institucion_id
 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
-      anac_etario:`SELECT 
+      anac_etario: `SELECT 
                 t.sexo as ejex,
                 SUM(CASE WHEN tedad >=0 and tedad<=20 THEN 1 ELSE 0 END)AS "00-20",
                 SUM(CASE WHEN tedad >20 and tedad<=25 THEN 1 ELSE 0 END) as "20-25",
@@ -166,28 +186,31 @@ $w$
                 COALESCE(t.edad_gestacional::INTEGER, -1) AS tedad
                 WHERE 1=1 
 $w$
-                GROUP BY t.sexo`
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_nacimiento, 'YYYY')", "to_char(t.fecha_nacimiento, 'YYYY')"],
-          periodo: ["to_char(t.fecha_nacimiento, 'YYYY-MM')", "to_char(t.fecha_nacimiento, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['i.dpto', 'i.dpto'],
-          eess: ['i.eess', 'i.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+                GROUP BY t.sexo`,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_nacimiento),'DD/MM/YYYY') AS amin, to_char(MAX(t.fecha_nacimiento),'DD/MM/YYYY') AS amax
+       FROM tmp_nacimientos t
+                WHERE 1=1 $w$`          
     },
-    acancer_barras: {
-      alias: 'acancer_barras',
-      campos: cmps,
-      ilogic: {      
-        acancer_barras: ` SELECT '' as pila,
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_nacimiento, 'YYYY')", "to_char(t.fecha_nacimiento, 'YYYY')"],
+        periodo: ["to_char(t.fecha_nacimiento, 'YYYY-MM')", "to_char(t.fecha_nacimiento, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['i.dpto', 'i.dpto'],
+        eess: ['i.eess', 'i.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  acancer_barras: {
+    alias: 'acancer_barras',
+    campos: cmps,
+    ilogic: {
+      acancer_barras: ` SELECT '' as pila,
 tt.nombre_corto AS ejex, 
 CASE WHEN p.ente_gestor IS null THEN 0 
                   ELSE  ROUND((1000*tt.pacientes::numeric/p.poblacion_afiliada::NUMERIC),1)
@@ -200,35 +223,35 @@ CASE WHEN p.ente_gestor IS null THEN 0
                   GROUP BY 1,2) AS tt
                   LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor = p.ente_gestor)
                   order by 3       
-        `, 
-        acancer_dpto:`SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
+        `,
+      acancer_dpto: `SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
       FROM tmp_cancer t, al_departamento d , ae_institucion eg
 		WHERE d.cod_dpto = t.dpto	and t.eg=eg.institucion_id
 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
-      
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-          periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['i.dpto', 'i.dpto'],
-          eess: ['i.eess', 'i.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+
     },
-    acancer: {
-      alias: 'acancer',
-      campos: cmps,
-      ilogic: {      
-        acancer: `SELECT 
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
+        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['i.dpto', 'i.dpto'],
+        eess: ['i.eess', 'i.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  acancer: {
+    alias: 'acancer',
+    campos: cmps,
+    ilogic: {
+      acancer: `SELECT 
 coalesce(t.localizacion, 'Unknow')  AS grupo, 
  dpto.nombre_dpto as subgrupo,
 eg.nombre_corto AS "institucion",
@@ -257,27 +280,28 @@ AND coalesce(t.localizacion, 'Unknow') =  tt2.causa_directa
 GROUP BY 1,2, 3, 4,5
 ORDER BY 1,2,3
         `
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-          periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-          eg: ['i.institucion_root', 'i.institucion_root'],
-          dpto: ['i.cod_dpto', 'i.cod_dpto'],
-          eess: ['i.institucion_id', 'i.institucion_id'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
     },
-    apai_vacun: {
-      alias: 'apai_vacun',
-      campos: cmps,
-      ilogic: {      
-        apai_vacun: `SELECT 
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
+        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  apai_vacun: {
+    alias: 'apai_vacun',
+    campos: cmps,
+    title_obj:{title:'VACUNAS - PAI', subtitle:'Datos de'},
+    ilogic: {
+      apai_vacun: `SELECT 
 t.vacuna  AS grupo, 
 t.nro_dosis AS subtercero,
  dpto.nombre_dpto as subgrupo,
@@ -318,61 +342,68 @@ AND i.cod_pais =  dpto.cod_pais AND i.cod_dpto =  dpto.cod_dpto
 $w$
 GROUP BY 1,2, 3, 4,5,6
 ORDER BY 1,2,3,4,5
-        `
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
-          eg: ['i.institucion_root', 'i.institucion_root'],
-          dpto: ['i.cod_dpto', 'i.cod_dpto'],
-          eess: ['i.institucion_id', 'i.institucion_id'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+        `,
+    entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+    FROM tmp_pai t, ae_institucion i
+WHERE t.eess =  i.institucion_id $w$`    
     },
-    apai_vacun_pie: {
-      alias: 'apai_vacun_pie',
-      campos: cmps,
-      ilogic: {      
-        apai_vacun_pie: `SELECT  vacuna as pila, nro_dosis as ejex, COUNT(*) AS value,
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  apai_vacun_pie: {
+    alias: 'apai_vacun_pie',
+    campos: cmps,
+    title_obj:{title:'VACUNAS - DOSIS APLICADAS', subtitle:'Datos de'},
+    ilogic: {
+      apai_vacun_pie: `SELECT  vacuna as pila, nro_dosis as ejex, COUNT(*) AS value,
       SUM(COUNT(*)) OVER (PARTITION BY vacuna ORDER BY vacuna ) AS total_acumulado
       FROM tmp_pai t WHERE 1=1 $w$
       GROUP BY 1,2
       ORDER BY 1,2
-        `
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['t.dpto', 't.dpto'],
-          eess: ['t.eess', 't.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+        `,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+      FROM tmp_pai t WHERE 1=1 $w$`
     },
-    apai_vacun_dpeg: {
-      alias: 'apai_vacun_dpeg',
-      campos: cmps,
-      ilogic: {      
-        apai_vacun_dpeg: `SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  apai_vacun_dpeg: {
+    alias: 'apai_vacun_dpeg',
+    campos: cmps,
+    title_obj:{title:'DATOS - PAI', subtitle:'Informacion de '},
+    ilogic: {
+      apai_vacun_dpeg: `SELECT  d.nombre_dpto as pila, eg.nombre_corto as ejex ,COUNT(*) AS value
       FROM tmp_pai t, al_departamento d , ae_institucion eg
 		WHERE d.cod_dpto = t.dpto	and t.eg=eg.institucion_id
 $w$
       GROUP BY 1,2
       ORDER BY 1,2
         `,
-        apai_vacun_hetario: `SELECT 
+      apai_vacun_hetario: `SELECT 
                 genero as ejex,
                 SUM(CASE WHEN cast(edad as DECIMAL) >=0 and cast(edad as DECIMAL)<=0.25 THEN 1 ELSE 0 END)as "0m-3m",
                 SUM(CASE WHEN cast(edad as DECIMAL) >0.25 and cast(edad as DECIMAL)<=0.50 THEN 1 ELSE 0 END)AS "4m-6m",
@@ -400,33 +431,36 @@ $w$
                 FROM tmp_pai t
                 WHERE 1=1 $w$
                 GROUP BY genero`,
-        apai_day: `SELECT TO_CHAR(fecha_vacunacion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
+      apai_day: `SELECT TO_CHAR(fecha_vacunacion, 'YYYY-MM-DD') as ejex,  COUNT (*) AS value,
                 TO_CHAR((select MAX(fecha_vacunacion) FROM tmp_pai),'DD/MM/YYYY') AS obs
                 FROM tmp_pai t
                 WHERE 1=1 $w$
                 GROUP BY 1
-                ORDER BY 1`        
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['t.dpto', 't.dpto'],
-          eess: ['t.eess', 't.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+                ORDER BY 1`,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+      FROM tmp_pai t WHERE 1=1 $w$`
     },
-    acarmelo: {
-      alias: 'acarmelo',
-      campos: cmps,
-      ilogic: {      
-        acarmelo: `SELECT eg.nombre_corto as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_vacunacion, 'YYYY')", "to_char(t.fecha_vacunacion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_vacunacion, 'YYYY-MM')", "to_char(t.fecha_vacunacion, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  acarmelo: {
+    alias: 'acarmelo',
+    campos: cmps,
+    title_obj:{title:'BENEFICIO CARMELO', subtitle:'Datos de'},
+    ilogic: {
+      acarmelo: `SELECT eg.nombre_corto as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
                 FROM tmp_carmelo t, ae_institucion eg
                 WHERE t.eg=eg.institucion_id
                 $w$
@@ -449,238 +483,329 @@ $w$
                         WHERE t.dpto = dpto.cod_dpto
                         $w$
                         GROUP BY 1,2
-                        ORDER BY 3 DESC,1,2  `
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["to_char(t.fecha_dispensacion, 'YYYY')", "to_char(t.fecha_dispensacion, 'YYYY')"],
-          periodo: ["to_char(t.fecha_dispensacion, 'YYYY-MM')", "to_char(t.fecha_dispensacion, 'YYYY-MM')"],
-          eg: ['t.eg', 't.eg'],
-          dpto: ['t.dpto', 't.dpto'],
-          eess: ['t.eess', 't.eess'],
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+                        ORDER BY 3 DESC,1,2  `,
+      entre_periodos:`SELECT to_char(min(t.fecha_dispensacion), 'DD/MM/YYY') AS amin, to_char(max(t.fecha_dispensacion), 'DD/MM/YYY') AS amax
+                        FROM tmp_carmelo t, ae_institucion eg
+                WHERE t.eg=eg.institucion_id
+                $w$`
     },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_dispensacion, 'YYYY')", "to_char(t.fecha_dispensacion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_dispensacion, 'YYYY-MM')", "to_char(t.fecha_dispensacion, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 
-    //canales endemicos
-    aneumonia_count: {
-      alias: 'aneumonia_count',
-      campos: cmps,
-      ilogic: {        
-        infec_casos: infecciones_dash.dash_neumonia.ilogic.infec_casos,        
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+  //canales endemicos
+  aneumonia_count: {
+    alias: 'aneumonia_count',
+    campos: cmps,
+    title_obj:{title:'NUMERO DE CASOS DE NEUMONIA POR GESTION ', subtitle:'Semana de'},
+    ilogic: {
+      infec_casos: infecciones_dash.dash_neumonia.ilogic.infec_casos,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' $w$`
     },
-    aneumonia_gral: {
-      alias: 'aneumonia_gral',
-      campos: cmps,
-      ilogic: {
-        infec_dpto: infecciones_dash.dash_neumonia.ilogic.infec_dpto,
-        infec_gestion: infecciones_dash.dash_neumonia.ilogic.infec_gestion,
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
       },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
     },
-    aneumonia_qf: {
-      alias: 'aneumonia_qf',
-      campos: cmps,
-      ilogic: {
-        infec_quartil: infecciones_dash.dash_neumonia.ilogic.infec_quartil,
-        infec_frecuencia: infecciones_dash.dash_neumonia.ilogic.infec_frecuencia,      
-        
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+    withInitial: true,
+  },
+  aneumonia_gral: {
+    alias: 'aneumonia_gral',
+    campos: cmps,
+    title_obj:{title:'REPORTE DE NEUMONIA ', subtitle:'Por departamento, por Gestión de semana '},
+    ilogic: {
+      infec_dpto: infecciones_dash.dash_neumonia.ilogic.infec_dpto,
+      infec_gestion: infecciones_dash.dash_neumonia.ilogic.infec_gestion,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' $w$`
     },
-    aneumonia_dpto: {
-      alias: 'aneumonia_dpto',
-      campos: cmps,
-      ilogic: {
-        infec_dpto_q: infecciones_dash.dash_neumonia.ilogic.infec_dpto_q
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
       },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
     },
+    withInitial: true,
+  },
+  aneumonia_qf: {
+    alias: 'aneumonia_qf',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - NEUMONIA', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_quartil: infecciones_dash.dash_neumonia.ilogic.infec_quartil,
+      infec_frecuencia: infecciones_dash.dash_neumonia.ilogic.infec_frecuencia,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' $w$`
 
-    airas: {
-      alias: 'airas',
-      campos: cmps,
-      ilogic: {        
-        infec_casos: infecciones_dash.dash_iras.ilogic.infec_casos,
-        infec_dpto: infecciones_dash.dash_iras.ilogic.infec_dpto,
-        infec_gestion: infecciones_dash.dash_iras.ilogic.infec_gestion,
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
     },
-    airas_qf: {
-      alias: 'airas_qf',
-      campos: cmps,
-      ilogic: {
-        infec_quartil: infecciones_dash.dash_iras.ilogic.infec_quartil,
-        infec_frecuencia: infecciones_dash.dash_iras.ilogic.infec_frecuencia,      
-        
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
       },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
     },
-    airas_dpto: {
-      alias: 'airas_dpto',
-      campos: cmps,
-      ilogic: {
-        infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+    withInitial: true,
+  },
+  aneumonia_dpto: {
+    alias: 'aneumonia_dpto',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - NEUMONIA DEPARTAMENTALES', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_dpto_q: infecciones_dash.dash_neumonia.ilogic.infec_dpto_q,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='NEUMONIA' $w$`
     },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 
-    aedas: {
-      alias: 'aedas',
-      campos: cmps,
-      ilogic: {        
-        infec_casos: infecciones_dash.dash_edas.ilogic.infec_casos,
-        infec_dpto: infecciones_dash.dash_edas.ilogic.infec_dpto,
-        infec_gestion: infecciones_dash.dash_edas.ilogic.infec_gestion,
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+  airas_gral: {
+    alias: 'airas_gral',
+    campos: cmps,
+    title_obj:{title:'REPORTE DE IRA´s ', subtitle:'Por departamento, por Gestión de semana '},
+    ilogic: {      
+      infec_dpto: infecciones_dash.dash_iras.ilogic.infec_dpto,
+      infec_gestion: infecciones_dash.dash_iras.ilogic.infec_gestion,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='IRAS' $w$`
     },
-    aedas_qf: {
-      alias: 'aedas_qf',
-      campos: cmps,
-      ilogic: {
-        infec_quartil: infecciones_dash.dash_edas.ilogic.infec_quartil,
-        infec_frecuencia: infecciones_dash.dash_edas.ilogic.infec_frecuencia,      
-        
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
       },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
     },
-    aedas_dpto: {
-      alias: 'aedas_dpto',
-      campos: cmps,
-      ilogic: {
-        infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q
-      },
-      referer: [],
-      primal: {
-        equivalencia: {
-          gestion: ["gestion", "gestion"],
-          periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
-          dpto: ['dpto', 'dpto']  
-        },
-        query: `SELECT $sa$`,
-        headers: [{}],
-        attributes: null,
-      },
-      withInitial: true,
+    withInitial: true,
+  },
+  airas_count: {
+    alias: 'airas_count',
+    campos: cmps,
+    title_obj:{title:'NUMERO DE CASOS DE IRA´s POR GESTION ', subtitle:'Semana de'},
+    ilogic: {
+      infec_casos: infecciones_dash.dash_iras.ilogic.infec_casos,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='IRAS' $w$`
     },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  airas_qf: {
+    alias: 'airas_qf',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - IRA´s', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_quartil: infecciones_dash.dash_iras.ilogic.infec_quartil,
+      infec_frecuencia: infecciones_dash.dash_iras.ilogic.infec_frecuencia,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='IRAS' $w$`
 
-    //VCUNATORIOS
-    avacunatorio:{        
-        alias: 'avacunatorio',        
-        campos: {eg: ['Ente Gestor', false, true, 'C', , , 'M'],
-    dpto: ['Departamento', false, true, 'C', , , 'M'],
-    eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
-        }, 
-        ilogic: {     
-          dataTable:`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  airas_dpto: {
+    alias: 'airas_dpto',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - IRA´s DEPARTAMENTALES', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='IRAS' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+//edas
+  aedas_gral: {
+    alias: 'aedas_gral',
+    campos: cmps,
+    title_obj:{title:'REPORTE DE EDA´s ', subtitle:'Por departamento, por Gestión de semana '},
+    ilogic: {
+      
+      infec_dpto: infecciones_dash.dash_edas.ilogic.infec_dpto,
+      infec_gestion: infecciones_dash.dash_edas.ilogic.infec_gestion,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='EDAS' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  aedas_count: {
+    alias: 'aedas_count',
+    campos: cmps,
+    title_obj:{title:'NUMERO DE CASOS DE EDA´s POR GESTION ', subtitle:'Semana de'},
+    ilogic: {
+      infec_casos: infecciones_dash.dash_edas.ilogic.infec_casos,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='EDAS' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  aedas_qf: {
+    alias: 'aedas_qf',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - EDA´s', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_quartil: infecciones_dash.dash_edas.ilogic.infec_quartil,
+      infec_frecuencia: infecciones_dash.dash_edas.ilogic.infec_frecuencia,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='EDAS' $w$`
+
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  aedas_dpto: {
+    alias: 'aedas_dpto',
+    campos: cmps,
+    title_obj:{title:'CANALES ENDEMICOS - EDA´s DEPARTAMENTALES', subtitle:'Informacion semanal de '},
+    ilogic: {
+      infec_dpto_q: infecciones_dash.dash_iras.ilogic.infec_dpto_q,
+      entre_periodos:`SELECT  to_char(MIN(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amin, to_char(Max(TO_DATE(gestion||'-'||semana, 'IYYY-IW')), 'IYYY-IW') AS amax
+               FROM tmp_infecciones 
+                WHERE infeccion='EDAS' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+
+  //VCUNATORIOS
+  avacunatorio: {
+    alias: 'avacunatorio',
+    campos: {
+      eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+      dpto: ['Departamento', false, true, 'C', , , 'M'],
+      eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
+    },
+    title_obj:{title:'VACUNATORIOS DE LA SSCP', subtitle:' '},
+    ilogic: {
+      dataTable: `
           SELECT 
 v.departamento, v.municipio, v.institucion, v.establecimiento, direccion, lat, lng,
 v.telefono, v.horarios
@@ -688,29 +813,31 @@ FROM tmp_vacunatorio v
 WHERE 1=1
 $w$
 order by v.departamento, v.municipio,  v.institucion, v.establecimiento
-          `
-        },
-        keySession:{},
-        referer: [ ],
-        primal:{
-            equivalencia:{
-              eg:['v.eg','v.eg'],
-              dpto:['v.dpto','v.dpto'],
-              eess:['v.eess', 'v.eess']              
-              },
-            attributes:null,//`${parameters.rprte_abastecimienton.campos} `,
-             query:`
+          `,
+      entre_periodos:`SELECT 
+STRING_AGG(DISTINCT v.departamento, ', ' ORDER BY v.departamento) AS amin, '' AS amax
+FROM tmp_vacunatorio v WHERE 1=1 $w$`    
+    },
+    keySession: {},
+    referer: [],
+    primal: {
+      equivalencia: {
+        eg: ['v.eg', 'v.eg'],
+        dpto: ['v.dpto', 'v.dpto'],
+        eess: ['v.eess', 'v.eess']
+      },
+      attributes: null,//`${parameters.rprte_abastecimienton.campos} `,
+      query: `
              SELECT DISTINCT $sa$`,
-            headers:[{ value: "departamento", text: "DEPARTAMENTO" }, 
-            { value: "institucion", text: "ENTE GESTOR" }, 
-            { value: "establecimiento", text: "ESTABLECIMIENTO SALUD" },
+      headers: [{ value: "departamento", text: "DEPARTAMENTO" },
+      { value: "institucion", text: "ENTE GESTOR" },
+      { value: "establecimiento", text: "ESTABLECIMIENTO SALUD" },
         //{ value: "direccion", text: "DIRECCIÓN" }
-            ],      
-            
-        },
-        withInitial:true,
-        
-    }, 
-  }
-  module.exports = PDEPENDENCIES
-  
+      ],
+
+    },
+    withInitial: true,
+
+  },
+}
+module.exports = PDEPENDENCIES

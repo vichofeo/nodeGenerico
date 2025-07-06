@@ -13,6 +13,7 @@ const PDEPENDENCIES = {
     campos: {eg: ['Ente Gestor', false, true, 'C', , , 'M'],
       dpto: ['Departamento', false, true, 'C', , , 'M'],
       eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],},
+    title_obj:{title:'NUMERO DE ESTABLECIMIENTOS DE SALUD DE LA SSCP', subtitle:'Por departamento y nivel de atención'},  
     ilogic: {
       aeb_georef: `SELECT 
               eg.nombre_institucion as ente_gestor, i.nombre_institucion, r.nivel_atencion, a.atributo AS nivel, r.snis,
@@ -27,7 +28,8 @@ const PDEPENDENCIES = {
               r.institucion_id = i.institucion_id AND r.ente_gestor_id = eg.institucion_id AND r.nivel_atencion=a.atributo_id 
               AND i.cod_pais=dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
               AND r.nivel_atencion IN ('1ERNIVEL','2DONIVEL','3ERNIVEL')
-                  $w$`
+                  $w$`,
+      entre_periodos:`select 'Con Cod. RUES y ' as amin, 'Sin Cod RUES' as amax` 
     },
     referer: [],
     primal: {
@@ -48,6 +50,7 @@ const PDEPENDENCIES = {
     campos: {eg: ['Ente Gestor', false, true, 'C', , , 'M'],
       dpto: ['Departamento', false, true, 'C', , , 'M'],
       eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],},
+    title_obj:{title:'NUMERO DE ESTABLECIMIENTOS DE SALUD DE LA SSCP', subtitle:'Y sus niveles de atención'},    
     ilogic: {
       aeb_depniv: `SELECT 
                 eg.nombre_corto as ente_gestor, dpto.nombre_dpto AS dpto,
@@ -63,7 +66,8 @@ const PDEPENDENCIES = {
                 $w$
                 GROUP BY 1,2,3,4
                 ORDER BY 1, 2, 3
-                `
+                `,
+      entre_periodos:`select 'Con Cod. RUES y ' as amin, 'Sin Cod RUES' as amax` 
     },
     referer: [],
     primal: {
