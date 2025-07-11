@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       establecimiento: { type: DataTypes.STRING, allowNull: true },
       servicio: { type: DataTypes.STRING, allowNull: true },
       departamento: { type: DataTypes.STRING, allowNull: true },
+      ciudad: { type: DataTypes.STRING, allowNull: true },
       fecha_emision: { type: DataTypes.STRING, allowNull: true },
       cronograma: { type: DataTypes.STRING, allowNull: true },
       seguimiento: { type: DataTypes.STRING, allowNull: true },

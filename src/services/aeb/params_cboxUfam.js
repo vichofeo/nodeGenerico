@@ -13,34 +13,25 @@ const PDEPENDENCIES = {
     campos: cmps,
     title_obj:{title:'UFAM Nro. DE AUDITORIAS MEDICAS AMES - INAS - RRAME', subtitle:'Comprendidas en el periodo'},
     ilogic: {
-      ufam_air: `SELECT eg.nombre_corto as ente_gestor, 'RRAME' AS grupo, t.gestion_ejecucion as gestion, COUNT(*) AS value
-                FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+      ufam_air: `SELECT t.ente_gestor_name as ente_gestor, 'RRAME' AS grupo, t.gestion_ejecucion as gestion, COUNT(*) AS value
+                FROM tmp_rrame t
+                WHERE 1=1
                 $w$
                 GROUP BY 1,2,3
 
                 UNION 
 
-                SELECT eg.nombre_corto as ente_gestor, 'INAS' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
-                FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                SELECT ente_gestor_name as ente_gestor, 'INAS' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
+                FROM tmp_inas t
+                WHERE 1=1
                 $w$
                 GROUP BY 1,2,3
 
                 UNION
                 
-                SELECT eg.nombre_corto as ente_gestor, 'AMES' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
-                FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                SELECT ente_gestor_name as ente_gestor, 'AMES' AS grupo,  t.gestion_ejecucion as gestion, COUNT(*) AS value
+                FROM tmp_ames t
+                WHERE 1=1                
                 $w$
                 GROUP BY 1,2,3
                 ORDER BY 1,2,3
@@ -50,27 +41,20 @@ min(TO_CHAR(coalesce(amin, '1900-01-01'), 'YYYY-Month')) AS amin,
 max(TO_CHAR(coalesce(amax, '1900-01-01'), 'YYYY-Month')) AS amax
 FROM(
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
-WHERE 
-t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-AND i.institucion_root = eg.institucion_id 
-AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+FROM tmp_rrame t
+WHERE  t.fecha_emision is not null
 $w$
 UNION 
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
+FROM tmp_inas t
                 WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+                t.fecha_emision is not null
                 $w$
 UNION 
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
+FROM tmp_ames t
                 WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+                t.fecha_emision is not null
                 $w$
                 ) AS tbl
 WHERE amin IS NOT null`
@@ -83,9 +67,9 @@ WHERE amin IS NOT null`
           "to_char(t.fecha_emision,'YYYY-MM')",
           "to_char(t.fecha_emision,'YYYY-MM')",
         ],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -100,66 +84,44 @@ WHERE amin IS NOT null`
     ilogic: {
       ufam_air_dpto: `SELECT pila, ejex, sum(value) AS value
 FROM (
-SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
-
-                FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+SELECT 'rrame', t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+                FROM tmp_rrame t
+                WHERE 1=1
 $w$
-                GROUP BY 1,2
+                GROUP BY 1,2,3
 
                 UNION 
 
-SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
-
-                FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+SELECT 'inas',t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+                FROM tmp_inas t
+                WHERE 1=1
 $w$
-                GROUP BY 1,2
-
-                UNION
-                
-SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
-                FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                GROUP BY 1,2,3
+                UNION                
+SELECT 'ames',t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+                FROM tmp_ames t
+                WHERE 1=1
 $w$
-                GROUP BY 1,2) AS tbl
+                GROUP BY 1,2,3) AS tbl
                 GROUP BY 1,2
                 ORDER BY 1,2
                 `,
-        ames: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
-                FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+        ames: `SELECT t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+                FROM tmp_ames t
+                WHERE 1=1                
                 $w$
                 GROUP BY 1,2
                 ORDER BY 1,2`,
-        inas: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+        inas: `SELECT t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
-                FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                FROM tmp_inas t
+                WHERE 1=1                
                 $w$
                 GROUP BY 1,2 ORDER BY 1,2`,
-        rrame: `SELECT dpto.nombre_dpto as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
+        rrame: `SELECT t.departamento as pila, t.gestion_ejecucion AS ejex, COUNT(*) AS value
 
-                FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
+                FROM tmp_rrame t
+                WHERE 1=1                
                 $w$
                 GROUP BY 1,2 ORDER BY 1,2`,
       entre_periodos:`SELECT 
@@ -167,27 +129,19 @@ min(TO_CHAR(coalesce(amin, '1900-01-01'), 'YYYY-Month')) AS amin,
 max(TO_CHAR(coalesce(amax, '1900-01-01'), 'YYYY-Month')) AS amax
 FROM(
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_rrame t, ae_institucion eg, ae_institucion i, al_departamento dpto
+FROM tmp_rrame t
 WHERE 
-t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-AND i.institucion_root = eg.institucion_id 
-AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+1=1
 $w$
 UNION 
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_inas t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+FROM tmp_inas t
+                WHERE 1=1               
                 $w$
 UNION 
 SELECT MIN(t.fecha_emision) AS amin, MAX(t.fecha_emision) AS amax
-FROM tmp_ames t, ae_institucion eg, ae_institucion i, al_departamento dpto
-                WHERE 
-                t.eg = i.institucion_root AND t.eess = i.institucion_id AND t.dpto = i.cod_dpto
-                AND i.institucion_root = eg.institucion_id 
-                AND i.cod_pais = dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto and t.fecha_emision is not null
+FROM tmp_ames t
+                WHERE 1=1
                 $w$
                 ) AS tbl
 WHERE amin IS NOT null`                      
@@ -200,9 +154,9 @@ WHERE amin IS NOT null`
           "to_char(t.fecha_emision,'YYYY-MM')",
           "to_char(t.fecha_emision,'YYYY-MM')",
         ],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],

@@ -201,12 +201,38 @@ const PARAMETROS = {
         },
         tmp_rramen: {
                 table: `tmp_rrame tc
-                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
-                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
-                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+                        LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                        LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
                 alias: 'tmp_rramen',
                 cardinalidad: "n",
                 linked: "tmp_rrame",
+                campos: `tc.ente_gestor_name, tc.departamento,
+                        eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, 
+                        tc.eg, tc.dpto
+                `,
+
+                camposView: [{ value: "ente_gestor_name", text: "Reg: Ente Gestor" }, { value: "departamento", text: "Reg: Dpto" }, 
+                { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" },
+                ],
+                key: [],
+                precondicion: [],
+                groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento,
+                    eg.nombre_institucion, dpto.nombre_dpto,
+                    tc.eg, tc.dpto
+                    ORDER BY (eg.nombre_institucion, dpto.nombre_dpto) DESC, 
+                    tc.ente_gestor_name, tc.departamento
+                    `,
+                update: [],
+                referer: []
+        },
+        acrebhabn: {
+                table: `u_acrehab tc
+                LEFT JOIN ae_institucion eess ON (eess.institucion_root =  tc.eg AND eess.institucion_id =  tc.eess AND eess.cod_dpto = tc.dpto)
+                LEFT JOIN ae_institucion eg ON (eg.institucion_id =  tc.eg )
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto =  tc.dpto )`,
+                alias: 'acrebhabn',
+                cardinalidad: "n",
+                linked: "u_acrehab",
                 campos: `tc.ente_gestor_name, tc.departamento, tc.establecimiento,
                 eg.nombre_institucion as eg_n, dpto.nombre_dpto as dpto_n, eess.nombre_institucion as eess_n,
                 tc.eg, tc.dpto, tc.eess

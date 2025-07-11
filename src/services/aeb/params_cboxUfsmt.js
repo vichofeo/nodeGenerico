@@ -47,8 +47,8 @@ COALESCE(sc.atributo,'') AS genero,
                 ORDER BY 1,2,3
       `,
       entre_periodos: `SELECT
-min(TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Month')) AS amin,
- MAX(TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Month')) AS amax
+TO_CHAR(min(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amin,
+ TO_CHAR(MAX(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amax
 FROM ae_institucion i, f_formulario_registro r
 WHERE 
 r.institucion_id = i.institucion_id
@@ -131,8 +131,8 @@ HAVING sum(ll.texto::INTEGER)>0
                 ORDER BY 6 DESC, 1,2,3
       `,
       entre_periodos: `SELECT
-min(TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Month')) AS amin,
- MAX(TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-Month')) AS amax
+TO_CHAR(min(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amin,
+ TO_CHAR(MAX(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amax
 FROM ae_institucion i, f_formulario_registro r
 WHERE 
 r.institucion_id = i.institucion_id

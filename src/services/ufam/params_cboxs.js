@@ -47,7 +47,7 @@ const PDEPENDENCIES = {
                 GROUP BY gestion_ejecucion, genero
                 ORDER BY 1,2
                 `,
-      ames_tipo_sol: `SELECT departamento as pila, tipo_solicitud as ejex,  COUNT (*) AS value, 
+      ames_tipo_sol: `SELECT departamento as pila, coalesce(tipo_solicitud,'Unknow') as ejex,  COUNT (*) AS value, 
                 SUM(COUNT(*)) OVER (PARTITION BY departamento ORDER BY departamento, tipo_solicitud ) AS total_acumulado
                 FROM tmp_ames
                 WHERE 1=1 $w$
@@ -118,23 +118,21 @@ const PDEPENDENCIES = {
             $w$
             ORDER BY 2`,
       headers: [{}],
-      attributes: `dpto.nombre_dpto, eg.nombre_institucion AS eg, eess.nombre_institucion AS eess,  
-            extract(year from pac.create_date) AS gestion, frm.parametro AS frm,
-            seccion.codigo||' - '|| seccion.parametro AS seccion, 
-            cap.codigo||' '||cap.parametro AS capitulo, 
-            parametro.codigo ||'. '|| parametro.parametro AS standar,
-            TO_CHAR((pac.fecha_complimiento)::DATE,'dd/mm/yyyy') AS fecha_vencimiento,            
-            CASE  WHEN pac.fecha_complimiento IS NULL THEN 'En espera por inicio..'
-            WHEN (( pac.fecha_complimiento )::DATE - NOW()::DATE)<0
+      attributes: `departamento, ente_gestor_name AS eg, establecimiento AS eess,
+            gestion_solicitud, 
+            gestion_ejecucion,
+            TO_CHAR(cronograma,'dd/mm/yyyy') AS fecha_vencimiento,
+            CASE  WHEN fecha_emision IS NULL THEN 'En espera por inicio..'
+            WHEN (( cronograma )::DATE - NOW()::DATE)<0
                     THEN 'Vigencia CONCLUIDA'
-                    ELSE 'Quedan: '||(( pac.fecha_complimiento)::DATE - NOW()::DATE) || ' dias.'
-                    END AS "vigencia",                    
-                    CASE  WHEN (( pac.fecha_complimiento )::DATE - NOW()::DATE)>60
+                    ELSE 'Quedan: '||(( cronograma)::DATE - NOW()::DATE) || ' dias.'
+                    END AS "vigencia",
+                    CASE  WHEN (( cronograma )::DATE - NOW()::DATE)>60
                     THEN 'Vigente'
-                    WHEN (( pac.fecha_complimiento )::DATE - NOW()::DATE)>0 and (( pac.fecha_complimiento )::DATE - NOW()::DATE) <=60
-                    THEN 'Vencimiento proximo' 
-                    WHEN (( pac.fecha_complimiento )::DATE - NOW()::DATE)<0
-                    THEN 'Vencido' 
+                    WHEN (( cronograma )::DATE - NOW()::DATE)>0 and (( cronograma )::DATE - NOW()::DATE) <=60
+                    THEN 'Vencimiento proximo'
+                    WHEN (( cronograma )::DATE - NOW()::DATE)<0
+                    THEN 'Vencido'
                     ELSE 'N/A' END  AS alertax23`,
     },
     withInitial: true,
@@ -335,7 +333,7 @@ const PDEPENDENCIES = {
                 WHERE 1=1 $w$
                 GROUP BY gestion
                 ORDER BY 1`,*/
-      ames_servicio: `SELECT servicio AS ejex, COUNT(*) AS value
+      ames_servicio: `SELECT coalesce(servicio,'Unknow') AS ejex, COUNT(*) AS value
                 FROM tmp_rrame WHERE 1=1 $w$
                 GROUP BY 1
                 ORDER BY 1`,
@@ -345,7 +343,7 @@ const PDEPENDENCIES = {
       equivalencia: {
         departamento: ['departamento', 'departamento'],
         eg: ['ente_gestor_name', 'ente_gestor_name'],
-        establecimiento: ['establecimiento', "ente_gestor_name||': '|| departamento ||' - ' ||establecimiento"],
+        establecimiento: ["ente_gestor_name||': '|| departamento", "ente_gestor_name||': '|| departamento"],
         //tipo_solicitud:['tipo_solicitud', 'tipo_solicitud'],
         servicio: ['servicio', 'servicio'],
         gestion: ['gestion_ejecucion', 'gestion_ejecucion'],

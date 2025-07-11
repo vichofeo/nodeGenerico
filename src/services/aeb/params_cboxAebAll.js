@@ -343,7 +343,7 @@ $w$
 GROUP BY 1,2, 3, 4,5,6
 ORDER BY 1,2,3,4,5
         `,
-    entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+    entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MAX(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
     FROM tmp_pai t, ae_institucion i
 WHERE t.eess =  i.institucion_id $w$`    
     },
@@ -373,7 +373,7 @@ WHERE t.eess =  i.institucion_id $w$`
       GROUP BY 1,2
       ORDER BY 1,2
         `,
-      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MAX(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
       FROM tmp_pai t WHERE 1=1 $w$`
     },
     referer: [],
@@ -437,7 +437,7 @@ $w$
                 WHERE 1=1 $w$
                 GROUP BY 1
                 ORDER BY 1`,
-      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
+      entre_periodos:`SELECT to_char(MIN(t.fecha_vacunacion), 'DD/MM/YYYY') as amin, to_char(MAX(t.fecha_vacunacion), 'DD/MM/YYYY') as amax
       FROM tmp_pai t WHERE 1=1 $w$`
     },
     referer: [],
@@ -484,7 +484,7 @@ $w$
                         $w$
                         GROUP BY 1,2
                         ORDER BY 3 DESC,1,2  `,
-      entre_periodos:`SELECT to_char(min(t.fecha_dispensacion), 'DD/MM/YYY') AS amin, to_char(max(t.fecha_dispensacion), 'DD/MM/YYY') AS amax
+      entre_periodos:`SELECT to_char(min(t.fecha_dispensacion), 'DD/MM/YYYY') AS amin, to_char(max(t.fecha_dispensacion), 'DD/MM/YYYY') AS amax
                         FROM tmp_carmelo t, ae_institucion eg
                 WHERE t.eg=eg.institucion_id
                 $w$`

@@ -72,25 +72,25 @@ GROUP BY 1) AS tbl`
     campos: cmps,
     ilogic: {
       ss_uucass: `SELECT 
-                SUM(CASE WHEN tipo_registro='HABILITACION' THEN valor ELSE 0 END ) AS habilitacion, 
-                SUM(CASE WHEN tipo_registro='ACREDITACION' THEN valor ELSE 0 END ) AS acreditacion
+                SUM(CASE WHEN tipo_reg='HABILITACION' THEN valor ELSE 0 END ) AS habilitacion, 
+                SUM(CASE WHEN tipo_reg='ACREDITACION' THEN valor ELSE 0 END ) AS acreditacion
                 FROM (SELECT 
-                iah.tipo_registro,   a.atributo, COUNT(*) AS valor
-                FROM r_institucion_salud_acrehab iah, 
-					      r_is_atributo a, ae_institucion i
+                iah.tipo_reg,   a.atributo, COUNT(*) AS valor
+                FROM u_acrehab iah, 
+					      r_is_atributo a
                 WHERE 
-                iah.tipo_registro=a.atributo_id 
-                AND iah.institucion_id = i.institucion_id  $w$
-                GROUP BY iah.tipo_registro, a.atributo) as tbl`
+                iah.tipo_reg=a.atributo_id 
+                AND iah.tipo='O'  $w$
+                GROUP BY iah.tipo_reg, a.atributo) as tbl`
     },
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ['iah.gestion_registro', 'iah.gestion_registro'],
-        periodo: ["to_char(iah.fecha_ra, 'YYYY-MM')", "to_char(iah.fecha_ra, 'YYYY-MM')"],
-        eg: ['i.institucion_root', "i.institucion_root"],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        gestion: ['iah.gestion', 'iah.gestion'],
+        periodo: ["to_char(iah.fecha, 'YYYY-MM')", "to_char(iah.fecha, 'YYYY-MM')"],
+        eg: ['iah.eg', "iah.eg"],
+        dpto: ['iah.dpto', 'iah.dpto'],
+        eess: ['iah.eess', 'iah.eess'],
 
       },
       query: `SELECT $sa$`,

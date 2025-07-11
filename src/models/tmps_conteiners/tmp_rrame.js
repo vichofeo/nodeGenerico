@@ -13,24 +13,39 @@ module.exports = (sequelize, DataTypes) => {
   }
   tmp_rrame.init(
     {
-      
-      
-      numero: {type: DataTypes.STRING, allowNull: true},
-      gestion_ejecucion: {type: DataTypes.STRING, allowNull: true},
-	ente_gestor_name: {type: DataTypes.STRING, allowNull: true},
-	rrame_no: {type: DataTypes.STRING, allowNull: true},
-	caso: {type: DataTypes.STRING, allowNull: true},
-	establecimiento: {type: DataTypes.STRING, allowNull: true},
-	servicio: {type: DataTypes.STRING, allowNull: true},
-	departamento: {type: DataTypes.STRING, allowNull: true},
-	fecha_emision: {type: DataTypes.DATEONLY, allowNull: true},
-	notificacion_rrame: {type: DataTypes.STRING, allowNull: true},
-	vacio: {type: DataTypes.TEXT, allowNull: true},     
+      idx: { type: DataTypes.INTEGER(), allowNull: false, primaryKey: true, autoIncrement: true },
+
+      numero: { type: DataTypes.STRING, allowNull: true },
+      gestion_ingreso: { type: DataTypes.STRING, allowNull: true },
+      gestion_ejecucion: { type: DataTypes.STRING, allowNull: true },
+      ente_gestor_name: { type: DataTypes.STRING, allowNull: true },
+      origen: { type: DataTypes.STRING, allowNull: true },
+      rrame_no: { type: DataTypes.STRING, allowNull: true },
+      auditor: { type: DataTypes.STRING, allowNull: true },
+      caso: { type: DataTypes.STRING, allowNull: true },
+      _a: { type: DataTypes.STRING, allowNull: true },
+      _b: { type: DataTypes.STRING, allowNull: true },
+      _c: { type: DataTypes.STRING, allowNull: true },
+      _d: { type: DataTypes.STRING, allowNull: true },
+      servicio: { type: DataTypes.STRING, allowNull: true },
+      departamento: { type: DataTypes.STRING, allowNull: true },
+      ciudad: { type: DataTypes.STRING, allowNull: true },
+
+      fecha_emision: { type: DataTypes.DATEONLY, allowNull: true },
+      notificacion_conclusion: { type: DataTypes.STRING, allowNull: true },
+
+      swloadend: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      f_emision: { type: DataTypes.STRING, allowNull: true },
+
+      hash: { type: DataTypes.STRING, allowNull: true, unique: true },
+      hasher: { type: DataTypes.STRING, allowNull: true },
+      dni_register: { type: DataTypes.STRING, allowNull: true },
 
       eg: { type: DataTypes.STRING, allowNull: true },
       dpto: { type: DataTypes.STRING, allowNull: true },
       eess: { type: DataTypes.STRING, allowNull: true },
-      prd: { type: DataTypes.STRING, allowNull: true }
+
+
 
     },
     {
