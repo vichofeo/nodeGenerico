@@ -5,13 +5,13 @@ const cmps = {
   dpto: ['Departamento', false, true, 'C', , , 'M'],
   eess: ['Establecimiento de Salud', false, true, 'C', , , 'M'],
 }
-//extraCondicion:[[campo, valor], [campo2, valor]...]
-;('use strict')
+  //extraCondicion:[[campo, valor], [campo2, valor]...]
+  ; ('use strict')
 const PDEPENDENCIES = {
   ucass_ah: {
     alias: 'ucass_ah',
     campos: cmps,
-    title_obj:{title:'UCASS Nro. de HABILITACIONES / ACREDITACIONES', subtitle:'Ralizada en el periodo'},
+    title_obj: { title: 'UCASS Nro. de HABILITACIONES / ACREDITACIONES', subtitle: 'Ralizada en el periodo' },
     ilogic: {
       ucass_ah: `SELECT 
  gestion,
@@ -38,7 +38,7 @@ $w$
     GROUP BY 1,2,3
      ORDER BY 1,2,3
                 `,
-                entre_periodos: `SELECT
+      entre_periodos: `SELECT
 TO_CHAR(min(coalesce(ah.fecha, '1900-01-01')), 'YYYY-Month') AS amin,
 TO_CHAR(max(coalesce(ah.fecha, '1900-01-01')), 'YYYY-Month') AS amax
 FROM u_acrehab ah, r_is_atributo a2
@@ -50,7 +50,7 @@ AND ah.tipo='O' and ah.fecha is not null
     primal: {
       equivalencia: {
         gestion: ["ah.gestion", "ah.gestion"],
-        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')" ],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
         eg: ['ah.eg', 'ah.eg'],
         dpto: ['ah.dpto', 'ah.dpto'],
         eess: ['ah.eess', 'ah.eess'],
@@ -61,6 +61,107 @@ AND ah.tipo='O' and ah.fecha is not null
     },
     withInitial: true,
   },
-  
+  ucass_groupa: {
+    alias: 'ucass_groupa',
+    campos: cmps,
+    title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
+    ilogic: {
+      ucass_groupa: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
+COUNT(*) AS value
+FROM u_acrehab ah
+WHERE ah.tipo_reg='ACREDITACION'
+AND ah.tipo='O'
+$w$
+GROUP BY 1,2,3,4
+ORDER BY 1,2,3,4
+        `,
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+    FROM u_acrehab ah
+WHERE ah.tipo_reg='ACREDITACION'
+AND ah.tipo='O' and ah.fecha is not null $w$ `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["ah.gestion", "ah.gestion"],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
+        eg: ['ah.eg', 'ah.eg'],
+        dpto: ['ah.dpto', 'ah.dpto'],
+        eess: ['ah.eess', 'ah.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ucass_grouph: {
+    alias: 'ucass_grouph',
+    campos: cmps,
+    title_obj: { title: 'UCASS - HABILITACIONES', subtitle: 'Datos de' },
+    ilogic: {
+      ucass_grouph: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
+COUNT(*) AS value
+FROM u_acrehab ah
+WHERE ah.tipo_reg='HABILITACION'
+AND ah.tipo='O'
+$w$
+GROUP BY 1,2,3,4
+ORDER BY 1,2,3,4
+        `,
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+    FROM u_acrehab ah
+WHERE ah.tipo_reg='HABILITACION'
+AND ah.tipo='O' and ah.fecha is not null $w$ `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["ah.gestion", "ah.gestion"],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
+        eg: ['ah.eg', 'ah.eg'],
+        dpto: ['ah.dpto', 'ah.dpto'],
+        eess: ['ah.eess', 'ah.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ucass_nroah: {
+    alias: 'ucass_nroah',
+    campos: cmps,
+    title_obj: { title: 'UCASS Nro. DE ACREDITACIONES - HABILITACIONES', subtitle: 'Comprendidas en el periodo' },
+    ilogic: {
+      ucass_nroah: `SELECT 
+ah.ente_gestor_name AS row_index, SUBSTRING(ah.tipo_reg,1,3)||'.' AS col_head2, ah.gestion as col_head1,
+COUNT(*) AS value
+FROM u_acrehab ah
+WHERE 
+ah.tipo='O' $w$
+GROUP BY 1,2,3
+ORDER BY 1,2,3
+                `,
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+    FROM u_acrehab ah
+WHERE 
+ ah.tipo='O' and ah.fecha is not null $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["ah.gestion", "ah.gestion"],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
+        eg: ['ah.eg', 'ah.eg'],
+        dpto: ['ah.dpto', 'ah.dpto'],
+        eess: ['ah.eess', 'ah.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 }
 module.exports = PDEPENDENCIES
