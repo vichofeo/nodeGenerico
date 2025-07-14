@@ -34,7 +34,7 @@ const PDEPENDENCIES = {
                 WHERE 1=1                
                 $w$
                 GROUP BY 1,2,3
-                ORDER BY 1,2,3
+                ORDER BY value DESC, 1,2,3
                 `,
                 entre_periodos:`SELECT 
 min(TO_CHAR(coalesce(amin, '1900-01-01'), 'YYYY-Month')) AS amin,

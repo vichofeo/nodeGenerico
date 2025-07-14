@@ -67,13 +67,14 @@ AND ah.tipo='O' and ah.fecha is not null
     title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
     ilogic: {
       ucass_groupa: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
-COUNT(*) AS value
+COUNT(*) AS value,
+SUM(COUNT(*)) OVER (PARTITION BY ah.departamento ORDER BY ah.departamento )  AS acumulado
 FROM u_acrehab ah
 WHERE ah.tipo_reg='ACREDITACION'
 AND ah.tipo='O'
 $w$
 GROUP BY 1,2,3,4
-ORDER BY 1,2,3,4
+ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , ah.ente_gestor_name 
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
@@ -101,13 +102,14 @@ AND ah.tipo='O' and ah.fecha is not null $w$ `
     title_obj: { title: 'UCASS - HABILITACIONES', subtitle: 'Datos de' },
     ilogic: {
       ucass_grouph: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
-COUNT(*) AS value
+COUNT(*) AS value,
+SUM(COUNT(*)) OVER (PARTITION BY ah.departamento ORDER BY ah.departamento )  AS acumulado
 FROM u_acrehab ah
 WHERE ah.tipo_reg='HABILITACION'
 AND ah.tipo='O'
 $w$
 GROUP BY 1,2,3,4
-ORDER BY 1,2,3,4
+ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , ah.ente_gestor_name 
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
@@ -147,6 +149,35 @@ ORDER BY 1,2,3
     FROM u_acrehab ah
 WHERE 
  ah.tipo='O' and ah.fecha is not null $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["ah.gestion", "ah.gestion"],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
+        eg: ['ah.eg', 'ah.eg'],
+        dpto: ['ah.dpto', 'ah.dpto'],
+        eess: ['ah.eess', 'ah.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ucass_ah_meta: {
+    alias: 'ucass_ah_meta',
+    campos: cmps,
+    title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
+    ilogic: {
+      ucass_ah_meta: `SELECT mm.departamento as ente_gestor, mm.tipo_reg AS grupo, mm.gestion, mm.meta AS value 
+FROM u_metas mm
+ORDER BY mm.gestion, mm.departamento 
+        `,
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+    FROM u_acrehab ah
+WHERE ah.tipo_reg='ACREDITACION'
+AND ah.tipo='O' and ah.fecha is not null $w$ `
     },
     referer: [],
     primal: {

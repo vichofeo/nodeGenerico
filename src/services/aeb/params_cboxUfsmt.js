@@ -128,7 +128,7 @@ AND tbl.row_ll = ll.row_ll AND ll.col_ll NOT IN ('GE_DIAGESTB_E', 'GE_SOSDIAG_E'
 $w$
                 GROUP BY 1, 2, 3, 4, 5
 HAVING sum(ll.texto::INTEGER)>0
-                ORDER BY 6 DESC, 1,2,3
+                ORDER BY value DESC, 1,2,3
       `,
       entre_periodos: `SELECT
 TO_CHAR(min(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amin,
