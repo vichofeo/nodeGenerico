@@ -56,8 +56,8 @@ const PDEPENDENCIES = {
                 eg.nombre_corto as ente_gestor, dpto.nombre_dpto AS dpto,
                 r.nivel_atencion||r.snis AS nivel_atencion, 
                 a.atributo || case WHEN r.snis='Y' THEN ' (c/cr)' ELSE ' (s/cr)' END  AS nivel,
-                COUNT(*) AS value
-
+                COUNT(*) AS value,
+                SUM(COUNT(*)) OVER (PARTITION BY eg.nombre_corto ORDER BY eg.nombre_corto )  AS acumulado
                 FROM r_institucion_salud r, ae_institucion i, ae_institucion eg, r_is_atributo a, al_departamento dpto
                 WHERE 
                 r.institucion_id = i.institucion_id AND i.institucion_root = eg.institucion_id AND r.nivel_atencion=a.atributo_id 
@@ -65,7 +65,7 @@ const PDEPENDENCIES = {
                 AND r.nivel_atencion IN ('1ERNIVEL','2DONIVEL','3ERNIVEL')
                 $w$
                 GROUP BY 1,2,3,4
-                ORDER BY 1, 2, 3
+                ORDER BY acumulado DESC,1, 2, 3
                 `,
       entre_periodos:`select 'Con Cod. RUES y ' as amin, 'Sin Cod RUES' as amax` 
     },
