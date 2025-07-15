@@ -170,9 +170,11 @@ WHERE
     campos: cmps,
     title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
     ilogic: {
-      ucass_ah_meta: `SELECT mm.departamento as ente_gestor, mm.tipo_reg AS grupo, mm.gestion, mm.meta AS value 
+      ucass_ah_meta: `SELECT mm.tipo_reg AS grupo,
+mm.departamento AS principal, mm.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
+mm.meta AS value 
 FROM u_metas mm
-ORDER BY mm.gestion, mm.departamento 
+ORDER BY 1,2,3,4
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
