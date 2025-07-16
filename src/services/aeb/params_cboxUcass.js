@@ -168,27 +168,35 @@ WHERE
   ucass_ah_meta: {
     alias: 'ucass_ah_meta',
     campos: cmps,
-    title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
+    title_obj: { title: 'UCASS - METAS ACRE./HAB.', subtitle: 'Datos de' },
     ilogic: {
       ucass_ah_meta: `
       SELECT ah.tipo_reg AS grupo, 
 ah.departamento AS principal, ah.gestion AS segundo, 'exec' AS tipo, 'clase' AS clase,
-COUNT(*) AS VALUE, 0 AS meta
+COUNT(*) AS value, 0 AS meta, 
+SUM(COUNT(*)) OVER (PARTITION BY ah.tipo_reg, ah.departamento ORDER BY ah.tipo_reg, ah.departamento )  AS acumulado
 FROM u_acrehab ah
-WHERE ah.tipo='O'
+WHERE ah.tipo='O' $w$
 group BY 1,2,3
  UNION 
 
-SELECT mm.tipo_reg AS grupo,
+SELECT  mm.tipo_reg AS grupo,
 mm.departamento AS principal, mm.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
-mm.meta AS VALUE, 1 AS meta 
+mm.meta AS value, 1 AS meta , 0 AS acumulado
 FROM u_metas mm
-ORDER BY 1,2,3
+LEFT JOIN u_acrehab ah ON (mm.unidad='UCASS' and ah.tipo='O' AND  mm.tipo_reg = ah.tipo_reg AND mm.departamento=ah.departamento AND mm.gestion=ah.gestion)
+WHERE 1=1 $w$
+GROUP BY 
+mm.tipo_reg ,
+mm.departamento, mm.gestion, 
+mm.meta 
+
+ORDER BY 1, acumulado desc, 2,3
         `,
-      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'YYYY-Month') as amin, to_char(MAX(ah.fecha), 'YYYY-Month') as amax
     FROM u_acrehab ah
-WHERE ah.tipo_reg='ACREDITACION'
-AND ah.tipo='O' and ah.fecha is not null $w$ `
+WHERE 
+ah.tipo='O' and ah.fecha is not null $w$ `
     },
     referer: [],
     primal: {
