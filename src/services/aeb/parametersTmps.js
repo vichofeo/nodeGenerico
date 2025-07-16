@@ -242,7 +242,7 @@ const PARAMETROS = {
                 { value: "eg_n", text: "Equivale: Ente Gestor" }, { value: "dpto_n", text: "Equivale: Dpto" }, { value: "eess_n", text: "Equivale: eess" },
                 ],
                 key: [],
-                precondicion: [],
+                precondicion: ["tc.tipo = 'O'"],
                 groupOrder: ` GROUP BY tc.ente_gestor_name, tc.departamento, tc.establecimiento,
                     eg.nombre_institucion, dpto.nombre_dpto, eess.nombre_institucion,
                     tc.eg, tc.dpto, tc.eess
