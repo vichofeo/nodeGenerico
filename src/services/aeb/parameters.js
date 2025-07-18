@@ -107,7 +107,7 @@ const PARAMETROS = {
         { value: "mes", text: "Periodos" },
         { value: "usr", text: "Usuario" }, {value:'accion', text:'Accion'} ],
         key: [],
-        precondicion: ['t.dni_register = p.dni_persona'],
+        precondicion: ['t.dni_register = p.dni_persona','t.tipo is null'],
         groupOrder: `GROUP BY t.gestion, t.departamento, t.ente_gestor_name , t.establecimiento, usr, t.dni_register 
                     ORDER BY 1 desc, 2,3,4 `,//null string    
         update: [],

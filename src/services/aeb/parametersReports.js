@@ -463,7 +463,7 @@ const REPORTS = {
     table: `( SELECT formulario, gestion||'-'||mes AS periodo, COUNT(*) AS registros
           FROM tmp_snis302b
           WHERE 
-          swloadend = TRUE 
+          swloadend = TRUE  and tipo is null
           GROUP BY 1,2
           ORDER BY 1
           ) AS t1`,
@@ -500,7 +500,7 @@ const REPORTS = {
     rows: ['GRUPO DE VARIABLES'],
     cols: ['TIPO REPORTE', 'VARIABLE', 'TIPO VARIABLE', 'SUBVARIABLE'],
     mdi: 'mdi-seat-flat-angled',
-    precondicion: ['s.eg=i.institucion_id'],
+    precondicion: ['s.eg=i.institucion_id','s.tipo is null'],
     referer: [],
     metodo: function (dato = {}) {
       //Array(formulario, [mess "gestion-mes"])
