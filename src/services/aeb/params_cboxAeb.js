@@ -19,8 +19,8 @@ const PDEPENDENCIES = {
               eg.nombre_institucion as ente_gestor, i.nombre_institucion, r.nivel_atencion, a.atributo AS nivel, r.snis,
               i.cod_dpto AS dpto, dpto.nombre_dpto AS ndpto,
               i.telefono, i.direccion_web,
-              i.zona_barrio||'; '||i.avenida_calle AS direccion,
-              i.latitud, i.longitud,
+              COALESCE (i.zona_barrio,'')||'; '||COALESCE (i.avenida_calle,'') AS direccion,
+              COALESCE (i.latitud, dpto.latitud) AS latitud, COALESCE (i.longitud, dpto.longitud) AS longitud,
               to_char(i.fecha_creacion,'DD/MM/YYYY') AS creacion
 
               FROM r_institucion_salud r, ae_institucion i, ae_institucion eg, r_is_atributo a, al_departamento dpto

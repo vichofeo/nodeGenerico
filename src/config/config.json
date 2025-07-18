@@ -3,8 +3,8 @@
     "username": "postgres",
     "password": "vico",
     "database": "ss_sscpdb",    
-    "schema": "pruebas",    
-    "searchPath": "pruebas",
+    "schema": "pruebas_2",    
+    "searchPath": "pruebas_2",
     "host": "localhost",
     "dialect": "postgres",
     "dialectOptions": {            
