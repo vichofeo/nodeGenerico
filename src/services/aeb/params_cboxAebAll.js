@@ -144,8 +144,41 @@ $w$
         gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
         periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
         eg: ['t.eg', 't.eg'],
-        dpto: ['i.dpto', 'i.dpto'],
-        eess: ['i.eess', 'i.eess'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  adef_nrodef: {
+    alias: 'adef_nrodef',
+    campos: cmps,
+    title_obj: { title: 'DEFUNCIONES POR DEPARTAMENTO', subtitle: 'Comprendidas en el periodo' },
+    ilogic: {
+      adef_nrodef: `SELECT 
+          t.ente_gestor_name AS row_index, upper(substr(t.sexo,1,1)) AS col_head2, t.departamento as col_head1,
+          COUNT(*) AS value
+          FROM tmp_defunciones t
+          WHERE 
+          1=1 $w$
+          GROUP BY 1,2,3
+          ORDER BY 1,2,3
+                `,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_defuncion),'DD/MM/YYYY') AS amin, to_char(MAX(t.fecha_defuncion),'DD/MM/YYYY') AS amax
+       FROM tmp_defunciones t
+                WHERE 1=1 $w$` 
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_defuncion, 'YYYY')", "to_char(t.fecha_defuncion, 'YYYY')"],
+        periodo: ["to_char(t.fecha_defuncion, 'YYYY-MM')", "to_char(t.fecha_defuncion, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -199,6 +232,39 @@ $w$
         eg: ['t.eg', 't.eg'],
         dpto: ['i.dpto', 'i.dpto'],
         eess: ['i.eess', 'i.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  anac_nronac: {
+    alias: 'anac_nronac',
+    campos: cmps,
+    title_obj: { title: 'NACIMIENTOS POR DEPARTAMENTO', subtitle: 'Comprendidas en el periodo' },
+    ilogic: {
+      anac_nronac: `SELECT 
+          t.ente_gestor_name AS row_index, upper(substr(t.sexo,1,1)) AS col_head2, t.departamento as col_head1,
+          COUNT(*) AS value
+          FROM tmp_nacimientos t
+          WHERE 
+          1=1 $w$
+          GROUP BY 1,2,3
+          ORDER BY 1,2,3
+                `,
+      entre_periodos:`SELECT to_char(MIN(t.fecha_nacimiento),'DD/MM/YYYY') AS amin, to_char(MAX(t.fecha_nacimiento),'DD/MM/YYYY') AS amax
+       FROM tmp_defunciones t
+                WHERE 1=1 $w$` 
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["to_char(t.fecha_nacimiento, 'YYYY')", "to_char(t.fecha_nacimiento, 'YYYY')"],
+        periodo: ["to_char(t.fecha_nacimiento, 'YYYY-MM')", "to_char(t.fecha_nacimiento, 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
