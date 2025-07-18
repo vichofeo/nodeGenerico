@@ -905,5 +905,39 @@ FROM tmp_vacunatorio v WHERE 1=1 $w$`
     withInitial: true,
 
   },
+  //ONCOLOGIA Y RENAL
+  //1. Oncologia
+  aonco_nr: {
+    alias: 'aonco_nr',
+    campos: cmps,
+    title_obj:{title:'ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle:'Informacion mensual de '},
+    ilogic: {
+      aonco_nr: `
+        SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-Mon') AS ejex,
+        to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),
+        COUNT(*) AS value
+        FROM tmp_snis302b t
+        WHERE t.tipo='MLI'
+        AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' $w$
+        GROUP BY 1,2,3
+        ORDER BY 1,3`,
+
+      entre_periodos:`SELECT  to_char(MIN(to_date(t.gestion||'-'||t.mes, 'YYYY-MM')), 'YYYY-Month') AS amin, to_char(Max(to_date(t.gestion||'-'||t.mes, 'YYYY-MM')), 'YYYY-Month') AS amax
+               FROM tmp_snis302b t WHERE  t.tipo='MLI'
+                AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
 }
 module.exports = PDEPENDENCIES

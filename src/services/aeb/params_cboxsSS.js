@@ -296,6 +296,36 @@ GROUP BY 1) AS tbl`
     },
     withInitial: true,
   },
+//
+ss_onco_renal: {
+    alias: 'ss_onco_renal',
+    campos: cmps,
+    ilogic: {
+      ss_onco_renal: `SELECT 
+sum(case when formulario='ENFERMEDADES ONCOLOGICAS' AND subvariable='N' THEN valor ELSE 0 END) AS "ONCO.",
+sum(case when formulario='ENFERMEDAD Y ESTADIO RENAL' AND subvariable='N' THEN valor ELSE 0 END) AS "RENAL"
+FROM tmp_snis302b t
+WHERE 
+t.tipo='MLI' $w$
+              `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {        
+        gestion: ["gestion", "gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        eg: ['eg', "eg"],
+        dpto: ['dpto', 'dpto'],
+        eess: ['eess', 'eess']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+
+  //----under
   ss_nuemo: {
     alias: 'ss_nuemo',
     campos: cmps,
