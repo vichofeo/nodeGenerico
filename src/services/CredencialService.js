@@ -93,11 +93,14 @@ const guardar = async (usr, handleError) => {
 const login = async (usr, handleError) => {
   try {
     const result = await credencialModel.findDataOne(usr)
+    const message_return= 'USUARIO Y/O CONTRASEÑA INCORRECTO'
 
     if (!result) {
-      handleError.setMessage("USER_NOT_EXISTS")
+      //handleError.setMessage("USER_NOT_EXISTS")
+      handleError.setMessage(message_return)
       handleError.setCode(404)
-      return { message: 'Usuario incorrecto', ok: false }
+      //return { message: 'Usuario incorrecto', ok: false }
+      return { message: message_return, ok: false }
     } else {
       const aux = await handleJwt.compare(usr.password, result.hash)      
       if (aux) {
@@ -186,9 +189,11 @@ VALUES (CURRENT_TIMESTAMP,'????','${result.login}','${result.institucion_id}', '
         }
       } else {
         
-        handleError.setMessage("PASSWORD_INVALID")
+        //handleError.setMessage("PASSWORD_INVALID")
+        handleError.setMessage(message_return)
         handleError.setCode(402)
-        return { message: 'Contraseña incorrecto', ok: false }
+        //return { message: 'Contraseña incorrecto', ok: false }
+        return { message: message_return, ok: false }
       }
     }
   } catch (error) { 

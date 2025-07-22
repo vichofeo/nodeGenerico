@@ -783,7 +783,7 @@ $w$
     },
     title_obj: { title: 'VACUNATORIOS DE LA SSCP', subtitle: ' ' },
     ilogic: {
-      dataTable: `
+      /*dataTable: `
           SELECT 
 v.departamento, v.municipio, v.institucion, v.establecimiento, direccion, lat, lng,
 v.telefono, v.horarios
@@ -791,7 +791,18 @@ FROM tmp_vacunatorio v
 WHERE 1=1
 $w$
 order by v.departamento, v.municipio,  v.institucion, v.establecimiento
-          `,
+          `,*/
+          dataTable:`SELECT
+dpto.nombre_dpto AS departamento, eg.nombre_corto AS institucion, i.nombre_institucion AS establecimiento,
+i.zona_barrio ||' '||COALESCE(i.avenida_calle) AS direccion,
+i.latitud AS lat, i.longitud AS lng, 
+i.telefono, i.direccion_web AS horarios
+FROM ae_institucion eg, ae_institucion i, al_departamento dpto, r_institucion_salud r
+WHERE 
+r.institucion_id=i.institucion_id
+AND i.institucion_root= eg.institucion_id
+AND i.cod_pais=dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
+AND r.vacunatorio=TRUE `,
       entre_periodos: `SELECT 
 STRING_AGG(DISTINCT v.departamento, ', ' ORDER BY v.departamento) AS amin, '' AS amax
 FROM tmp_vacunatorio v WHERE 1=1 $w$`
@@ -822,7 +833,7 @@ FROM tmp_vacunatorio v WHERE 1=1 $w$`
   aonco_nr: {
     alias: 'aonco_nr',
     campos: cmps,
-    title_obj: { title: 'ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
     ilogic: {
       aonco_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -873,7 +884,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   aonco_n: {
     alias: 'aonco_n',
     campos: cmps,
-    title_obj: { title: 'ATENCIÓN ENFERMEDADES ONCOLOGICAS - NUEVOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - NUEVOS', subtitle: 'Información de ' },
     ilogic: {
       aonco_n: `
 SELECT 
@@ -913,7 +924,7 @@ ORDER BY 1,2,3,4
   aonco_r: {
     alias: 'aonco_r',
     campos: cmps,
-    title_obj: { title: 'ATENCIÓN ENFERMEDADES ONCOLOGICAS - REPETIDOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - - REPETIDOS', subtitle: 'Información de ' },
     ilogic: {
       aonco_r: `
 SELECT 
@@ -953,7 +964,7 @@ ORDER BY 1,2,3,4
   aonco_table: {
     alias: 'aonco_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE NUMERO DE ATENCIÓN ENFERMEDADES ONCOLOGICAS', subtitle: 'Información de ' },
+    title_obj: { title: 'DATOS DE REGISTRO ENFERMEDADES ONCOLOGICAS', subtitle: 'Información de ' },
     ilogic: {
       aonco_table: `SELECT 
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,
@@ -988,7 +999,7 @@ ORDER BY 1,2,3
   arenal_nr: {
     alias: 'arenal_nr',
     campos: cmps,
-    title_obj: { title: 'ENFERMEDAD Y ESTADIO RENAL DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
     ilogic: {
       arenal_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -1039,7 +1050,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   arenal_n: {
     alias: 'arenal_n',
     campos: cmps,
-    title_obj: { title: 'ATENCIÓN ENFERMEDAD Y ESTADIO RENAL - NUEVOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - NUEVOS', subtitle: 'Información de ' },
     ilogic: {
       arenal_n: `
 SELECT 
@@ -1079,7 +1090,7 @@ ORDER BY 1,2,3,4
   arenal_r: {
     alias: 'arenal_r',
     campos: cmps,
-    title_obj: { title: 'ATENCIÓN ENFERMEDAD Y ESTADIO RENAL - REPETIDOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - REPETIDOS', subtitle: 'Información de ' },
     ilogic: {
       arenal_r: `
 SELECT 
@@ -1119,7 +1130,7 @@ ORDER BY 1,2,3,4
   arenal_table: {
     alias: 'arenal_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE NUMERO DE ATENCIÓN ENFERMEDAD Y ESTADIO RENAL', subtitle: 'Información de ' },
+    title_obj: { title: 'DATOS DE NUMERO DE REGISTROS DE ENFERMEDADES RENALES', subtitle: 'Información de ' },
     ilogic: {
       arenal_table: `SELECT
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,

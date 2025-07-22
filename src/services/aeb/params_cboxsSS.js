@@ -164,17 +164,19 @@ GROUP BY 1) AS tbl`
       eess: ['Establecimiento de Salud', false, true, 'C', , , 'M']
     },
     ilogic: {
-      ss_vacunatorio: `SELECT COUNT(*) AS "Total"
-                      FROM tmp_vacunatorio
-                      WHERE 1=1 $w$
+      ss_vacunatorio: `SELECT COUNT(*) AS "Total"        
+            FROM ae_institucion i , 
+            r_institucion_salud r
+            WHERE i.institucion_id = r.institucion_id
+            and r.vacunatorio= true $w$
               `
     },
     referer: [],
     primal: {
       equivalencia: {        
-        eg: ['eg', "eg"],
-        dpto: ['dpto', 'dpto'],
-        eess: ['eess', 'eess'],
+        eg: ['i.institucion_root', "i.institucion_root"],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
 
       },
       query: `SELECT $sa$`,

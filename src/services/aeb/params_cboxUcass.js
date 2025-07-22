@@ -168,7 +168,7 @@ WHERE
   ucass_ah_meta: {
     alias: 'ucass_ah_meta',
     campos: cmps,
-    title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
+    title_obj: { title: 'UCASS - ACREDITACIONES - HABILITACIONES', subtitle: 'Realizadas vs Metas de ' },
     ilogic: {
       ucass_ah_meta: `
       SELECT ah.tipo_reg AS grupo, 

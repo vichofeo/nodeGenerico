@@ -24,9 +24,9 @@ module.exports = (sequelize, DataTypes) => {
   ap_aplicacion.init(
     {
       aplicacion_id: { type: DataTypes.STRING(64), allowNull: false, primaryKey: true },
-      nombre_aplicacion: { type: DataTypes.STRING(50), allowNull: true },
+      nombre_aplicacion: { type: DataTypes.STRING(256), allowNull: true },
       version: { type: DataTypes.DOUBLE, allowNull: false },
-      nombre_comercial: { type: DataTypes.STRING(128), allowNull: false },
+      nombre_comercial: { type: DataTypes.STRING(512), allowNull: false },
       descripcion: { type: DataTypes.TEXT, allowNull: false },
     },
     {
