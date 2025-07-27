@@ -10,6 +10,43 @@
  */
 "use strict"
 const PARAMETROS = {
+    //ABC cnf
+    acreditacionn:{
+        table: 'al_departamento dpto, ae_institucion isap ,r_institucion_salud isa,  ae_institucion eg, r_institucion_salud_acrehab r',
+        alias: 'Acreditaciones',
+        cardinalidad: "n",
+        linked: 'acreditacion',
+        campos: `r.acrehab_id as idx, 'acreditacion' as linked,r.institucion_id,         
+        eg.nombre_corto, dpto.nombre_dpto,
+        isap.nombre_institucion,
+        r.eess_nombre, r.estado_acrehab, r.gestion_registro, 
+        r.nro_ra, r.fecha_ra, r.vigencia_anios, r.puntaje, r.tipo_registro, r.activo
+        `,
+
+        camposView: [
+            { value: "nombre_corto", text: "Ente Gestor" }, { value: "nombre_dpto", text: "Dpto" },
+            { value: "nombre_institucion", text: "Establecimiento" } ,   
+        { value: "eess_nombre", text: "Nombre Registrado" }, { value: "desc_estado", text: "Estado" },
+        { value: "gestion_registro", text: "Gestion registro" },
+        { value: "nro_ra", text: "Nro R.A." },
+        { value: "fecha_ra", text: "Fecha R.A." },
+        { value: "vigencia_anios", text: "Vigencia en Anios" },
+        { value: "puntaje", text: "Puntaje" },
+        { value: "activo", text: "Vigente" }
+        ],
+        //key: ['isap.root'], //llave de busqueda
+        key: [], //llave de busqueda
+        precondicion: ["dpto.cod_pais = isap.cod_pais" ,"dpto.cod_dpto=isap.cod_dpto",
+            "isap.institucion_id =  isa.institucion_id", "isa.ente_gestor_id =  eg.institucion_id",
+            "isa.institucion_id =  r.institucion_id","tipo_registro='ACREDITACION'"],
+        update: [],
+        referer: [
+            { ref: 'r_is_atributo as atr1', camporef: 'atr1.atributo_id', camporefForeign: 'r.estado_acrehab', alias: 'grupo_atributo', campos: 'atr1.atributo as desc_estado', condicion: 'AHACREDITACION' },
+            
+        ],
+    },
+
+    //conf para otros objetivos
     eess: {
         table: 'uf_abastecimiento_institucion_cnf',
         alias: 'eess',
