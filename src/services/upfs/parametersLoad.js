@@ -9,7 +9,7 @@ const PARAMETERS = {
         //table: ['xnro','cod_liname','medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
         file: ['NRO.', 'GRUPO', 'VARIABLE', 'SUBVARIABLE', 'DESCRIPCIÓN DEL MEDICAMENTO/CONCENTRACION', 'FORMA FARMACÉUTICAS/PRESENTACION', 'FECHA DE VENCIMIENTO', 'REGISTRO SANITARIO', 'CONSUMO MENSUAL', 'INGRESOS/ENTRADAS', 'EGRESOS/SALIDAS', 'TRANSFERENCIAS', 'STOCK / SALDOS'],
         table: ['xnro','grupo', 'variable', 'subvariable', 'medicamento','forma_farmaceutica','f_vencimiento','reg_sanitario','consumo_mensual','ingresos', 'egresos', 'transferencias', 'saldo_stock'],
-        validate: [0,1,1,1,1,1,1,1,1,1,1,1,1],
+        validate: [0,1,1,1,1,1,0,1,1,1,1,1,1],
         forFilter:['FECHA DE VENCIMIENTO'],        
         update:[['fecha_vencimiento',"TO_DATE(f_vencimiento, 'DD/MM/YYYY')",'Verifique el formato de fecha vencimiento sea DD/MM/YYYY'],
         ['cod_liname', `UPPER(grupo)||'-'||LPAD(variable, 2, '0')||'-'||LPAD(subvariable, 2, '0')`, 'No se puedo autogenerar el codigo liname'],

@@ -319,7 +319,11 @@ module.exports = class FrmsUtils {
     this.#setDataSession(this.#uService.filterHeaderTokenVerify(this.#_getToken()))
     const datos = this.#seteaObjWithDataSession()
 
-    console.log("\n *************COMBODEPENDENCY************** \n\n modelo:", dto.modelo, "-----------")
+    console.log("\n *************COMBODEPENDENCY************** \n\n modelo:",typeof this.#parametros[dto.modelo], "-----------")
+
+    //verifica existencia de modelo de datos
+
+    if (typeof this.#parametros[dto.modelo] ==='undefined') throw new Error(4001)
 
     const objParamModel = this.#parametros[dto.modelo]
     //console.log("\n *************************** ----------- OBJETO SELECT", objParamModel)

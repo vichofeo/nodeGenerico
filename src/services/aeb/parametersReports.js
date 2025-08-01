@@ -8,10 +8,10 @@ const REPORTS = {
     tables: 'tmp_hemofilia',
     alias: 'Datos Hemofilia',
     attributes: [
-      ['gestion', 'periodo'],
+      ['tipo_hemofilia', 'periodo'],
       ['count(*)', 'registros'],
     ],
-    campos: `ente_gestor_name, departamento, establecimiento, edad, genero, tipo_hemofilia, tipo_hemorragia, tratamiento_casa, gestion`,
+    campos: `ente_gestor_name, departamento, establecimiento, edad, genero, tipo_hemofilia, grado_severidad, tratamiento_recibido`,
     headers: [
       'ENTE GESTOR',
       'Departamento',      
@@ -19,9 +19,9 @@ const REPORTS = {
       'EDAD',
       'Sexo',      
       'Tipo Hemofilia',
-      'Tipo Hemorragia',
-      'Tratamiento Recibido',
-      'Tratamiento en casa', 'Gestion'
+      'Grado Severidad',
+      'Tratamiento Recibido'
+      
     ],
     tipo: 'Count',
     camposOcultos: [],

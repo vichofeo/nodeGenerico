@@ -253,7 +253,7 @@ const frmsConsolidado = async (dto, handleError) => {
       //titlesEstablecimientos[nombre] = eess.children.map(o=>[ inst_id+'|'+o.institucion_id,`${index++}. ${o.nombre_institucion}` ])
       //atributosEstablecimiento.push(...eess.children.map(o=>nombre+'|'+o.nombre_institucion))
       atributosEstablecimiento.push(...
-        eess.children.map(o=>`SUM(CASE WHEN eg.institucion_id ||'|'|| i.institucion_id = '${inst_id}|${o.institucion_id}' AND (c.sw_sg=TRUE OR c.sw_sg IS NULL) THEN ll.texto::decimal ELSE 0 END) AS "${indexAux++}. ${o.nombre_institucion}"`)
+        eess.children.map(o=>`SUM(CASE WHEN eg.institucion_id ||'|'|| i.institucion_id = '${inst_id}|${o.institucion_id}' AND (c.sw_sg=TRUE OR c.sw_sg IS NULL) THEN ll.texto::decimal ELSE 0 END) AS "${indexAux++}. ${o.nombre_institucion.replaceAll('"',"'")}"`)
       )
     }
 
