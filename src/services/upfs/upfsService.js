@@ -119,8 +119,11 @@ const getDataCboxLigado = async (dto, handleError) => {
 
     } catch (error) {
         console.log("\n\n ?????????????????????????????????********error en COMBOX LIGADO *******?????????????????????? \n\n");
-        console.log(error);
-        handleError.setMessage("Error de sistema: BVDATCBOXSRV")
+        console.log(error.message);
+        if(Number(error?.message))
+            handleError.setMessage(error.message)
+        else
+            handleError.setMessage("Error de sistema: BVDATCBOXSRV")
         handleError.setHttpError(error.message)
     };
 

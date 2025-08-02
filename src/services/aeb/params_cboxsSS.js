@@ -344,7 +344,7 @@ t.tipo='MLI' $w$
       equivalencia: {        
         gestion: ["gestion", "gestion"],
         periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
-        eg: ['eg', "eg"],
+        eg: ['t.eg', "eg"],
         dpto: ['dpto', 'dpto'],
         eess: ['eess', 'eess']
       },
@@ -424,6 +424,31 @@ LIMIT 3   `
         gestion: ["gestion", "gestion"],
         periodo: ["to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')", "to_char(TO_DATE(gestion||'-'||semana, 'IYYY-IW'), 'YYYY-MM')"],        
         dpto: ['dpto', 'dpto']
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ss_hemo: {
+    alias: 'ss_hemo',
+    campos: cmps,
+    ilogic: {
+      ss_hemo: `SELECT 
+SUM(CASE  WHEN  h.grado_severidad= 'LEVE' THEN 1 ELSE 0 END) AS "LEVE",
+                SUM(CASE WHEN h.grado_severidad= 'MODERADA' THEN 1 ELSE 0 END) AS "MODERADA",
+                SUM(CASE WHEN h.grado_severidad= 'MODERADA DE COMPORTAMIENTO SEVERO' THEN 1 ELSE 0 END) AS "M.C.S.",
+                SUM(CASE WHEN h.grado_severidad= 'SEVERA' THEN 1 ELSE 0 END) AS "SEVERA"
+                FROM tmp_hemofilia h, ae_institucion eg
+                WHERE h.eg=eg.institucion_id  $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {        
+        eg: ['h.eg', 'h.eg'],
+        dpto: ['h.dpto', 'h.dpto'],
+        eess: ['h.eess', 'h.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],

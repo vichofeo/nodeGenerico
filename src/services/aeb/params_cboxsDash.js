@@ -55,7 +55,7 @@ const PDEPENDENCIES = {
       hemo_genero: `SELECT tipo_hemofilia as pila,genero AS ejex, COUNT(*) AS value					 
                 FROM tmp_hemofilia
                 WHERE 1=1 $w$
-                GROUP BY 1,2
+                GROUP BY 1,2              
                 ORDER BY 1, 2`,
       hemo_hetario: `SELECT 
         genero as ejex,

@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
   ae_institucion.init(
     {
       institucion_id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, allowNull: false, primaryKey: true },
-      id_ente_gestor: { type: DataTypes.STRING(64), allowNull: false },
+      id_fk: { type: DataTypes.STRING(64), allowNull: false },
       nombre_institucion: { type: DataTypes.STRING(80), allowNull: false },
       nombre_corto: { type: DataTypes.STRING(10), allowNull: false },
       telefono: { type: DataTypes.STRING(15), allowNull: true },

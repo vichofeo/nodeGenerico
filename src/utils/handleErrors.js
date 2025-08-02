@@ -1,4 +1,6 @@
 const { error } = require('winston')
+const error_messages=[]
+error_messages[4001] = '4001: Modelo de datos no definido. Error de Diseño'
 
 module.exports = class HandleErrors {
     #_res
@@ -88,8 +90,16 @@ module.exports = class HandleErrors {
                                  
                     this.setHttpErrorResponse(payload)
                 }    
-            }else {this.setCode(409)
-                this.#setObjResponse({ok:false, message:"Conflicto"})
+            }else {                
+                
+                if(error_messages[this.#_message]){
+                    this.setCode(200)
+                    this.#setObjResponse({ok:false, message:error_messages[this.#_message]})
+                }else{
+                    this.setCode(409)
+                    this.#setObjResponse({ok:false, message:"Conflicto"})
+                }
+                    
             }
             
         } catch (error) {            

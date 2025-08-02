@@ -230,8 +230,8 @@ $w$
         gestion: ["to_char(t.fecha_nacimiento, 'YYYY')", "to_char(t.fecha_nacimiento, 'YYYY')"],
         periodo: ["to_char(t.fecha_nacimiento, 'YYYY-MM')", "to_char(t.fecha_nacimiento, 'YYYY-MM')"],
         eg: ['t.eg', 't.eg'],
-        dpto: ['i.dpto', 'i.dpto'],
-        eess: ['i.eess', 'i.eess'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -464,7 +464,7 @@ $w$
                         ORDER BY 3 DESC,1,2  `,
       entre_periodos: `SELECT to_char(min(t.fecha_dispensacion), 'DD/MM/YYYY') AS amin, to_char(max(t.fecha_dispensacion), 'DD/MM/YYYY') AS amax
                         FROM tmp_carmelo t, ae_institucion eg
-                WHERE t.eg=eg.institucion_id
+                WHERE t.eg=eg.institucion_id AND t.fecha_dispensacion <> '1900-01-01'
                 $w$`
     },
     referer: [],
@@ -802,22 +802,25 @@ WHERE
 r.institucion_id=i.institucion_id
 AND i.institucion_root= eg.institucion_id
 AND i.cod_pais=dpto.cod_pais AND i.cod_dpto= dpto.cod_dpto
-AND r.vacunatorio=TRUE `,
-      entre_periodos: `SELECT 
+AND r.vacunatorio=TRUE  $w$
+order by dpto.cod_dpto`,
+     /* entre_periodos: `SELECT 
 STRING_AGG(DISTINCT v.departamento, ', ' ORDER BY v.departamento) AS amin, '' AS amax
-FROM tmp_vacunatorio v WHERE 1=1 $w$`
+FROM tmp_vacunatorio v WHERE 1=1 $w$
+`*/
+entre_periodos: `SELECT '' AS amin, '' AS amax`
+
     },
     keySession: {},
     referer: [],
     primal: {
       equivalencia: {
-        eg: ['v.eg', 'v.eg'],
-        dpto: ['v.dpto', 'v.dpto'],
-        eess: ['v.eess', 'v.eess']
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id']
       },
       attributes: null,//`${parameters.rprte_abastecimienton.campos} `,
-      query: `
-             SELECT DISTINCT $sa$`,
+      query: `SELECT DISTINCT $sa$`,
       headers: [{ value: "departamento", text: "DEPARTAMENTO" },
       { value: "institucion", text: "ENTE GESTOR" },
       { value: "establecimiento", text: "ESTABLECIMIENTO SALUD" },
@@ -828,12 +831,89 @@ FROM tmp_vacunatorio v WHERE 1=1 $w$`
     withInitial: true,
 
   },
+
+  //HEMODFILIA
+   ahemofilia: {
+    alias: 'ahemofilia',
+    campos: {
+      eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+      dpto: ['Departamento', false, true, 'C', , , 'M'],
+      eess: ['Establecimiento de Salud', false, true, 'C', , , 'M']
+    },
+    title_obj: { title: 'CASOS DE HEMOFILIA', subtitle: null },
+    ilogic: {
+      hemo_eg: `SELECT 
+                eg.nombre_corto as pila, 
+                tipo_hemofilia AS  ejex, 
+					 COUNT(*) AS value
+                FROM tmp_hemofilia h, ae_institucion eg
+                WHERE h.eg= eg.institucion_id $w$
+                GROUP BY 1,2
+                ORDER BY 1, 2`,
+      hemo_severidad:`SELECT 
+      eg.nombre_corto AS ente_gestor , 
+SUM(CASE  WHEN  h.grado_severidad= 'LEVE' THEN 1 ELSE 0 END) AS "Leve",
+                SUM(CASE WHEN h.grado_severidad= 'MODERADA' THEN 1 ELSE 0 END) AS "Moderada",
+                SUM(CASE WHEN h.grado_severidad= 'MODERADA DE COMPORTAMIENTO SEVERO' THEN 1 ELSE 0 END) AS "Moderada Comportamiento Severo",
+                SUM(CASE WHEN h.grado_severidad= 'SEVERA' THEN 1 ELSE 0 END) AS "Severa",
+                SUM( CASE WHEN h.grado_severidad= 'MODERADA' THEN 0 
+                    WHEN h.grado_severidad= 'LEVE' THEN 0
+                    WHEN h.grado_severidad= 'MODERADA DE COMPORTAMIENTO SEVERO'  THEN 0
+                    WHEN h.grado_severidad= 'SEVERA'  THEN 0
+                    ELSE 1 END)  AS  "Unknown"
+                FROM tmp_hemofilia h, ae_institucion eg
+                WHERE h.eg=eg.institucion_id  $w$
+                GROUP BY 1
+                ORDER BY 1`,          
+      hemo_tipo: `SELECT 
+       eg.nombre_corto as pila,                 
+              h.tipo_hemofilia AS grupo,
+              h.tipo_hemofilia ||' - '||h.grado_severidad  AS  ejex,
+              COUNT(*) AS value					 
+FROM tmp_hemofilia h, ae_institucion eg
+                WHERE h.eg= eg.institucion_id $w$
+                GROUP BY 1,2,3
+                ORDER BY 1, 2,3 `,
+      hemo_dpto: `SELECT d.nombre_dpto as pila,  h.tipo_hemofilia AS ejex, COUNT(*) AS value					 
+                FROM tmp_hemofilia h, al_departamento d
+                WHERE h.dpto=d.cod_dpto $w$
+                GROUP BY 1,2
+                ORDER BY 1, 2`,          
+
+      hemo_genero: `SELECT h.tipo_hemofilia as pila, h.genero AS ejex, COUNT(*) AS value					 
+                FROM tmp_hemofilia h
+                WHERE 1=1 $w$
+                GROUP BY 1,2
+                UNION 
+                SELECT 'A', 'F', 0              
+                ORDER BY 1, 2`,
+      hemo_tratamiento: `SELECT i.nombre_corto as pila, h.tratamiento_recibido  AS ejex, COUNT(*) AS value					 
+                FROM tmp_hemofilia h, ae_institucion i
+                WHERE h.eg= i.institucion_id  $w$
+                GROUP BY 1,2
+                ORDER BY 1, 2`,
+entre_periodos: `SELECT  '' AS amin, '' as amax`
+
+    },
+    referer: [],
+    primal: {
+      equivalencia: {        
+        eg: ['h.eg', 'h.eg'],
+        dpto: ['h.dpto', 'h.dpto'],
+        eess: ['h.eess', 'h.eess'],
+      },
+      query: `SELECT $sa$ `,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
   //ONCOLOGIA Y RENAL
   //1. Oncologia
   aonco_nr: {
     alias: 'aonco_nr',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -850,8 +930,8 @@ t.departamento   as pivot ,
       t.subvariable as ejex ,
 sum(valor) AS value					 
                 FROM tmp_snis302b t
-                WHERE t.tipo='MLI'
-        AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' $w$
+                WHERE t.tipo='MLI' AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' 
+                $w$
       GROUP BY  1,2,3
       ORDER BY 1,3 `,
       aonco_eg: `SELECT  t.ente_gestor_name as pila , 
@@ -871,9 +951,11 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["gestion", "gestion"],
+        gestion: ["t.gestion", "t.gestion"],
         periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
-        dpto: ['dpto', 'dpto']
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -884,7 +966,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   aonco_n: {
     alias: 'aonco_n',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - NUEVOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_n: `
 SELECT 
@@ -909,11 +991,11 @@ ORDER BY 1,2,3,4
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -924,7 +1006,7 @@ ORDER BY 1,2,3,4
   aonco_r: {
     alias: 'aonco_r',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - - REPETIDOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_r: `
 SELECT 
@@ -949,11 +1031,11 @@ ORDER BY 1,2,3,4
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -964,14 +1046,14 @@ ORDER BY 1,2,3,4
   aonco_table: {
     alias: 'aonco_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE REGISTRO ENFERMEDADES ONCOLOGICAS', subtitle: 'Información de ' },
+    title_obj: { title: 'DATOS DE REGISTRO ENFERMEDADES ONCOLOGICAS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_table: `SELECT 
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,
 SUM(t.valor) AS value
 FROM tmp_snis302b t
 WHERE t.tipo='MLI'
-AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' 
+AND t.formulario = 'ENFERMEDADES ONCOLOGICAS' $w$
 GROUP BY 1,2,3
 ORDER BY 1,2,3      
         `,
@@ -983,11 +1065,11 @@ ORDER BY 1,2,3
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
         eg: ['t.eg', 't.eg'],
-        dpto: ['i.dpto', 'i.dpto'],
-        eess: ['i.eess', 'i.eess'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -999,7 +1081,7 @@ ORDER BY 1,2,3
   arenal_nr: {
     alias: 'arenal_nr',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES DE NOTIFICACIÓN MENSUAL', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES DE NOTIFICACIÓN MENSUAL', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -1039,7 +1121,9 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
       equivalencia: {
         gestion: ["gestion", "gestion"],
         periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
-        dpto: ['dpto', 'dpto']
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -1050,7 +1134,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   arenal_n: {
     alias: 'arenal_n',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - NUEVOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_n: `
 SELECT 
@@ -1075,11 +1159,11 @@ ORDER BY 1,2,3,4
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -1090,7 +1174,7 @@ ORDER BY 1,2,3,4
   arenal_r: {
     alias: 'arenal_r',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - REPETIDOS', subtitle: 'Información de ' },
+    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_r: `
 SELECT 
@@ -1115,11 +1199,11 @@ ORDER BY 1,2,3,4
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
-        eg: ['i.institucion_root', 'i.institucion_root'],
-        dpto: ['i.cod_dpto', 'i.cod_dpto'],
-        eess: ['i.institucion_id', 'i.institucion_id'],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
+        eg: ['t.eg', 't.eg'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
@@ -1130,14 +1214,14 @@ ORDER BY 1,2,3,4
   arenal_table: {
     alias: 'arenal_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE NUMERO DE REGISTROS DE ENFERMEDADES RENALES', subtitle: 'Información de ' },
+    title_obj: { title: 'DATOS DE NUMERO DE REGISTROS DE ENFERMEDADES RENALES', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_table: `SELECT
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,
 SUM(t.valor) AS value
 FROM tmp_snis302b t
 WHERE t.tipo='MLI'
-AND t.formulario = 'ENFERMEDAD Y ESTADIO RENAL' 
+AND t.formulario = 'ENFERMEDAD Y ESTADIO RENAL'  $w$
 GROUP BY 1,2,3
 ORDER BY 1,2,3      
         `,
@@ -1149,11 +1233,11 @@ ORDER BY 1,2,3
     referer: [],
     primal: {
       equivalencia: {
-        gestion: ["to_char(t.fecha_diagnostico, 'YYYY')", "to_char(t.fecha_diagnostico, 'YYYY')"],
-        periodo: ["to_char(t.fecha_diagnostico, 'YYYY-MM')", "to_char(t.fecha_diagnostico, 'YYYY-MM')"],
+        gestion: ["t.gestion", "t.gestion"],
+        periodo: ["to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')", "to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'), 'YYYY-MM')"],
         eg: ['t.eg', 't.eg'],
-        dpto: ['i.dpto', 'i.dpto'],
-        eess: ['i.eess', 'i.eess'],
+        dpto: ['t.dpto', 't.dpto'],
+        eess: ['t.eess', 't.eess'],
       },
       query: `SELECT $sa$`,
       headers: [{}],
