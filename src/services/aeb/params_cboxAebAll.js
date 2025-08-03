@@ -794,7 +794,7 @@ order by v.departamento, v.municipio,  v.institucion, v.establecimiento
           `,*/
           dataTable:`SELECT
 dpto.nombre_dpto AS departamento, eg.nombre_corto AS institucion, i.nombre_institucion AS establecimiento,
-i.zona_barrio ||' '||COALESCE(i.avenida_calle) AS direccion,
+i.zona_barrio ||' '||COALESCE(i.avenida_calle,'') AS direccion,
 i.latitud AS lat, i.longitud AS lng, 
 i.telefono, i.direccion_web AS horarios
 FROM ae_institucion eg, ae_institucion i, al_departamento dpto, r_institucion_salud r
