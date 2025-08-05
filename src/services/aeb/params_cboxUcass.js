@@ -28,7 +28,7 @@ ELSE CASE WHEN SUBSTRING(a2.atributo,1,1)='H'THEN 'SegHab.' ELSE 'SegAcre.' END
 END AS vigencia,        
         COUNT(*) AS value
         FROM u_acrehab ah, r_is_atributo a2
-    WHERE ah.tipo_reg = a2.atributo_id AND ah.tipo_reg='ACREDITACION'
+    WHERE ah.tipo_reg = a2.atributo_id AND ah.tipo_reg='ACREDITACION' and ah.servicio is null
 --AND ah.tipo='O'
 $w$
     GROUP BY 1,2,3
@@ -79,7 +79,7 @@ END AS vigencia,
         COUNT(*) AS value
         FROM u_acrehab ah, r_is_atributo a2
     WHERE ah.tipo_reg = a2.atributo_id
-    and ah.tipo_reg='HABILITACION'
+    and ah.tipo_reg='HABILITACION' and ah.servicio is null
 --AND ah.tipo='O'
 $w$
     GROUP BY 1,2,3
@@ -113,15 +113,16 @@ AND ah.tipo='O' and ah.fecha is not null
     campos: cmps,
     title_obj: { title: 'UCASS - ACREDITACIONES', subtitle: 'Datos de' },
     ilogic: {
-      ucass_groupa: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
+      ucass_groupa: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, i.nombre_corto AS institucion,
 COUNT(*) AS value,
 SUM(COUNT(*)) OVER (PARTITION BY ah.departamento ORDER BY ah.departamento )  AS acumulado
-FROM u_acrehab ah
-WHERE ah.tipo_reg='ACREDITACION'
+FROM u_acrehab ah, ae_institucion i
+WHERE ah.eg=i.institucion_id
+AND ah.tipo_reg='ACREDITACION' and ah.servicio is null
 AND ah.tipo='O'
 $w$
 GROUP BY 1,2,3,4
-ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , ah.ente_gestor_name 
+ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , i.nombre_corto 
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
@@ -148,15 +149,16 @@ AND ah.tipo='O' and ah.fecha is not null $w$ `
     campos: cmps,
     title_obj: { title: 'UCASS - HABILITACIONES', subtitle: 'Datos de' },
     ilogic: {
-      ucass_grouph: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, ah.ente_gestor_name AS institucion,
+      ucass_grouph: `SELECT ah.departamento AS grupo, ah.nivel AS subtercero ,ah.gestion AS subgrupo, i.nombre_corto AS institucion,
 COUNT(*) AS value,
 SUM(COUNT(*)) OVER (PARTITION BY ah.departamento ORDER BY ah.departamento )  AS acumulado
-FROM u_acrehab ah
-WHERE ah.tipo_reg='HABILITACION'
+FROM u_acrehab ah, ae_institucion i
+WHERE ah.eg=i.institucion_id
+AND ah.tipo_reg='HABILITACION' and ah.servicio is null
 AND ah.tipo='O'
 $w$
 GROUP BY 1,2,3,4
-ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , ah.ente_gestor_name 
+ORDER BY acumulado DESC, ah.departamento, ah.nivel , ah.gestion , i.nombre_corto 
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
@@ -188,7 +190,7 @@ ah.ente_gestor_name AS row_index, SUBSTRING(ah.tipo_reg,1,3)||'.' AS col_head2, 
 COUNT(*) AS value
 FROM u_acrehab ah
 WHERE 
-ah.tipo='O' $w$
+ah.tipo='O' and ah.servicio is null $w$
 GROUP BY 1,2,3
 ORDER BY 1,2,3
                 `,
@@ -222,14 +224,14 @@ WHERE
             ah.departamento AS principal, ah.gestion AS segundo, 'exec' AS tipo, 'clase' AS clase,
             COUNT(*) AS VALUE, 0 AS meta
             FROM u_acrehab ah
-            WHERE ah.tipo='O' AND ah.tipo_reg='ACREDITACION'
+            WHERE ah.tipo='O' AND ah.tipo_reg='ACREDITACION' and ah.servicio is null $w$
             group BY 1,2,3
             UNION 
-            SELECT mm.tipo_reg AS grupo,
-            mm.departamento AS principal, mm.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
-            mm.meta AS VALUE, 1 AS meta 
-            FROM u_metas mm
-            WHERE mm.tipo_reg='ACREDITACION' $w$
+            SELECT ah.tipo_reg AS grupo,
+            ah.departamento AS principal, ah.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
+            ah.meta AS VALUE, 1 AS meta 
+            FROM u_metas ah
+            WHERE ah.tipo_reg='ACREDITACION' $w$
             ORDER BY 1,2,3
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
@@ -262,14 +264,14 @@ WHERE
             ah.departamento AS principal, ah.gestion AS segundo, 'exec' AS tipo, 'clase' AS clase,
             COUNT(*) AS VALUE, 0 AS meta
             FROM u_acrehab ah
-            WHERE ah.tipo='O' AND ah.tipo_reg='HABILITACION'
+            WHERE ah.tipo='O' AND ah.tipo_reg='HABILITACION' and ah.servicio is null $w$
             group BY 1,2,3
             UNION 
-            SELECT mm.tipo_reg AS grupo,
-            mm.departamento AS principal, mm.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
-            mm.meta AS VALUE, 1 AS meta 
-            FROM u_metas mm 
-            WHERE  mm.tipo_reg='HABILITACION' $w$
+            SELECT ah.tipo_reg AS grupo,
+            ah.departamento AS principal, ah.gestion AS segundo, 'meta' AS tipo, 'clase' AS clase,
+            ah.meta AS VALUE, 1 AS meta 
+            FROM u_metas ah 
+            WHERE  ah.tipo_reg='HABILITACION' $w$
             ORDER BY 1,2,3
         `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
@@ -310,7 +312,7 @@ AND r.nivel_atencion IN ('2DONIVEL', '3ERNIVEL', '1ERNIVEL')
 AND ah.dpto =i.cod_dpto) ::DECIMAL,2) AS value
         FROM u_acrehab ah, r_is_atributo a2
     WHERE ah.tipo_reg = a2.atributo_id
-    and ah.tipo_reg='ACREDITACION'
+    and ah.tipo_reg='ACREDITACION' and ah.servicio is null
 AND ah.tipo='O' $w$
     GROUP BY 1,2,3
      ORDER BY 1,2
@@ -337,7 +339,7 @@ AND ah.dpto =i.cod_dpto AND ah.eg=i.institucion_root
         FROM ae_institucion eg, u_acrehab ah, r_is_atributo a2 
     WHERE eg.institucion_id= ah.eg
 	 and ah.tipo_reg = a2.atributo_id
-    and ah.tipo_reg='ACREDITACION'
+    and ah.tipo_reg='ACREDITACION' and ah.servicio is null
 AND ah.tipo='O' $w$
     GROUP BY 1,2,3,4
      ORDER BY 1,2`,  
@@ -380,7 +382,7 @@ AND ah.dpto =i.cod_dpto) ::DECIMAL,2) AS value
 
         FROM u_acrehab ah, r_is_atributo a2
     WHERE ah.tipo_reg = a2.atributo_id
-    and ah.tipo_reg='HABILITACION'
+    and ah.tipo_reg='HABILITACION' and ah.servicio is null
 AND ah.tipo='O' $w$
     GROUP BY 1,2,3
      ORDER BY 1,2
@@ -407,7 +409,7 @@ AND ah.dpto =i.cod_dpto AND ah.eg=i.institucion_root
         FROM ae_institucion eg, u_acrehab ah, r_is_atributo a2 
     WHERE eg.institucion_id= ah.eg
 	 and ah.tipo_reg = a2.atributo_id
-    and ah.tipo_reg='HABILITACION'
+    and ah.tipo_reg='HABILITACION' and ah.servicio is null
 AND ah.tipo='O' $w$
     GROUP BY 1,2,3,4
      ORDER BY 1,2`,      
@@ -437,11 +439,11 @@ AND ah.tipo='O' $w$
     title_obj: { title: 'UCASS - HABILITACIONES REALIZADAS', subtitle: 'Periodo de ' },
     ilogic: {
       ucass_h_tbl: `SELECT
-ah.departamento, eg.nombre_corto AS "ente gestor", ah.establecimiento, ah.nivel, ah.ra_reg, TO_CHAR(ah.fecha,'DD/MM/YYYY') AS fecha
+ah.departamento, eg.nombre_corto AS "ente gestor", ah.establecimiento, ah.nivel, ah.ra_reg as "R.A.", TO_CHAR(ah.fecha,'DD/MM/YYYY') AS fecha
 FROM u_acrehab ah, ae_institucion eg
 WHERE ah.eg= eg.institucion_id
-AND ah.tipo='O' AND ah.tipo_reg='HABILITACION' $w$
-ORDER BY 1,2,6
+AND ah.tipo='O' AND ah.tipo_reg='HABILITACION' and ah.servicio is null $w$
+ORDER BY 1,2, ah.fecha desc
         `,
           
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
@@ -470,11 +472,11 @@ ORDER BY 1,2,6
     title_obj: { title: 'UCASS - ACREDITACIONES REALIZADAS', subtitle: 'Periodo de ' },
     ilogic: {
       ucass_a_tbl: `SELECT
-ah.departamento, eg.nombre_corto AS "ente gestor", ah.establecimiento, ah.nivel, ah.ra_reg, TO_CHAR(ah.fecha,'DD/MM/YYYY') AS fecha
+ah.departamento, eg.nombre_corto AS "ente gestor", ah.establecimiento, ah.nivel, ah.ra_reg as "R.A.", TO_CHAR(ah.fecha,'DD/MM/YYYY') AS fecha
 FROM u_acrehab ah, ae_institucion eg
 WHERE ah.eg= eg.institucion_id
-AND ah.tipo='O' AND ah.tipo_reg='ACREDITACION' $w$
-ORDER BY 1,2,6
+AND ah.tipo='O' AND ah.tipo_reg='ACREDITACION' and ah.servicio is null $w$
+ORDER BY 1,2, ah.fecha desc
         `,
           
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax

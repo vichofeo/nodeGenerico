@@ -41,7 +41,7 @@ COALESCE(sc.atributo,'') AS genero,
                 AND s.codigo='A.'
                 AND p.codigo='A1'
   $w$
-                AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
+                --AND ll.row_ll IN ('Fv2A1', 'Fv2A2', 'Fv2A3')
                 GROUP BY 1, 2, 3, 4, 5
                 HAVING(sum(ll.texto::INTEGER))>0
                 ORDER BY 1,2,3
