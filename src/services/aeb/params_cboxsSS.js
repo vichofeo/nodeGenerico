@@ -156,6 +156,31 @@ GROUP BY 1) AS tbl`
 /** ******************** ************************* *****************
  * tarjetas izquierda 
  * */
+ss_bdpa: {
+    alias: 'ss_bdpa',
+    campos: {
+      eg: ['Ente Gestor', false, true, 'C', , , 'M'],
+      dpto: ['Departamento', false, true, 'C', , , 'M'],
+      eess: ['Establecimiento de Salud', false, true, 'C', , , 'M']
+    },
+    ilogic: {
+      ss_bdpa: `SELECT 'construyendo..' AS "creation"
+              `
+    },
+    referer: [],
+    primal: {
+      equivalencia: {        
+        eg: ['i.institucion_root', "i.institucion_root"],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
   ss_vacunatorio: {
     alias: 'ss_vacunatorio',
     campos: {
