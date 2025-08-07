@@ -22,6 +22,7 @@ console.log('DB_HOST:', process.env.UPLOADS);*/
  */
 
 const express = require('express')
+const cors = require('cors');
 const morgan = require('morgan') //FOR DEV control
 const helmet = require('helmet');
 //const xmlparser = require('express-xml-bodyparser')
@@ -40,6 +41,7 @@ const config = require('./config/config.cnf.js')
  */
 
 const app = express()
+app.use(cors());
 
 //******************************************************** */
 // Usar helmet para agregar encabezados de seguridad

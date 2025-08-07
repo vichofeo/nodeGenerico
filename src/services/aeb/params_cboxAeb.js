@@ -30,7 +30,7 @@ const PDEPENDENCIES = {
               AND i.cod_pais=dpto.cod_pais AND i.cod_dpto = dpto.cod_dpto
               AND r.nivel_atencion IN ('1ERNIVEL','2DONIVEL','3ERNIVEL')
                   $w$`,
-      entre_periodos:`select 'Con Cod. RUES y ' as amin, 'Sin Cod RUES' as amax` 
+      entre_periodos:`select '- Con/Sin Cod. RUES ' as amin, ' a '||to_char(now(), 'YYYY-Month') as amax` 
     },
     referer: [],
     primal: {
@@ -68,7 +68,7 @@ const PDEPENDENCIES = {
                 GROUP BY 1,2,3,4
                 ORDER BY acumulado DESC,1, 2, 3
                 `,
-      entre_periodos:`select 'Con Cod. RUES y ' as amin, 'Sin Cod RUES' as amax` 
+      entre_periodos:`select '- Con/Sin Cod. RUES ' as amin, ' a '||to_char(now(), 'YYYY-Month') as amax` 
     },
     referer: [],
     primal: {

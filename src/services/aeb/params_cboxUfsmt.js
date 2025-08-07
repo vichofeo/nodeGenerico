@@ -16,9 +16,7 @@ const PDEPENDENCIES = {
       ufsmt_frma: `SELECT 
                 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
                 THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
- 
-
-                dpto.nombre_dpto as subgrupo,
+                 dpto.nombre_dpto as subgrupo,
 eg.nombre_corto AS "institucion",
 COALESCE(c.atributo,'') AS "grupo_etario", 
 COALESCE(sc.atributo,'') AS genero,
@@ -153,5 +151,157 @@ AND r.concluido='7' $w$`
     },
     withInitial: true,
   },
+
+   ufsmt_frmc: {
+    alias: 'ufsmt_frmc',
+    campos: cmps,
+    title_obj:{title:'DATOS PARA ANALISIS DEL ACCIDENTE DE TRABAJO', subtitle:'Periodo de Reporte'},
+    ilogic: {      
+      ufsmt_frmc: `SELECT p.codigo ||'. '|| p.enunciado AS grupo, 
+                dpto.nombre_dpto as subgrupo, eg.nombre_corto AS "institucion",
+                sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll,
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND r.concluido='7'
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='C.'
+                $w$
+                GROUP BY 1, 2, 3
+                HAVING(sum(ll.texto::INTEGER))>0
+                ORDER BY 1,2,3
+      `,
+      entre_periodos: `SELECT
+TO_CHAR(min(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amin,
+ TO_CHAR(MAX(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amax
+FROM ae_institucion i, f_formulario_registro r
+WHERE 
+r.institucion_id = i.institucion_id
+AND r.concluido='7' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')"],
+        periodo: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')" ],
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ufsmt_frmd: {
+    alias: 'ufsmt_frmd',
+    campos: cmps,
+    title_obj:{title:'CAPACITACIONES RELACIONADAS A MEDICINA DEL TRABAJO, HIGIENE Y SEGURIDAD INDUSTRIAL', subtitle:'Periodo de Reporte'},
+    ilogic: {      
+      ufsmt_frmd: `SELECT               p.codigo AS pivot, 
+				    CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+                THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
+                dpto.nombre_dpto as subgrupo,
+eg.nombre_corto AS "institucion",
+                sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+                LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
+                LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
+                LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND r.concluido='7'
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='D.'
+                AND p.codigo IN ('D1', 'D2')
+                $w$                
+                GROUP BY 1, 2, 3, 4
+                HAVING(sum(ll.texto::INTEGER))>0
+                ORDER BY 1,2,3`,
+      frmd3:`SELECT 
+              c.atributo AS pivot, 
+				    CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+                THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
+                dpto.nombre_dpto as subgrupo,
+eg.nombre_corto AS "institucion",
+                sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+                LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll)
+                LEFT JOIN f_is_atributo c ON (c.atributo_id= ll.col_ll)
+                LEFT JOIN f_is_atributo sc ON (sc.atributo_id= ll.scol_ll),
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND r.concluido='7'
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='D.'
+                AND p.codigo IN ('D3') $w$
+                GROUP BY 1, 2, 3, 4
+                HAVING(sum(ll.texto::INTEGER))>0
+                ORDER BY 1,2,3`,
+      frmd4:`SELECT   dpto.nombre_dpto as pila,
+eg.nombre_corto AS ejex,
+                sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll,      
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND r.concluido='7'
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='D.'
+                AND p.codigo IN ('D4') 
+                GROUP BY 1, 2
+                HAVING(sum(ll.texto::INTEGER))>0
+                ORDER BY 1,2`,          
+      entre_periodos: `SELECT
+TO_CHAR(min(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amin,
+ TO_CHAR(MAX(TO_DATE(r.periodo,'YYYYMMDD')), 'YYYY-Month') AS amax
+FROM ae_institucion i, f_formulario_registro r
+WHERE 
+r.institucion_id = i.institucion_id
+AND r.concluido='7' $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY')"],
+        periodo: ["TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')", "TO_CHAR(TO_DATE(r.periodo,'YYYYMMDD'), 'YYYY-MM')" ],
+        eg: ['i.institucion_root', 'i.institucion_root'],
+        dpto: ['i.cod_dpto', 'i.cod_dpto'],
+        eess: ['i.institucion_id', 'i.institucion_id'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  }
 }
 module.exports = PDEPENDENCIES
