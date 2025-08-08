@@ -180,23 +180,57 @@ AND ah.tipo='O' and ah.fecha is not null $w$ `
     },
     withInitial: true,
   },
-  ucass_nroah: {
-    alias: 'ucass_nroah',
+  ucass_nroa: {
+    alias: 'ucass_nroa',
     campos: cmps,
-    title_obj: { title: 'UCASS Nro. DE ACREDITACIONES - HABILITACIONES', subtitle: 'Comprendidas en el periodo' },
+    title_obj: { title: 'UCASS Nro. DE HABILITACIONES', subtitle: 'Comprendidas en el periodo' },
     ilogic: {
-      ucass_nroah: `SELECT 
+      ucass_nroa: `SELECT 
+                ah.ente_gestor_name AS row_index, SUBSTRING(ah.tipo_reg,1,3)||'.' AS col_head2, ah.gestion as col_head1,
+                COUNT(*) AS value
+                FROM u_acrehab ah
+                WHERE 
+                ah.tipo='O' and ah.servicio is null AND ah.tipo_reg='ACREDITACION' $w$ 
+                GROUP BY 1,2,3
+                ORDER BY 1,2,3
+                `,
+      entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
+              FROM u_acrehab ah
+          WHERE ah.tipo_reg='ACREDITACION' and ah.servicio is null AND 
+          ah.tipo='O' and ah.fecha is not null $w$`
+    },
+    referer: [],
+    primal: {
+      equivalencia: {
+        gestion: ["ah.gestion", "ah.gestion"],
+        periodo: ["COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')", "COALESCE(TO_CHAR(ah.fecha,'YYYY-MM'),'1900-01')"],
+        eg: ['ah.eg', 'ah.eg'],
+        dpto: ['ah.dpto', 'ah.dpto'],
+        eess: ['ah.eess', 'ah.eess'],
+      },
+      query: `SELECT $sa$`,
+      headers: [{}],
+      attributes: null,
+    },
+    withInitial: true,
+  },
+  ucass_nroh: {
+    alias: 'ucass_nroh',
+    campos: cmps,
+    title_obj: { title: 'UCASS Nro. DE HABILITACIONES', subtitle: 'Comprendidas en el periodo' },
+    ilogic: {
+      ucass_nroh: `SELECT 
 ah.ente_gestor_name AS row_index, SUBSTRING(ah.tipo_reg,1,3)||'.' AS col_head2, ah.gestion as col_head1,
 COUNT(*) AS value
 FROM u_acrehab ah
 WHERE 
-ah.tipo='O' and ah.servicio is null $w$
+ah.tipo='O' and ah.servicio is null AND ah.tipo_reg='HABILITACION' $w$ 
 GROUP BY 1,2,3
 ORDER BY 1,2,3
                 `,
       entre_periodos: `SELECT to_char(MIN(ah.fecha), 'DD/MM/YYYY') as amin, to_char(MAX(ah.fecha), 'DD/MM/YYYY') as amax
     FROM u_acrehab ah
-WHERE 
+WHERE ah.tipo_reg='HABILITACION' and ah.servicio is null AND 
  ah.tipo='O' and ah.fecha is not null $w$`
     },
     referer: [],
@@ -214,6 +248,7 @@ WHERE
     },
     withInitial: true,
   },
+  
   ucass_a_meta: {
     alias: 'ucass_a_meta',
     campos: cmps,

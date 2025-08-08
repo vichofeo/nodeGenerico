@@ -11,7 +11,7 @@ const PDEPENDENCIES = {
       establecimiento_t: ['ESTABLECIMIENTO REALIZA TRATAMIENTO',     false,     true,       'C',      ],
       //nivel_t: ['NIVEL EESS TRATAMIENTO', false, true, 'C'],
 
-      gestion: ['GESTION', false, true, 'C'],
+      //gestion: ['GESTION', false, true, 'C'],
       genero: ['GENERO', false, true, 'C'],
 
       //tipo_registro: ['NUEVO / REPETIDO', false, true, 'C'],
@@ -27,16 +27,16 @@ const PDEPENDENCIES = {
         FROM tmp_hemofilia
         WHERE 1=1 $w$`,
       hemo_eg: `SELECT 
-                ente_gestor as pila, 
+                ente_gestor_name as pila, 
                 tipo_hemofilia AS  ejex, 
 					 COUNT(*) AS value, 
-					 SUM(COUNT(*)) OVER (PARTITION BY ente_gestor ORDER BY ente_gestor ) AS total_acumulado
+					 SUM(COUNT(*)) OVER (PARTITION BY ente_gestor_name ORDER BY ente_gestor_name ) AS total_acumulado
                 FROM tmp_hemofilia
                 WHERE 1=1 $w$
                 GROUP BY 1,2
                 ORDER BY 1, 2`,
       hemo_tipo: `SELECT 
-                ente_gestor as pila,                 
+                ente_gestor_name as pila,                 
               tipo_hemofilia AS grupo,
               CASE WHEN h_leve ='X' THEN tipo_hemofilia ||' - Leve' 
               WHEN h_moderada ='X' THEN tipo_hemofilia ||' - Moderada' 
@@ -81,7 +81,7 @@ const PDEPENDENCIES = {
         WHERE 1=1 $w$
         GROUP BY genero`,
       hemo_severidad: `SELECT 
-                ente_gestor ,                 
+                ente_gestor_name ,                 
                 SUM(CASE WHEN h_leve ='X' THEN 1 ELSE 0 END) AS "Leve",
                 SUM(CASE WHEN h_moderada ='X' THEN 1 ELSE 0 END) AS "Moderada",
                 SUM(CASE WHEN h_severa ='X' THEN 1 ELSE 0 END) AS "Severa",
@@ -112,10 +112,10 @@ const PDEPENDENCIES = {
         departamento: ['departamento', 'departamento'],
         //establecimiento_o: ['establecimiento_origen', 'establecimiento_origen'],
         //nivel_o: ['nivel_atencion_origen', 'nivel_atencion_origen'],
-        eg: ['ente_gestor', 'ente_gestor'],
+        eg: ['ente_gestor_name', 'ente_gestor_name'],
         establecimiento_t: [ 'establecimiento',   'establecimiento',    ],
         //nivel_t: ['nivel_atencion_tratamiento', 'nivel_atencion_tratamiento'],
-        gestion: ['gestion', 'gestion'],
+        //gestion: ['gestion', 'gestion'],
         genero: ['genero', 'genero'],
         //tipo_registro: ['tipo_registro', 'tipo_registro'],
       },
@@ -143,7 +143,7 @@ const PDEPENDENCIES = {
       especialidad: ['ESPECIALIDAD', false, true, 'C'],
     },
     ilogic: {
-      car_eg: `SELECT  ente_gestor  AS pila ,COUNT(*) AS value
+      car_eg: `SELECT  ente_gestor_name  AS pila ,COUNT(*) AS value
         FROM tmp_carmelo WHERE 1=1 $w$
         GROUP BY 1
         ORDER BY 2 `,
@@ -155,7 +155,7 @@ const PDEPENDENCIES = {
         FROM tmp_carmelo WHERE 1=1 $w$
         GROUP BY 1
         ORDER BY 2 `,
-      car_genero_eg: `SELECT ente_gestor as pila, genero AS ejex, COUNT(*) AS value					 
+      car_genero_eg: `SELECT ente_gestor_name as pila, genero AS ejex, COUNT(*) AS value					 
                 FROM tmp_carmelo
                 WHERE 1=1 $w$
                 GROUP BY 1,2
@@ -183,13 +183,13 @@ const PDEPENDENCIES = {
         FROM tmp_carmelo
         WHERE 1=1 $w$
         GROUP BY genero`,
-      car_dpto_eg: `SELECT departamento as pila,  ente_gestor AS ejex, COUNT(*) AS value, 
+      car_dpto_eg: `SELECT departamento as pila,  ente_gestor_name AS ejex, COUNT(*) AS value, 
                   TO_CHAR((SELECT MAX(fecha_dispensacion)FROM tmp_carmelo),'dd/mm/YYYY') AS obs
                 FROM tmp_carmelo
                 WHERE 1=1 $w$
                 GROUP BY 1,2
                 ORDER BY 3, 1, 2`,
-      car_gestion_eg: `SELECT ente_gestor as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
+      car_gestion_eg: `SELECT ente_gestor_name as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
                 FROM tmp_carmelo
                 WHERE 1=1 $w$
                 GROUP BY 1,2
@@ -247,7 +247,7 @@ const PDEPENDENCIES = {
       dosis: ['DOSIS', false, true, 'C'],
     },
     ilogic: {
-      pai_eg: `SELECT  ente_gestor  AS pila ,COUNT(*) AS value
+      pai_eg: `SELECT  ente_gestor_name  AS pila ,COUNT(*) AS value
       FROM tmp_pai WHERE 1=1 $w$
       GROUP BY 1
       ORDER BY 2 `,
@@ -255,11 +255,11 @@ const PDEPENDENCIES = {
       FROM tmp_pai WHERE 1=1 $w$
       GROUP BY 1
       ORDER BY 2 `,
-      pai_dpto_eg: `SELECT  departamento as pila, ente_gestor as ejex, COUNT(*) AS value
+      pai_dpto_eg: `SELECT  departamento as pila, ente_gestor_name as ejex, COUNT(*) AS value
       FROM tmp_pai WHERE 1=1 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
-      pai_vacun_eg: `SELECT  ente_gestor as pila, vacuna as ejex, COUNT(*) AS value
+      pai_vacun_eg: `SELECT  ente_gestor_name as pila, vacuna as ejex, COUNT(*) AS value
       FROM tmp_pai WHERE 1=1 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
@@ -278,7 +278,7 @@ const PDEPENDENCIES = {
                 GROUP BY 1,2
                 ORDER BY 3 desc,1,2
                 `,
-      pai_genero_dpto: `SELECT ente_gestor as pila, genero as ejex,  COUNT (*) AS value
+      pai_genero_dpto: `SELECT ente_gestor_name as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_pai
                 WHERE 1=1 $w$
                 GROUP BY 1,2
@@ -372,16 +372,16 @@ const PDEPENDENCIES = {
       cie10: ['CIE10 - GRUPO', false, true, 'C'],
     },
     ilogic: {
-      cancer_1000: `SELECT '' as pila,tt.ente_gestor AS ejex, CASE WHEN p.ente_gestor IS null THEN 0 
+      cancer_1000: `SELECT '' as pila,tt.ente_gestor_name AS ejex, CASE WHEN p.ente_gestor_name IS null THEN 0 
                   ELSE  ROUND((1000*tt.pacientes::numeric/p.poblacion_afiliada::NUMERIC),1)
                   END  AS value
                   FROM (
-                  SELECT t.ente_gestor , 
+                  SELECT t.ente_gestor_name , 
                   COUNT(*) AS pacientes
                   FROM tmp_cancer t
                   WHERE 1=1 $w$
                   GROUP BY 1) AS tt
-                  LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor = p.ente_gestor)
+                  LEFT JOIN tmp_cancer_poblacion p ON (tt.ente_gestor_name = p.ente_gestor)
                   order by 3 `,
       cancer_casos: `SELECT 'Registrados' as pivot ,gestion as ejex ,COUNT(*) AS value, TO_CHAR((SELECT MAX(fecha_diagnostico) FROM tmp_cancer),'dd/mm/YYYY') AS obs
       FROM tmp_cancer WHERE 1=1 $w$
@@ -417,11 +417,11 @@ gestion as pila, 'Registrados' AS ejex,  COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1
       ORDER BY 2 `,
-      cancer_eg: `SELECT  ente_gestor  AS pila ,COUNT(*) AS value
+      cancer_eg: `SELECT  ente_gestor_name  AS pila ,COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1
       ORDER BY 2 `,
-      cancer_dpto_eg: `SELECT  departamento as pila, ente_gestor as ejex, COUNT(*) AS value
+      cancer_dpto_eg: `SELECT  departamento as pila, ente_gestor_name as ejex, COUNT(*) AS value
       FROM tmp_cancer WHERE 1=1 $w$
       GROUP BY 1,2
       ORDER BY 1,2`,
@@ -431,7 +431,7 @@ gestion as pila, 'Registrados' AS ejex,  COUNT(*) AS value
                 GROUP BY 1,2
                 ORDER BY 3 desc,1,2
                 `,
-      cancer_genero_dpto: `SELECT ente_gestor as pila, genero as ejex,  COUNT (*) AS value
+      cancer_genero_dpto: `SELECT ente_gestor_name as pila, genero as ejex,  COUNT (*) AS value
                 FROM tmp_cancer
                 WHERE 1=1 $w$
                 GROUP BY 1,2

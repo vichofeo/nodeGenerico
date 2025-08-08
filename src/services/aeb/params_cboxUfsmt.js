@@ -76,8 +76,6 @@ AND r.concluido='7' $w$`
       ufsmt_frmb: `SELECT 
                 CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
                 THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
- 
-
                 dpto.nombre_dpto as subgrupo,
 eg.nombre_corto AS "institucion",
 COALESCE(c.atributo,'') AS "grupo_etario", 
@@ -157,7 +155,35 @@ AND r.concluido='7' $w$`
     campos: cmps,
     title_obj:{title:'DATOS PARA ANALISIS DEL ACCIDENTE DE TRABAJO', subtitle:'Periodo de Reporte'},
     ilogic: {      
-      ufsmt_frmc: `SELECT p.codigo ||'. '|| p.enunciado AS grupo, 
+      ufsmt_frmc: `SELECT 
+                CASE WHEN f.grupo_atributo IS NOT NULL AND  f.grupo_atributo<> 'F_ROW_CIE10_10PAMT' AND substring(p.codigo,1,1)<>'C'
+                THEN f.orden||'. ' ELSE  '' END  ||COALESCE(f.atributo,'') AS grupo, 
+                 dpto.nombre_dpto as subgrupo,
+eg.nombre_corto AS "institucion",
+sum(ll.texto::integer) AS value
+                FROM ae_institucion eg,
+                f_formulario frm,  u_is_atributo a, f_formulario_registro r,  f_frm_enunciado p, f_frm_subfrm s, f_formulario_llenado ll
+                LEFT JOIN f_is_atributo f ON (f.atributo_id= ll.row_ll),
+
+                ae_institucion i 
+                LEFT JOIN al_departamento dpto ON (dpto.cod_dpto=i.cod_dpto)
+                WHERE eg.institucion_id =  i.institucion_root
+                AND a.atributo_id =  r.concluido
+                AND frm.formulario_id =  r.formulario_id AND i.institucion_id= r.institucion_id
+                and r.registro_id= ll.registro_id
+                AND ll.formulario_id =  p.formulario_id AND ll.subfrm_id=p.subfrm_id AND ll.enunciado_id= p.enunciado_id
+                AND p.formulario_id = s.formulario_id AND p.subfrm_id=s.subfrm_id
+                AND r.concluido='7'
+                AND frm.codigo_formulario='FRM003'
+                AND s.codigo='A.'
+                AND p.codigo='A2'
+                AND ll.row_ll IN ('Fv2A11') $w$
+                GROUP BY 1, 2, 3
+                HAVING(sum(ll.texto::INTEGER))>0
+
+                UNION
+
+      SELECT p.codigo ||'. '|| p.enunciado AS grupo, 
                 dpto.nombre_dpto as subgrupo, eg.nombre_corto AS "institucion",
                 sum(ll.texto::integer) AS value
                 FROM ae_institucion eg,

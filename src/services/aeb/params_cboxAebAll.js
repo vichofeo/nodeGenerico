@@ -436,7 +436,7 @@ $w$
   acarmelo: {
     alias: 'acarmelo',
     campos: cmps,
-    title_obj: { title: 'BENEFICIO CARMELO', subtitle: 'Datos de' },
+    title_obj: { title: 'COMPLEMENTO NUTRICIONAL CARMELO', subtitle: 'Datos de' },
     ilogic: {
       acarmelo: `SELECT eg.nombre_corto as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
                 FROM tmp_carmelo t, ae_institucion eg
@@ -444,6 +444,13 @@ $w$
                 $w$
                 GROUP BY 1,2
                 ORDER BY 1, 2`,
+      acarmelo_nal:`SELECT TO_CHAR(t.fecha_dispensacion, 'YYYY') AS  gestion, COUNT(*) AS VALUE, 
+                to_char(max(t.fecha_dispensacion), 'DD/MM/YYYY')  AS obs, 
+                SUM(COUNT(*)) OVER (ORDER BY  TO_CHAR(t.fecha_dispensacion, 'YYYY') ) AS total_acumulado
+                FROM tmp_carmelo t
+                WHERE 1=1 $w$
+                GROUP BY gestion
+                ORDER BY 1`,          
       acarmelo_gesdpto: `SELECT dpto.nombre_dpto as pila,  extract(year from fecha_dispensacion) AS ejex, COUNT(*) AS value					 
                 FROM tmp_carmelo t, al_departamento dpto
                 WHERE t.dpto=dpto.cod_dpto
@@ -913,7 +920,7 @@ entre_periodos: `SELECT  '' AS amin, '' as amax`
   aonco_nr: {
     alias: 'aonco_nr',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS DE NOTIFICACIÓN MENSUAL', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES ONCOLÓGICAS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -966,7 +973,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   aonco_n: {
     alias: 'aonco_n',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES ONCOLÓGICAS - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_n: `
 SELECT 
@@ -1006,7 +1013,7 @@ ORDER BY 1,2,3,4
   aonco_r: {
     alias: 'aonco_r',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES ONCOLOGICAS - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES ONCOLÓGICAS - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_r: `
 SELECT 
@@ -1046,7 +1053,7 @@ ORDER BY 1,2,3,4
   aonco_table: {
     alias: 'aonco_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE REGISTRO ENFERMEDADES ONCOLOGICAS', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES ONCOLÓGICAS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       aonco_table: `SELECT 
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,
@@ -1081,7 +1088,7 @@ ORDER BY 1,2,3
   arenal_nr: {
     alias: 'arenal_nr',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES DE NOTIFICACIÓN MENSUAL', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES RENALES', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_nr: `
         SELECT t.subvariable AS pivot, to_char(to_date(t.gestion||'-'||t.mes, 'YYYY-MM'),'YYYY-MM') AS ejex,
@@ -1134,7 +1141,7 @@ SUM(SUM(t.valor)) OVER (PARTITION BY t.ente_gestor_name ORDER BY t.ente_gestor_n
   arenal_n: {
     alias: 'arenal_n',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES RENALES - NUEVOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_n: `
 SELECT 
@@ -1174,7 +1181,7 @@ ORDER BY 1,2,3,4
   arenal_r: {
     alias: 'arenal_r',
     campos: cmps,
-    title_obj: { title: 'REGISTRO DE ENFERMEDADES RENALES - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES RENALES - REPETIDOS', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_r: `
 SELECT 
@@ -1214,7 +1221,7 @@ ORDER BY 1,2,3,4
   arenal_table: {
     alias: 'arenal_table',
     campos: cmps,
-    title_obj: { title: 'DATOS DE NUMERO DE REGISTROS DE ENFERMEDADES RENALES', subtitle: 'Fuente: SNIS Información de ' },
+    title_obj: { title: 'CONSULTAS DE ENFERMEDADES RENALES', subtitle: 'Fuente: SNIS Información de ' },
     ilogic: {
       arenal_table: `SELECT
 t.ente_gestor_name AS row_index, t.subvariable||'.' AS col_head2, t.departamento as col_head1,
